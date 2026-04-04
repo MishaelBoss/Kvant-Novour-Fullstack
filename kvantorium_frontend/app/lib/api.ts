@@ -1,40 +1,37 @@
+import axios from "axios";
 import { EditProfile } from "../types/edit_profile.interface";
 import { News } from "../types/news.interface";
 import { User } from "../types/user.interface";
 import { UserLogin } from "../types/user_login.interface";
 
-export const API_URL = 'http://localhost:8000/api'
-
 export const checkAuthStatus = async () => {
     try {
-        const res = await fetch(`${API_URL}/is_authenticated/`, {
-            method: 'GET',
-            credentials: 'include',
-            cache: 'no-store',
+        const res = await axios.get(`/is_authenticated/`, {
+            withCredentials: true, 
         });
 
-        if (res.ok) {
-            const data = await res.json();
-            return data.is_authenticated ? data : null;
-        }
-        
-        return null;
+        return res.data.is_authenticated ? res.data : null;
     } catch (error) {
-        console.error("Ошибка при проверке авторизации:", error);
+        if (axios.isAxiosError(error)) {
+            console.error("Ошибка API:", error.response?.data || error.message);
+            
+            if (error.response?.status === 401) {
+                return null;
+            }
+        } else {
+            console.error("Неизвестная ошибка:", error);
+        }
         return null;
     }
 };
 
 export const login = async (data: UserLogin): Promise<boolean> => {
     try{
-        const res = await fetch(`${API_URL}/login/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            credentials: 'include' 
+        const res = await axios.post(`/login/`, data, {
+            withCredentials: true, 
         });
 
-        if (res.ok){
+        if (res.status >= 200 || res.status < 300){
             window.dispatchEvent(new Event("fetchUser"));
             return true; 
         };
@@ -48,14 +45,14 @@ export const login = async (data: UserLogin): Promise<boolean> => {
 
 export const register = async (data: UserLogin): Promise<boolean> => {
     try{
-        const res =  await fetch(`${API_URL}/register/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            credentials: 'include' 
+        const res =  await axios.post(`/register/`, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true, 
         });
 
-        if (res.ok){
+        if (res.status === 200 || res.status === 201){
             window.dispatchEvent(new Event("fetchUser"));
             return true;
         };
@@ -69,19 +66,16 @@ export const register = async (data: UserLogin): Promise<boolean> => {
 
 export const getProfile = async (): Promise<User> => {
     try{
-        const res = await fetch(`${API_URL}/my-profile/`, {
-            method: 'GET',
-            credentials: 'include', 
+        const res = await axios.get(`/my-profile/`, {
+            withCredentials: true, 
         });
 
         if (res.status === 401) {
             console.warn("Пользователь не авторизован (401)");
-            return {
-                is_authenticated: false
-            }
+            return { is_authenticated: false }
         }
 
-        const data = await res.json();
+        const data = await res.data;
 
         return {
             ...data, 
@@ -97,14 +91,11 @@ export const getProfile = async (): Promise<User> => {
 
 export const editProfile = async (data: EditProfile): Promise<boolean> => {
     try{
-        const res = await fetch(`${API_URL}/edit-profile/`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            credentials: 'include',
+        const res = await axios.patch(`/edit-profile/`, data, {
+            withCredentials: true, 
         })
 
-        if (res.ok) {
+        if (res.status === 200 || res.status === 201) {
             window.dispatchEvent(new Event("fetchUser"));
             return true;
         }
@@ -118,12 +109,11 @@ export const editProfile = async (data: EditProfile): Promise<boolean> => {
 
 export const logout = async () => {
     try{
-        const res = await fetch(`${API_URL}/logout/`, {
-            method: 'POST',
-            credentials: 'include',
+        const res = await axios.post(`/logout/`, {
+            withCredentials: true, 
         })
 
-        if (res.ok){
+        if (res.status === 201){
             window.dispatchEvent(new Event("fetchUser"));
         };
     } catch (error) {
@@ -148,13 +138,11 @@ export const createNews = async (data: News): Promise<boolean> => {
             });
         }
 
-        const res = await fetch(`${API_URL}/run-create-news/`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
+        const res = await axios.post(`/run-create-news/`, formData, {
+            withCredentials: true,
         })
 
-        if(res.ok){
+        if(res.status === 201){
             window.dispatchEvent(new Event("fetchListNews"));
             return true;
         }
@@ -168,13 +156,12 @@ export const createNews = async (data: News): Promise<boolean> => {
 
 export const getCategories = async () => {
     try {
-        const res = await fetch(`${API_URL}/categories-list/`, {
-            method: 'GET',
-            credentials: 'include'
+        const res = await axios.get(`/categories-list/`, {
+            withCredentials: true
         })
 
-        if (res.ok) {
-            const data = await res.json();
+        if (res.status === 200) {
+            const data = await res.data;
             return data;
         }
     } catch (error) {
@@ -184,14 +171,11 @@ export const getCategories = async () => {
 
 export const getListNews = async () => {
     try {
-        const res = await fetch(`${API_URL}/news-list/`, {
-            method: 'GET',
-            credentials: 'include'
+        const res = await axios.get(`/news-list/`, {
+            withCredentials: true
         })
 
-        const data = await res.json();
-
-        return data;
+        return await res.data;
     } catch (error) {
         console.error('Не удалось загрузить список новостей',error)
         return { 
@@ -208,12 +192,11 @@ export const deleteNews = async (id: number | undefined) => {
     }
 
     try{
-        const res = await fetch(`${API_URL}/news-delete/${id}/`, {
-            method: 'DELETE',
-            credentials: 'include'
+        const res = await axios.delete(`/news-delete/${id}/`, {
+            withCredentials: true
         })
 
-        if (res.ok) {
+        if (res.status === 204) {
             window.dispatchEvent(new Event("fetchListNews"));
         }
     } catch (error) {
@@ -223,14 +206,11 @@ export const deleteNews = async (id: number | undefined) => {
 
 export const getListUsers = async () => {
     try {
-        const res = await fetch(`${API_URL}/users-list/`, {
-            method: 'GET',
-            credentials: 'include'
+        const res = await axios.get(`/users-list/`, {
+            withCredentials: true
         })
 
-        const data = await res.json();
-
-        return data;
+        return await res.data;
     } catch (error) {
         console.error('Не удалось загрузить список пользователей',error)
         return { 
@@ -247,12 +227,11 @@ export const deleteUser = async (id: number | undefined) => {
     }
     
     try {
-        const res = await fetch(`${API_URL}/user-delete/${id}/`, {
-            method: 'DELETE',
-            credentials: 'include'
+        const res = await axios.delete(`/user-delete/${id}/`, {
+            withCredentials: true
         })
 
-        if (res.ok) {
+        if (res.status === 204) {
             window.dispatchEvent(new Event("fetchListUsers"));
         }
     } catch (error) {
@@ -275,13 +254,11 @@ export const createUser = async (data: User): Promise<boolean> => {
 
             console.log("FormData role:", formData.get('role')); 
 
-        const res = await fetch(`${API_URL}/run-create-user/`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
+        const res = await axios.post(`/run-create-user/`, formData, {
+            withCredentials: true
         })
 
-        if(res.ok){
+        if(res.status === 201){
             window.dispatchEvent(new Event("fetchListUsers"));
             return true;
         }

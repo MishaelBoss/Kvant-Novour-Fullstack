@@ -1,5 +1,7 @@
+import axios from 'axios';
 import { cookies } from 'next/headers';
-import { API_URL } from './api';
+
+const API_URL = 'http://localhost:8000/api';
 
 export async function getCurrentUser() {
     try {
@@ -12,26 +14,24 @@ export async function getCurrentUser() {
             return null;
         }
 
-        const res = await fetch(`${API_URL}/is_authenticated/`, {
-            method: 'GET',
+        const res = await axios.get(`${API_URL}/is_authenticated/`, {
             headers: {
                 'Cookie': `access_token=${accessToken}`,
             },
-            cache: 'no-store',
+            withCredentials: true,
         });
 
-        console.log("Auth response status:", res.status);
-
-        if (!res.ok) {
-            const text = await res.text();
-            console.log("Auth error body:", text);
+        if (res.status === 401) {
+            console.log("Auth error body:", res.statusText);
             return null;
         }
 
-        const data = await res.json();
+        const data = await res.data;
         return data.is_authenticated ? data : null;
     } catch (error) {
-        console.error("Auth check failed:", error);
+        if (axios.isAxiosError(error)) {
+            console.error("Ошибки:", error.response?.data);
+        }
         return null;
     }
 }
