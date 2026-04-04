@@ -1,0 +1,141 @@
+.Header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #ffffff;
+    padding: 8px 24px 14px;
+    width: calc(100% - var(--desktop-padding-default) * 2);
+    max-width: 1416px;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    margin: auto;
+}
+
+.Header-container {
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 60px;
+}
+
+.Header-content-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.Header-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    gap: 6px;
+    min-width: 70px;
+    background: transparent;
+    border: none;
+}
+
+.Header-item:hover {
+    background-color: rgba(0, 26, 52, 0.04);
+}
+
+.Icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+
+.Icon-wrapper svg {
+    width: 24px;
+    height: 24px;
+    transition: color 0.2s ease;
+}
+
+.Header-item:hover .Icon-wrapper svg {
+    color: #005bff !important;
+}
+
+.Item-text {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #001a34;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.Header-item:hover .Item-text {
+    color: #005bff;
+}
+
+.Badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background-color: #f91155;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    line-height: 1;
+    font-family: monospace;
+}
+
+.DropdownMenuContent {
+    min-width: 280px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px 0;
+    box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 
+                0 10px 20px -15px rgba(22, 23, 24, 0.2);
+    animation-duration: 200ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+    z-index: 100;
+}
+
+.DropdownMenuItem {
+    font-family: sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #001a34;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.2s;
+}
+
+.DropdownMenuItem[data-highlighted] {
+    background-color: #f5f7f9;
+}
+
+.ItemTitle {
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.DropdownMenuArrow {
+    fill: white;
+    height: 12px;
+    width: 25px;
+}
