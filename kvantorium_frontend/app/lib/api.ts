@@ -38,7 +38,9 @@ export const login = async (data: UserLogin): Promise<boolean> => {
 
         return false;
     } catch (error){
-        console.error("Ошибка при авторизации:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка входа:', error.response?.data || error.message);
+        }
         return false;
     }
 };
@@ -59,7 +61,9 @@ export const register = async (data: UserLogin): Promise<boolean> => {
 
         return false;
     } catch (error){
-        console.error("Ошибка при регистрации:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка регистрации:', error.response?.data || error.message);
+        }
         return false;
     }
 };
@@ -82,7 +86,9 @@ export const getProfile = async (): Promise<User> => {
             is_authenticated: true 
         };
     } catch (error){
-        console.error("Ошибка профиля:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при получений данных:', error.response?.data || error.message);
+        }
         return {
             is_authenticated: false
         }
@@ -102,7 +108,9 @@ export const editProfile = async (data: EditProfile): Promise<boolean> => {
 
         return false;
     } catch (error) {
-        console.error("Ошибка редактирования профиля:",error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при редактирования:', error.response?.data || error.message);
+        }
         return false;
     }
 }
@@ -117,7 +125,9 @@ export const logout = async () => {
             window.dispatchEvent(new Event("fetchUser"));
         };
     } catch (error) {
-        console.error("Ошибка выхода:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка выхода из аккаунта:', error.response?.data || error.message);
+        }
     }
 }
 
@@ -149,7 +159,9 @@ export const createNews = async (data: News): Promise<boolean> => {
 
         return false;
     } catch (error) {
-        console.error("Ошибка при создание новости:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при создание:', error.response?.data || error.message);
+        }
         return false;
     }
 }
@@ -165,7 +177,9 @@ export const getCategories = async () => {
             return data;
         }
     } catch (error) {
-        console.error('Не удалось загрузить список категорий',error)
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка получения списка:', error.response?.data || error.message);
+        }
     }
 }
 
@@ -177,7 +191,9 @@ export const getListNews = async () => {
 
         return await res.data;
     } catch (error) {
-        console.error('Не удалось загрузить список новостей',error)
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка получения списка:', error.response?.data || error.message);
+        }
         return { 
             results: [], 
             count: 0 
@@ -196,11 +212,13 @@ export const deleteNews = async (id: number | undefined) => {
             withCredentials: true
         })
 
-        if (res.status === 204) {
+        if (res.status >= 200 && res.status < 300) {
             window.dispatchEvent(new Event("fetchListNews"));
         }
     } catch (error) {
-        console.error('Ошибка удаление новости', error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка удаления:', error.response?.data || error.message);
+        }
     }
 }
 
@@ -212,7 +230,9 @@ export const getListUsers = async () => {
 
         return await res.data;
     } catch (error) {
-        console.error('Не удалось загрузить список пользователей',error)
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка получения списка:', error.response?.data || error.message);
+        }
         return { 
             results: [], 
             count: 0 
@@ -231,11 +251,13 @@ export const deleteUser = async (id: number | undefined) => {
             withCredentials: true
         })
 
-        if (res.status === 204) {
+        if (res.status >= 200 && res.status < 300) {
             window.dispatchEvent(new Event("fetchListUsers"));
         }
     } catch (error) {
-        console.error('Не удалось удалить пользователя', error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка удаления:', error.response?.data || error.message);
+        }
     }
 }
 
@@ -265,7 +287,9 @@ export const createUser = async (data: User): Promise<boolean> => {
 
         return false;
     } catch (error) {
-        console.error('Не удалось создать пользователя', error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при создание:', error.response?.data || error.message);
+        }
         return false;
     }
 }
