@@ -12,10 +12,9 @@ export const checkAuthStatus = async () => {
 
         return res.data.is_authenticated ? res.data : null;
     } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error("Ошибка API:", error.response?.data || error.message);
-            
+        if (axios.isAxiosError(error)) {            
             if (error.response?.status === 401) {
+                console.log("User не авторизован");
                 return null;
             }
         } else {

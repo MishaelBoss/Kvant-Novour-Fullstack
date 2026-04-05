@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Category } from "../types/category.interface";
 
 interface Props {
-    image?: string | File | null;
+    image?: string | null;
     title: string;
     content: string;
     categories?: Category[];
@@ -12,7 +12,7 @@ export function CartNews({image, title, content, categories}: Props){
     const truncateText = (text: string, limit = 150) => {
         return text.length > limit ? text.substring(0, limit) + "..." : text;
     };
-    
+
     return (
         <>
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full border border-gray-100">
@@ -29,9 +29,9 @@ export function CartNews({image, title, content, categories}: Props){
                 <div className="absolute top-3 left-3 flex flex-wrap gap-2 z-10">
                     {categories?.map((item) => (
                         <span
-                            key={item.id} 
+                            key={item.value} 
                             className="badge-custom px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm border border-white/30">
-                            {item.name}
+                            {item.label}
                         </span>
                     ))}
                 </div>

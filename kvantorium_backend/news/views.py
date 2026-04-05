@@ -53,8 +53,8 @@ class NewsListView(APIView):
                 'title': n.title,
                 'content': n.content,
                 'categories': [{
-                    'id': c.id, 
-                    'name': c.name
+                    'value': c.id, 
+                    'label': c.name
                     } 
                     for c in n.categories.all()
                 ],

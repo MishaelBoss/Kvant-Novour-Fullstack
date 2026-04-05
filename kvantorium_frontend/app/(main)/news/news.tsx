@@ -43,7 +43,6 @@ export default function News() {
             const data = await getCategories();
 
             setCategories(data.results);
-            
         }
 
         fetchCategories();
@@ -89,7 +88,7 @@ export default function News() {
                 <main className="flex-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {news?.map((item) => (
-                            <CartNews key={item.id} image={item.image} title={item.title!} content={item.content!} categories={item.categories}/>
+                            <CartNews key={item.id} image={item.image?.toString().replace('http://localhost', '')} title={item.title!} content={item.content!} categories={item.categories}/>
                         ))}
                     </div>
                 </main>

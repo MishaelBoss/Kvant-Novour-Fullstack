@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EditProfileModal } from './_components/EditModal';
 import Link from 'next/link';
-import { FormatPhoneNumber } from '@/app/utils/formatPhoneNumber';
+import { FormatPhoneNumber } from '@/app/utils/FormatPhoneNumber';
 import { Separator } from "radix-ui";
 import { DropdownMenu } from '@radix-ui/themes';
 import { LogoutConfirmModel } from './_components/LogoutConfirmModel';

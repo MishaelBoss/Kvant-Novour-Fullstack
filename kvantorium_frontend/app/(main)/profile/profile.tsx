@@ -52,7 +52,7 @@ export default function MyProfile() {
                 <aside className="w-64 bg-white rounded-2xl p-4 shadow-sm h-fit">
                     <div className="flex items-center gap-3 mb-6 px-2">
                         <div className="relative w-[80px] h-[80px] aspect-square flex-shrink-0 rounded-full overflow-hidden bg-blue-500">
-                            <Image src={user?.avatar || '/default-avatar.png'} fill alt={user?.username || "Avatar"} className="object-cover"/>
+                            <Image src={user?.avatar?.replace('http://localhost', '') || '/default-avatar.png'} fill alt={user?.username || "Avatar"} className="object-cover"/>
                         </div>
 
                         <div>

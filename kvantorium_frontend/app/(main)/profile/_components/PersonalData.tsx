@@ -1,5 +1,5 @@
 import * as Separator from '@radix-ui/react-separator';
-import { FormatPhoneNumber } from "@/app/utils/formatPhoneNumber";
+import { FormatPhoneNumber } from "@/app/utils/FormatPhoneNumber";
 import { User } from '@/app/types/user.interface';
 import Link from 'next/link';
 import { PAGES } from '@/app/config/page';

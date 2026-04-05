@@ -7,7 +7,7 @@ export default function AxiosConfig() {
         axios.defaults.withCredentials = true;
         axios.defaults.xsrfCookieName = 'csrftoken';
         axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-        axios.defaults.baseURL = 'http://localhost:8000/api'
+        axios.defaults.baseURL = '/api'
     }, []);
 
     return null;
