@@ -50,7 +50,7 @@ export default function KvantumID() {
                 <section className="flex-1 max-w-[800px]">
                     <div className="flex items-start gap-8 mb-12">
                         <div className="relative w-[120px] h-[120px] rounded-full overflow-hidden">
-                            <Image src={user?.avatar || '/default-avatar.png'} fill alt={user?.username || "Avatar"} className="object-cover"/>
+                            <Image src={user?.avatar?.replace('http://localhost', '') || '/default-avatar.png'} fill alt={user?.username || "Avatar"} className="object-cover"/>
                         </div>
                         
                         <div className="flex-1 pt-2">

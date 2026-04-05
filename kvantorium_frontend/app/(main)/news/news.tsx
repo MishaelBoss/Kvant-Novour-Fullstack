@@ -16,7 +16,7 @@ export default function News() {
         const savedValue = localStorage.getItem('myAppSelectValue');
         if (savedValue) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setSelectedValue(savedValue);
+            setSelectedValue(savedValue || 'all');
         }
     }, []);
 
@@ -48,6 +48,10 @@ export default function News() {
         fetchCategories();
     }, [])
 
+    const filteredNews = selectedValue === 'all' || selectedValue === '' ? news : news.filter(item => 
+        item.categories?.some(c => c.value.toString() === selectedValue.toString())
+    );
+
     return (
         <>
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8 font-sans text-[#242424]">
@@ -66,7 +70,7 @@ export default function News() {
                                     value={selectedValue} 
                                     onChange={handleChange} 
                                     className="w-full bg-[#f4f5f7] border-none rounded-xl px-4 py-3 text-sm appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none">
-                                        <option value={1}>
+                                        <option value="all">
                                             Все новости
                                         </option>
                                     {categories.map((item) => (
@@ -87,7 +91,7 @@ export default function News() {
                 
                 <main className="flex-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {news?.map((item) => (
+                        {filteredNews?.map((item) => (
                             <CartNews key={item.id} image={item.image?.toString().replace('http://localhost', '')} title={item.title!} content={item.content!} categories={item.categories}/>
                         ))}
                     </div>
