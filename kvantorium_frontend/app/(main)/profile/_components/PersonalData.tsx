@@ -8,7 +8,7 @@ interface PersonalDataProps {
     user: User | null;
 }
 
-export function PersonalData({ user} : PersonalDataProps) {
+export function PersonalData({user} : PersonalDataProps) {
     return (
         <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
             <section className="mb-12 relative pl-[40px]">

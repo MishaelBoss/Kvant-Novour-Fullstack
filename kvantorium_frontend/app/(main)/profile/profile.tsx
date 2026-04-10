@@ -10,11 +10,12 @@ import { Skeleton } from "@radix-ui/themes";
 import { Achievements } from "./_components/Achievements";
 import { PersonalData } from "./_components/PersonalData";
 import { Notifications } from "./_components/Notifications";
+import { KvantoForm } from "./_components/KvantoForm";
 
 export default function MyProfile() {
     const [user, setUser] = useState<User | null>(null);
     const searchParams = useSearchParams();
-    const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications';
+    const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'kvantoForm';
     const activeTab = tabFromUrl || 'personal';
     const [loading, setLoading] = useState(true);
     const router = useRouter();
@@ -77,6 +78,10 @@ export default function MyProfile() {
                             Сообщения
                         </button>
 
+                        {user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'teacher' && <button onClick={() => setActiveTab('kvantoForm')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'kvantoForm' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                            Кванто форм (beta)
+                        </button>}
+
                         <Link href={PAGES.KVANTUMID()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
                             Моя учетная запись
                         </Link>
@@ -90,6 +95,7 @@ export default function MyProfile() {
                 {activeTab === 'personal' && <PersonalData user={user} />}
                 {activeTab === 'achievements' && <Achievements user={user} />}
                 {activeTab === 'notifications' && <Notifications/>}
+                {activeTab === 'kvantoForm' && <KvantoForm/>}
             </div>
         </div>
     );

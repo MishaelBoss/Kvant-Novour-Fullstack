@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import { PAGES } from '@/app/config/page';
 import { getProfile } from '@/app/lib/api';
 import { User } from '@/app/types/user.interface';
