@@ -1,3 +1,8 @@
+"use client";
+
+import { PAGES } from "@/app/config/page";
+import Link from "next/link";
+
 export function KvantoForm(){
     return (
         <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
@@ -19,9 +24,9 @@ export function KvantoForm(){
                     </p>
                 </div>
 
-                <button className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                <Link href={PAGES.KVANTUM_FORM_NEW()} className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                     Создать форму
-                </button>
+                </Link>
             </div>
         </main>
     );

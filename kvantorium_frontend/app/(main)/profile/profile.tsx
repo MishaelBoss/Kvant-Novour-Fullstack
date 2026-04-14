@@ -20,6 +20,8 @@ export default function MyProfile() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const canAccessKvanto = ['admin', 'teacher'].includes(user?.role?.toLowerCase() ?? '');
+
     const setActiveTab = (tab: string) => {
         router.push(`?tab=${tab}`, { scroll: false });
     };
@@ -78,7 +80,7 @@ export default function MyProfile() {
                             Сообщения
                         </button>
 
-                        {user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'teacher' && <button onClick={() => setActiveTab('kvantoForm')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'kvantoForm' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                        {canAccessKvanto && <button onClick={() => setActiveTab('kvantoForm')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'kvantoForm' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
                             Кванто форм (beta)
                         </button>}
 

@@ -23,4 +23,7 @@ export const PAGES = new class PageConfig{
     QUANTS() {
         return "/quants/"
     }
+    KVANTUM_FORM_NEW() {
+        return "/kvanto_form/new/"
+    }
 }
