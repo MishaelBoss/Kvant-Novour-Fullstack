@@ -161,14 +161,6 @@ export default function NewForm() {
                                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                                     Вопрос {index + 1}
                                 </span>
-                                <button
-                                    onClick={() => removeQuestion(q.id)}
-                                    className="text-gray-300 hover:text-red-400 transition-colors cursor-pointer"
-                                    aria-label="Удалить вопрос">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4H5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </button>
                                 <DropdownMenu.Root>
                                     <DropdownMenu.Trigger>
                                         <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
