@@ -1,24 +1,13 @@
 'use client';
 
-import { Question, QuestionType } from "@/app/types/form.interface";
+import { FormSettings, Question } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ModelConfirmAddForm } from "./_components/ModelConfirmAddForm";
-import { DropdownMenu } from "@radix-ui/themes";
 import { Content } from "./_components/Content";
 import { Settings } from "./_components/Settings";
-
-const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-    short_text: 'Короткий текст',
-    long_text: 'Длинный текст',
-    radio: 'Один вариант',
-    checkbox: 'Несколько вариантов',
-    dropdown: 'Выпадающий список',
-    number: 'Число',
-};
-
-const WITH_CHOICES: QuestionType[] = ['radio', 'checkbox', 'dropdown'];
+import { QuestionCard } from "./_components/QuestionCard";
 
 function generateId() {
     return Math.random().toString(36).slice(2, 9);
@@ -33,6 +22,18 @@ export default function NewForm() {
     const [deadline, setDeadline] = useState('');
     const [questions, setQuestions] = useState<Question[]>([]);
 
+    const [settings, setSettings] = useState<FormSettings>({
+        timer_enabled: false,
+        timer_seconds: 1800,
+        one_question_per_page: true,
+        show_results_after: true,
+        require_profile: true,
+    });
+
+    const updateSettings = (patch: Partial<FormSettings>) => {
+        setSettings(prev => ({ ...prev, ...patch }));
+    };
+
     const addQuestion = () => {
         setQuestions(prev => [...prev, {
             id: generateId(),
@@ -42,6 +43,7 @@ export default function NewForm() {
             points: 0,
             order: prev.length,
             choices: [],
+            media: null,
         }]);
     };
 
@@ -62,16 +64,8 @@ export default function NewForm() {
             points: quest.points || 0,
             order: quest.order || prev.length,
             choices: quest.choices || [],
+            media: quest.media || null,
         }]);
-    };
-
-    const changeType = (id: string, type: QuestionType) => {
-        updateQuestion(id, {
-            type,
-            choices: WITH_CHOICES.includes(type)
-                ? [{ id: generateId(), text: '', is_correct: false, order: 0 }]
-                : [],
-        });
     };
 
     const addChoice = (questionId: string) => {
@@ -145,7 +139,7 @@ export default function NewForm() {
                     <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
                         <button 
                             onClick={() => setActiveTab('content')}
-                            className={`pb-3 text-sm font-medium transition-all relative ${
+                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${
                                 activeTab === 'content' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
                             }`}>
                             Контент
@@ -155,7 +149,7 @@ export default function NewForm() {
                         </button>
                         <button 
                             onClick={() => setActiveTab('settings')}
-                            className={`pb-3 text-sm font-medium transition-all relative ${
+                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${
                                 activeTab === 'settings' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
                             }`}>
                             Настройки
@@ -175,93 +169,23 @@ export default function NewForm() {
                             setDeadline={setDeadline}
                         />
                     ) : (
-                        <Settings/>
+                        <Settings settings={settings} updateSettings={updateSettings}/>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-3">
                     {questions.map((q, index) => (
-                        <div key={q.id} className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-200/50 flex flex-col gap-4">
-                            <div className="flex items-center justify-between gap-3">
-                                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                    Вопрос {index + 1}
-                                </span>
-                                <DropdownMenu.Root>
-                                    <DropdownMenu.Trigger>
-                                        <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
-                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill="currentColor" fillRule="evenodd" d="M3 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0" clipRule="evenodd"></path>
-                                            </svg>
-                                        </button>
-                                    </DropdownMenu.Trigger>
-                                    <DropdownMenu.Content>
-                                        <DropdownMenu.Item onClick={() => duplicateQuestion(q)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 focus:bg-red-50 focus:text-red-700 outline-none !cursor-pointer">
-                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                <path fill="currentColor" fillRule="evenodd" d="M12 2.5H8A1.5 1.5 0 0 0 6.5 4v1H8a3 3 0 0 1 3 3v1.5h1A1.5 1.5 0 0 0 13.5 8V4A1.5 1.5 0 0 0 12 2.5M11 11h1a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v1H4a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3zM4 6.5h4A1.5 1.5 0 0 1 9.5 8v4A1.5 1.5 0 0 1 8 13.5H4A1.5 1.5 0 0 1 2.5 12V8A1.5 1.5 0 0 1 4 6.5" clipRule="evenodd"></path>
-                                            </svg>
-                                            Дублировать
-                                        </DropdownMenu.Item>
-                                        <DropdownMenu.Item onClick={() => removeQuestion(q.id)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 focus:bg-red-50 focus:text-red-700 outline-none !cursor-pointer">
-                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                <path fill="currentColor" fillRule="evenodd" d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4H5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                            Удалить
-                                        </DropdownMenu.Item>
-                                    </DropdownMenu.Content>
-                                </DropdownMenu.Root>
-                            </div>
-                            <input
-                                value={q.text}
-                                onChange={e => updateQuestion(q.id, { text: e.target.value })}
-                                placeholder="Текст вопроса..."
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
-                            <div className="flex items-center gap-3 flex-wrap">
-                                <select
-                                    value={q.type}
-                                    onChange={e => changeType(q.id, e.target.value as QuestionType)}
-                                    className="px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors cursor-pointer bg-white"
-                                    aria-label="Тип вопроса">
-                                    {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
-                                        <option key={value} value={value}>{label}</option>
-                                    ))}
-                                </select>
-                                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                                    <input
-                                        type="checkbox"
-                                        checked={q.is_required}
-                                        onChange={e => updateQuestion(q.id, { is_required: e.target.checked })}
-                                        className="w-4 h-4 accent-blue-500 cursor-pointer"/>
-                                    Обязательный
-                                </label>
-                            </div>
-                            {WITH_CHOICES.includes(q.type) && (
-                                <div className="flex flex-col gap-2 pl-1">
-                                    {q.choices.map((choice, ci) => (
-                                        <div key={choice.id} className="flex items-center gap-2">
-                                            <span className="text-xs text-gray-400 w-4">{ci + 1}.</span>
-                                            <input
-                                                value={choice.text}
-                                                onChange={e => updateChoice(q.id, choice.id, e.target.value)}
-                                                placeholder={`Вариант ${ci + 1}`}
-                                                className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
-                                            <button
-                                                onClick={() => removeChoice(q.id, choice.id)}
-                                                className="text-gray-300 hover:text-red-400 transition-colors cursor-pointer"
-                                                aria-label={`Удалить вариант ${ci + 1}`}>
-                                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                                    <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button 
-                                        onClick={() => addChoice(q.id)}
-                                        className="self-start mt-1 text-sm text-blue-500 hover:text-blue-600 transition-colors cursor-pointer">
-                                        + Добавить вариант
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <QuestionCard
+                            key={q.id}
+                            question={q}
+                            index={index}
+                            onUpdate={updateQuestion}
+                            onRemove={removeQuestion}
+                            onDuplicate={duplicateQuestion}
+                            onAddChoice={addChoice}
+                            onUpdateChoice={updateChoice}
+                            onRemoveChoice={removeChoice}
+                        />
                     ))}
                 </div>
                 <button
