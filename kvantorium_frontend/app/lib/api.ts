@@ -3,6 +3,7 @@ import { EditProfile } from "../types/edit_profile.interface";
 import { News } from "../types/news.interface";
 import { User } from "../types/user.interface";
 import { UserLogin } from "../types/user_login.interface";
+import { FormCreate, FormItem, FormSettings } from "../types/form.interface";
 
 export const checkAuthStatus = async () => {
     try {
@@ -273,7 +274,7 @@ export const createUser = async (data: User): Promise<boolean> => {
         if (data.email) formData.append('email', data.email);
         if (data.role) formData.append('role', data.role)
 
-            console.log("FormData role:", formData.get('role')); 
+        console.log("FormData role:", formData.get('role')); 
 
         const res = await axios.post(`/run-create-user/`, formData, {
             withCredentials: true
@@ -292,3 +293,79 @@ export const createUser = async (data: User): Promise<boolean> => {
         return false;
     }
 }
+
+export const createForm = async (data: FormCreate, settings: FormSettings): Promise<boolean> => {
+    try {
+        const formData = new FormData();
+        
+        formData.append('title', data.title);
+        formData.append('description', data.description);
+        formData.append('status', data.status);
+        
+        if (data.deadline) {
+            formData.append('deadline', data.deadline);
+        }
+        
+        formData.append('settings', JSON.stringify(settings));
+        
+        const questionsForApi = data.questions.map((q, index) => ({
+            id: q.id,
+            text: q.text,
+            type: q.type,
+            is_required: q.is_required,
+            points: q.points,
+            order: index,
+            choices: q.choices.map(choice => ({
+                id: choice.id,
+                text: choice.text,
+                is_correct: choice.is_correct,
+                order: choice.order
+            })),
+            has_media: !!q.media
+        }));
+        
+        formData.append('questions', JSON.stringify(questionsForApi));
+        
+        data.questions.forEach((question, index) => {
+            if (question.media && question.media.file) {
+                const mediaKey = `media_${question.id || index}`;
+                formData.append(mediaKey, question.media.file);
+            }
+        });
+        
+        const res = await axios.post('/run-create-form/', formData, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        
+        if (res.status === 201) {
+            window.dispatchEvent(new Event("fetchFormsList"));
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при создании формы:', error.response?.data || error.message);
+        }
+        return false;
+    }
+};
+
+export const getMyFormsList = async (): Promise<FormItem[]> => {
+    try {
+        const res = await axios.get('/my-forms-list/', { 
+            withCredentials: true 
+        });
+
+        return res.data.results || res.data || [];
+    } catch(error) {
+        if(axios.isAxiosError(error)){
+            console.error('Ошибка при получение списка:', error.response?.data || error.message);
+        }
+
+        return [];
+    }
+};

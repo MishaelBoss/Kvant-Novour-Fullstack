@@ -42,3 +42,11 @@ export interface FormSettings {
     show_results_after: boolean;
     require_profile: boolean;
 }
+
+export interface FormItem {
+    id: number;
+    title: string;
+    description: string;
+    status: 'draft' | 'active';
+    created_at: string;
+}

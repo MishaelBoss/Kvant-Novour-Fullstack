@@ -1,6 +1,6 @@
 'use client';
 
-import { FormSettings, Question } from "@/app/types/form.interface";
+import { FormCreate, FormSettings, Question } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { ModelConfirmAddForm } from "./_components/ModelConfirmAddForm";
 import { Content } from "./_components/Content";
 import { Settings } from "./_components/Settings";
 import { QuestionCard } from "./_components/QuestionCard";
+import { createForm } from "@/app/lib/api";
 
 function generateId() {
     return Math.random().toString(36).slice(2, 9);
@@ -103,7 +104,22 @@ export default function NewForm() {
         ));
     };
 
-    const handleSave = (status: 'draft' | 'active') => {
+    const handleSave = async (status: 'draft' | 'active') => {
+        const formData: FormCreate = {
+            title: title,
+            description: description,
+            deadline: deadline,
+            status: status,
+            questions: questions
+        };
+        
+        const success = await createForm(formData, settings);
+        
+        if (success) {
+            router.push('/news');
+        } else {
+            alert('Ошибка сохранения формы');
+        }
     };
 
     return (
@@ -125,9 +141,8 @@ export default function NewForm() {
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             Сохранить
                         </button>
-                        <ModelConfirmAddForm>
+                        <ModelConfirmAddForm onPublish={() => handleSave('active')}>
                             <button
-                                onClick={() => handleSave('active')}
                                 className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
                                 Опубликовать
                             </button>

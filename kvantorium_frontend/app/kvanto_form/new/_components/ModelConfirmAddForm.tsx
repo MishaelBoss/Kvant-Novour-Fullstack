@@ -5,9 +5,10 @@ import { useState } from "react";
 
 interface ModelConfirmAddFormProps {
     children: React.ReactNode;
+    onPublish(): Promise<void>;
 }
 
-export function ModelConfirmAddForm({children}: ModelConfirmAddFormProps){
+export function ModelConfirmAddForm({children, onPublish}: ModelConfirmAddFormProps){
     const [open, setOpen] = useState(false);
 
     return (
@@ -37,6 +38,7 @@ export function ModelConfirmAddForm({children}: ModelConfirmAddFormProps){
                         color="red" 
                         size="3" 
                         style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
+                        onClick={() => onPublish()}
                     >
                         Опубликовать
                     </Button>

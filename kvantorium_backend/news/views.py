@@ -59,7 +59,9 @@ class NewsListView(APIView):
                     for c in n.categories.all()
                 ],
                 'image': image_url,
-                'created_at': n.created_at
+                'created_at': n.created_at,
+                'form_slug': n.form_slug,
+                'form_id': n.form_id
             })
 
         return Response({
