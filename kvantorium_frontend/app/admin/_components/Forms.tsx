@@ -1,29 +1,27 @@
-"use client";
-
 import { CartForms } from "@/app/components/CartForms";
 import { PAGES } from "@/app/config/page";
-import { getMyFormsList } from "@/app/lib/api";
+import { getAllFormsList } from "@/app/lib/api";
 import { FormItem } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export function KvantoForm(){
+export function Forms() {
     const [forms, setForms] = useState<FormItem[]>([]);
 
     useEffect(() => {
         const fetchForms = async () => {
-            const res = await getMyFormsList();
+            const res = await getAllFormsList();
 
-            if(Array.isArray(res)){ 
+            if (Array.isArray(res)) {
                 setForms(res);
             }
             else {
                 setForms([]);
             }
-        }
+        };
 
         fetchForms();
-    }, []);
+    });
 
     if (forms.length === 0) {
         return (

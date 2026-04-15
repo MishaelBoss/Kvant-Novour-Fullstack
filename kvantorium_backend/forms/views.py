@@ -6,6 +6,7 @@ from news.models import *
 import json
 from django.db import transaction
 from pytils.translit import slugify
+from users.permissions import *
 
 
 class CreateFormView(APIView):
@@ -71,7 +72,7 @@ class CreateFormView(APIView):
         
 
 class MyFormsListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole | IsTeacherRole]
 
     def get(self, request):
         forms = Form.objects.filter(owner=request.user).order_by('-created_at')
@@ -86,6 +87,28 @@ class MyFormsListView(APIView):
                 'created_at': f.created_at,
             })
             
+        return Response({
+            'count': forms.count(),
+            'results': data
+        })
+    
+
+class AllFormsList(APIView):
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+        forms = Form.objects.all().order_by('-created_at')
+
+        data = []
+        for f in forms:
+            data.append({
+                'id': f.id,
+                'title': f.title,
+                'description': f.description,
+                'status': f.status,
+                'created_at': f.created_at,
+            })
+
         return Response({
             'count': forms.count(),
             'results': data

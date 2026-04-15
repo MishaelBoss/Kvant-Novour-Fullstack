@@ -8,7 +8,7 @@ import { User } from "../types/user.interface";
 import { getProfile } from "../lib/api";
 import { Users } from "./_components/Users";
 import { News } from "./_components/News";
-import { Events } from "./_components/Events";
+import { Forms } from "./_components/Forms";
 
 interface AdminProps {
     currentUser: User | null;
@@ -17,7 +17,7 @@ interface AdminProps {
 export default function Admin({currentUser}: AdminProps) {
     const [user, setUser] = useState<User | null>(null);
     const searchParams = useSearchParams();
-    const tabFromUrl = searchParams.get('tab') as 'users' | 'news' | 'events';
+    const tabFromUrl = searchParams.get('tab') as 'users' | 'news' | 'forms';
     const activeTab = tabFromUrl || 'users';
     const router = useRouter();
 
@@ -64,15 +64,15 @@ export default function Admin({currentUser}: AdminProps) {
                             Новости
                         </button>
 
-                        <button onClick={() => setActiveTab('events')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'events' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-                            Ивенты
+                        <button onClick={() => setActiveTab('forms')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'forms' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                            Формы
                         </button>
                     </nav>
                 </aside>
 
                 {activeTab === 'users' && <Users currentAdminId={currentUser}/>}
                 {activeTab === 'news' && <News/>}
-                {activeTab === 'events' && <Events/>}
+                {activeTab === 'forms' && <Forms/>}
             </main>
         </div>
     );

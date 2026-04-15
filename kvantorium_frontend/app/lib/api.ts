@@ -369,3 +369,19 @@ export const getMyFormsList = async (): Promise<FormItem[]> => {
         return [];
     }
 };
+
+export const getAllFormsList = async (): Promise<FormItem[]> => {
+    try {
+        const res = await axios.get('/all-forms-list/', {
+            withCredentials: true
+        });
+
+        return res.data.results || res.data || [];
+    } catch (error) {
+        if (axios.isAxiosError(error)){
+            console.error('Ошибка при получение списка:', error.response?.data || error.message);
+        }
+
+        return [];
+    }
+};

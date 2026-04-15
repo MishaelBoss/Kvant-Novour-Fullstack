@@ -129,7 +129,7 @@ class MyProfileView(APIView):
 
 
 class ProfileViewView(APIView):
-    permission_classes = [IsAdminRole, IsTeacherRole]
+    permission_classes = [IsAdminRole | IsTeacherRole]
 
     def get(self, request, pk):
         profile = get_object_or_404(UserProfile, user=request.user)
