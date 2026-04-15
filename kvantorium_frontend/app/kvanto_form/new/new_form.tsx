@@ -1,10 +1,13 @@
-'use client'
+'use client';
+
 import { Question, QuestionType } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ModelConfirmAddForm } from "./_components/ModelConfirmAddForm";
 import { DropdownMenu } from "@radix-ui/themes";
+import { Content } from "./_components/Content";
+import { Settings } from "./_components/Settings";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
     short_text: 'Короткий текст',
@@ -24,6 +27,7 @@ function generateId() {
 export default function NewForm() {
     const router = useRouter();
 
+    const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [deadline, setDeadline] = useState('');
@@ -136,34 +140,43 @@ export default function NewForm() {
                         </ModelConfirmAddForm>
                     </div>
                 </div>
-                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-4">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Основное</p>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-600">Название формы</label>
-                        <input
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
-                            placeholder="Новая форма"
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
+
+                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
+                    <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
+                        <button 
+                            onClick={() => setActiveTab('content')}
+                            className={`pb-3 text-sm font-medium transition-all relative ${
+                                activeTab === 'content' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
+                            }`}>
+                            Контент
+                            {activeTab === 'content' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+                            )}
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('settings')}
+                            className={`pb-3 text-sm font-medium transition-all relative ${
+                                activeTab === 'settings' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
+                            }`}>
+                            Настройки
+                            {activeTab === 'settings' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+                            )}
+                        </button>
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-600">Описание</label>
-                        <textarea
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                            placeholder="Коротко о форме..."
-                            rows={3}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors resize-none"/>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="deadline-input" className="text-sm text-gray-600">Дедлайн (необязательно)</label>
-                        <input
-                            id="deadline-input"
-                            type="datetime-local"
-                            value={deadline}
-                            onChange={e => setDeadline(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
-                    </div>
+
+                    {activeTab === 'content' ? (
+                        <Content 
+                            title={title} 
+                            setTitle={setTitle} 
+                            description={description} 
+                            setDescription={setDescription}
+                            deadline={deadline}
+                            setDeadline={setDeadline}
+                        />
+                    ) : (
+                        <Settings/>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -259,7 +272,6 @@ export default function NewForm() {
                     </svg>
                     Добавить вопрос
                 </button>
-
             </div>
         </div>
     );
