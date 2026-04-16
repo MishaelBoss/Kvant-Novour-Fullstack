@@ -50,3 +50,33 @@ export interface FormItem {
     status: 'draft' | 'active';
     created_at: string;
 }
+
+export interface ParticipantProfile {
+    full_name: string;
+    school: string;
+    grade: string;
+    birth_year: number;
+    participated_before: boolean;
+}
+
+export interface FormDetail {
+    id: number;
+    title: string;
+    description: string;
+    slug: string;
+    status: FormStatus;
+    deadline: string | null;
+    settings: FormSettings;
+    questions: Question[];
+}
+
+export interface QuestionAnswer {
+    question_id: string;
+    text_value: string;
+    selected_choice_ids: string[];
+}
+
+export interface QuizSession {
+    profile: ParticipantProfile;
+    answers: QuestionAnswer[];
+}
