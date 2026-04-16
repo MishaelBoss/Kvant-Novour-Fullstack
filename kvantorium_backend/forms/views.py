@@ -25,9 +25,13 @@ class CreateFormView(APIView):
 
         try:
             with transaction.atomic():
+                title_val = request.data.get('title', 'Без названия')
+                generated_slug = slugify(title_val)
+            
                 form = Form.objects.create(
                     owner=request.user,
-                    title=request.data.get('title', 'Без названия'),
+                    title=title_val,
+                    slug=generated_slug,
                     description=request.data.get('description', ''),
                     deadline=request.data.get('deadline') or None,
                     status=status_val,
@@ -61,12 +65,12 @@ class CreateFormView(APIView):
                         title=f"Новый опрос: {form.title}",
                         content=form.description or "Пройдите наш новый опрос!",
                         form_id=form.id,
-                        form_slug=slugify(form.title)
+                        form_slug=generated_slug
                     )
                     category, _ = Category.objects.get_or_create(name="Опросы")
                     new_post.categories.add(category)
 
-                return Response({"id": form.id}, status=201)
+                return Response({"id": form.id, "slug": form.slug}, status=201)
 
         except Exception as e:
             return Response({"error": str(e)}, status=400)
@@ -118,7 +122,7 @@ class AllFormsList(APIView):
 
 class FormDetailView(APIView):
     def get(self, request, slug):
-        form = get_object_or_404(Form, title__iexact=slug)
+        form = get_object_or_404(Form, slug=slug) 
         
         questions = []
         for q in form.questions.all():

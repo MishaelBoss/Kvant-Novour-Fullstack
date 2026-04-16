@@ -3,7 +3,7 @@ import { EditProfile } from "../types/edit_profile.interface";
 import { News } from "../types/news.interface";
 import { User } from "../types/user.interface";
 import { UserLogin } from "../types/user_login.interface";
-import { FormCreate, FormItem, FormSettings } from "../types/form.interface";
+import { FormCreate, FormItem, FormSettings, QuizSession } from "../types/form.interface";
 
 export const checkAuthStatus = async () => {
     try {
@@ -391,6 +391,7 @@ export const getFormDetail = async (slug: string) => {
         const res = await axios.get(`/form/${slug}/`, {
             withCredentials: true
         });
+
         return res.data.results || res.data;
     } catch (error) {
         if(axios.isAxiosError(error)) {
@@ -399,13 +400,13 @@ export const getFormDetail = async (slug: string) => {
     }
 }
 
-export async function submitQuizResults(slug: string, payload: any) {
+export const submitQuizResults = async (slug: string, payload: QuizSession) => {
     try {
-        const res = await axios.post(`/kvanto_form/${slug}/submit/`, {
-            body: JSON.stringify(payload),
+        const res = await axios.post(`/form/${slug}/submit/`, payload, {
             withCredentials: true
         });
-        return res.data();
+
+        return res.data.results || res.data;
     } catch (error) {
         if(axios.isAxiosError(error)) {
             console.error('Ошибка при отправки', error);

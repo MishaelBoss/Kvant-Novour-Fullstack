@@ -13,7 +13,7 @@ class Form(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS, default='draft')
-    slug = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    slug = models.SlugField(max_length=200, unique=True, verbose_name="Слаг для URL")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deadline = models.DateTimeField(null=True, blank=True)
