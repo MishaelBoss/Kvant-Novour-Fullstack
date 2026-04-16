@@ -18,7 +18,7 @@ export function ModelConfirmAddForm({children, onPublish}: ModelConfirmAddFormPr
             <Dialog.Content maxWidth="500px" style={{ borderRadius: '24px', padding: '28px' }}>
                 <Dialog.Title size="6" mb="1">Подтверждение о публикации формы</Dialog.Title>
                 <Dialog.Description size="2" mb="5" color="gray">
-                    Если выдите из аккаунта, вы всегда можите вернутся
+                    Подтверждение о публикации формы, она оповистится в новостях
                 </Dialog.Description>
                 <Flex direction="row" gap="3" mt="6" width="100%">
                     <Button 
@@ -35,7 +35,7 @@ export function ModelConfirmAddForm({children, onPublish}: ModelConfirmAddFormPr
                     <Button 
                         type="submit" 
                         variant="solid" 
-                        color="red" 
+                        color="indigo" 
                         size="3" 
                         style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
                         onClick={() => onPublish()}

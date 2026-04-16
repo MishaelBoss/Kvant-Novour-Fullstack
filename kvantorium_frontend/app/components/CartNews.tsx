@@ -49,7 +49,7 @@ export function CartNews({image, title, content, categories}: Props){
                 
                 <div className="mt-auto">
                     <button className="w-full bg-[#106fff] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm cursor-pointer">
-                        Подробнее
+                            {categories?.some(cat => cat.slug === "oprosyi") ? 'Принять участие' : 'Подробнее'}
                     </button>
                 </div>
             </div>

@@ -17,6 +17,8 @@ function generateId() {
 export default function NewForm() {
     const router = useRouter();
 
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -105,20 +107,38 @@ export default function NewForm() {
     };
 
     const handleSave = async (status: 'draft' | 'active') => {
-        const formData: FormCreate = {
-            title: title,
-            description: description,
-            deadline: deadline,
-            status: status,
-            questions: questions
-        };
-        
-        const success = await createForm(formData, settings);
-        
-        if (success) {
-            router.push('/news');
-        } else {
-            alert('Ошибка сохранения формы');
+        if (!title.trim()) {
+            setError('Введите название формы');
+            return;
+        }
+
+        setError(null);
+        setSaving(true);
+
+        try {
+            const formData: FormCreate = {
+                title: title,
+                description: description,
+                deadline: deadline,
+                status: status,
+                questions: questions
+            };
+            
+            const success = await createForm(formData, settings);
+
+            setSaving(success);
+            
+            if (success) {
+                if (status === 'active') {
+                    router.push('/profile?tab=kvantoForm');
+                }
+            } else {
+                alert('Ошибка сохранения формы');
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -135,11 +155,16 @@ export default function NewForm() {
                         </svg>
                         Назад
                     </Link>
+                    {error && (
+                        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+                            {error}
+                        </div>
+                    )}
                     <div className="flex gap-2">
                         <button
                             onClick={() => handleSave('draft')}
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                            Сохранить
+                            {saving ? 'Сохранение...' : 'Сохранить'}
                         </button>
                         <ModelConfirmAddForm onPublish={() => handleSave('active')}>
                             <button
