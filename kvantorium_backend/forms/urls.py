@@ -7,4 +7,5 @@ urlpatterns = [
     path('my-forms-list/', MyFormsListView.as_view(), name='my-forms-list'),
     path('all-forms-list/', AllFormsList.as_view(), name='all-forms-list'),
     path('form/<slug:slug>/', FormDetailView.as_view(), name='form-detail'),
+    path('form/<slug:slug>/submit/', SubmitResponseView.as_view(), name='submit-response'),
 ]

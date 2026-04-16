@@ -11,13 +11,14 @@ import { Achievements } from "./_components/Achievements";
 import { PersonalData } from "./_components/PersonalData";
 import { Notifications } from "./_components/Notifications";
 import { KvantoForm } from "./_components/KvantoForm";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function MyProfile() {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, isLoading: isAuthLoading } = useAuth(); 
     const searchParams = useSearchParams();
+    const [profile, setProfile] = useState<User | null>(null);
     const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'kvantoForm';
     const activeTab = tabFromUrl || 'personal';
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     const canAccessKvanto = ['admin', 'teacher'].includes(user?.role?.toLowerCase() ?? '');
@@ -27,27 +28,22 @@ export default function MyProfile() {
     };
 
     useEffect(() => {
-        const fetchUser = async () => {
-            const data: User = await getProfile();
-
-            if (data?.is_authenticated) {
-                setUser(data);
-            } else{
-                router.push(PAGES.HOME());
-            }
-            
-            setLoading(false);
-        };
-
-        fetchUser();
-    }, [router]);
-
-    if (loading) {
-        return (
-            <Skeleton>
-            </Skeleton>
-        );
+    if (user) {
+        getProfile().then(setProfile);
     }
+}, [user]);
+
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            router.push(PAGES.HOME());
+        }
+    }, [user, isAuthLoading, router]);
+
+    if (isAuthLoading) {
+        return <Skeleton />; 
+    }
+
+    if (!user) return null;
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
@@ -55,11 +51,11 @@ export default function MyProfile() {
                 <aside className="w-64 bg-white rounded-2xl p-4 shadow-sm h-fit">
                     <div className="flex items-center gap-3 mb-6 px-2">
                         <div className="relative w-[80px] h-[80px] aspect-square flex-shrink-0 rounded-full overflow-hidden bg-blue-500">
-                            <Image src={user?.avatar?.replace('http://localhost', '') || '/default-avatar.png'} loading="eager" fill alt={user?.username || "Avatar"} className="object-cover"/>
+                            <Image src={profile?.avatar?.replace('http://localhost', '') || '/default-avatar.png'} loading="eager" fill alt={profile?.username || "Avatar"} className="object-cover"/>
                         </div>
 
                         <div>
-                            <p className="text-[20px] font-bold text-sm leading-tight">{user?.first_name} {user?.last_name}</p>
+                            <p className="text-[20px] font-bold text-sm leading-tight">{profile?.first_name} {profile?.last_name}</p>
                         </div>
                     </div>
 
@@ -88,14 +84,14 @@ export default function MyProfile() {
                             Моя учетная запись
                         </Link>
 
-                        {user?.role?.toLowerCase() === "admin" && <Link href={PAGES.ADMINPANEL()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
+                        {profile?.role?.toLowerCase() === "admin" && <Link href={PAGES.ADMINPANEL()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
                             Админ панель
                         </Link>}
                     </nav>
                 </aside>
 
-                {activeTab === 'personal' && <PersonalData user={user} />}
-                {activeTab === 'achievements' && <Achievements user={user} />}
+                {activeTab === 'personal' && <PersonalData user={profile} />}
+                {activeTab === 'achievements' && <Achievements user={profile} />}
                 {activeTab === 'notifications' && <Notifications/>}
                 {activeTab === 'kvantoForm' && <KvantoForm/>}
             </div>

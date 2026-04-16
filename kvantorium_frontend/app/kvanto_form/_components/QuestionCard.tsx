@@ -231,7 +231,7 @@ export function QuestionCard({
                 </div>
             )}
 
-            {q.type === 'long_text' && (
+            {(q.type === 'long_text' || q.type === 'short_text') && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-100 rounded-lg">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-amber-400 flex-shrink-0">
                         <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.3"/>

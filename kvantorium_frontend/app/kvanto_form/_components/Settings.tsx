@@ -77,6 +77,42 @@ export function Settings ({settings, updateSettings}: SettingsProps) {
                     </div>
                 )}
             </div>
+            <div className="h-px bg-gray-100" />
+            <div className="flex flex-col gap-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Прохождение</p>
+                <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <p className="text-sm text-gray-700">По одному вопросу на странице</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Участник не видит все вопросы сразу</p>
+                    </div>
+                    <div
+                        onClick={() => updateSettings({ one_question_per_page: !settings.one_question_per_page })}
+                        className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
+                            settings.one_question_per_page ? 'bg-blue-500' : 'bg-gray-200'
+                        }`}
+                    >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
+                            settings.one_question_per_page ? 'left-5' : 'left-1'
+                        }`}/>
+                    </div>
+                </label>
+
+                <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <p className="text-sm text-gray-700">Показывать результат после прохождения</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Участник увидит свой балл сразу</p>
+                    </div>
+                    <div
+                        onClick={() => updateSettings({ show_results_after: !settings.show_results_after })}
+                        className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
+                            settings.show_results_after ? 'bg-blue-500' : 'bg-gray-200'
+                        }`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
+                            settings.show_results_after ? 'left-5' : 'left-1'
+                        }`}/>
+                    </div>
+                </label>
+            </div>
         </div>
     );
 }

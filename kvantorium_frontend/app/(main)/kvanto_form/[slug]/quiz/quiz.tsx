@@ -1,6 +1,6 @@
 "use client";
 
-import { getFormDetail } from "@/app/lib/api";
+import { getFormDetail, submitFormResponse } from "@/app/lib/api";
 import { FormDetail, Question, QuestionAnswer } from "@/app/types/form.interface";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -69,7 +69,13 @@ export default function Quiz() {
         const profile = profileRaw ? JSON.parse(profileRaw) : {};
         const session = { profile, answers: answersRef.current };
 
-        sessionStorage.setItem(`quiz_session_${slug}`, JSON.stringify(session));
+        try {
+            const result = await submitFormResponse(slug as string, session);
+            sessionStorage.setItem(`quiz_result_${slug}`, JSON.stringify(result));
+        } catch (e) {
+            console.error('Ошибка отправки:', e);
+        }
+
         router.push(`/kvanto_form/${slug}/result`);
     }, [slug, router]);
 

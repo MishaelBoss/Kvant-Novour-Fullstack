@@ -472,3 +472,16 @@ export const toggleFormStatus = async (id: number, currentStatus: string) => {
         return false;
     }
 };
+
+export async function submitFormResponse(slug: string, session: QuizSession): Promise<{
+    response_id: number;
+    auto_score: number;
+    max_score: number;
+    show_results_after: boolean;
+}> {
+    const res = await axios.post(`/form/${slug}/submit/`, session, {
+        withCredentials: true,
+    });
+
+    return res.data.results || res.data;
+}

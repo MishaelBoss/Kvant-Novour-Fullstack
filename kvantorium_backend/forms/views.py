@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -108,17 +110,18 @@ class UpdateFormView(APIView):
                 form.save()
 
                 if new_status == 'active':
-                    news_exists = News.objects.filter(form_id=form.id).exists()
+                    News.objects.update_or_create(
+                        form_id=form.id,
+                        defaults={
+                            'title': f"Новый опрос: {form.title}",
+                            'content': form.description or "Пройдите наш новый опрос!",
+                            'form_slug': generated_slug
+                        }
+                    )
 
-                    if not news_exists:
-                        new_post = News.objects.create(
-                            title=f"Новый опрос: {form.title}",
-                            content=form.description or "Пройдите наш новый опрос!",
-                            form_id=form.id,
-                            form_slug=generated_slug
-                        )
-                        category, _ = Category.objects.get_or_create(name="Опросы")
-                        new_post.categories.add(category)
+                    news_post = News.objects.get(form_id=form.id)
+                    category, _ = Category.objects.get_or_create(name="Опросы")
+                    news_post.categories.add(category)
 
                 if new_status == 'draft':
                     News.objects.filter(form_id=form.id).delete()
@@ -223,19 +226,9 @@ class FormDetailView(APIView):
                 'order': c.order
             } for c in q.choices.all()]
 
-            media_data = None
+            media_url = None
             if q.media:
-                media_url = q.media.url.lower()
-                media_type = 'image'
-                if media_url.endswith(('.mp3', '.wav', '.ogg')):
-                    media_type = 'audio'
-                elif media_url.endswith(('.mp4', '.webm', '.mov')):
-                    media_type = 'video'
-
-                media_data = {
-                    'type': media_type,
-                    'preview_url': request.build_absolute_uri(q.media.url)
-                }
+                media_url = request.build_absolute_uri(q.media.url)
 
             questions.append({
                 'id': q.id,
@@ -243,8 +236,12 @@ class FormDetailView(APIView):
                 'type': q.type,
                 'is_required': q.is_required,
                 'points': q.points,
-                'media': media_data,
-                'choices': choices
+                'order': q.order,
+                'choices': choices,
+                'media': {
+                    'type': _get_media_type(q.media.name),
+                    'preview_url': media_url,
+                } if q.media else None,
             })
 
         return Response({
@@ -263,26 +260,95 @@ class FormDetailView(APIView):
         })
     
 
-class SubmitQuizView(APIView):
+class SubmitResponseView(APIView):
     def post(self, request, slug):
-        form = get_object_or_404(Form, id=slug)
-        profile = request.data.get('profile')
-        answers = request.data.get('answers')
+        try:
+            form = Form.objects.prefetch_related(
+                'questions__choices'
+            ).get(slug=slug, status='active')
+        except Form.DoesNotExist:
+            return Response({"error": "Форма не найдена"}, status=404)
 
-        with transaction.atomic():
-            # 1. Создаем запись о прохождении (Submission/Session)
-            submission = Submission.objects.create(
-                form=form,
-                full_name=profile.get('full_name'),
-                school=profile.get('school'),
-                # ... другие поля профиля
-            )
+        if form.deadline and form.deadline < timezone.now():
+            return Response({"error": "Время приёма ответов истекло"}, status=400)
 
-            for ans in answers:
-                Answer.objects.create(
-                    submission=submission,
-                    question_id=ans.get('question_id'),
-                    text_value=ans.get('text_value'),
+        profile = request.data.get('profile', {})
+        answers_data = request.data.get('answers', [])
+
+        try:
+            with transaction.atomic():
+                form_response = FormResponse.objects.create(
+                    form=form,
+                    respondent_name=profile.get('full_name', ''),
+                    respondent_school=profile.get('school', ''),
+                    respondent_grade=profile.get('grade', ''),
                 )
 
-        return Response({"status": "ok", "message": "Результаты приняты"}, status=201)
+                auto_score = 0
+                max_score = 0
+
+                for q in form.questions.all():
+                    max_score += q.points
+
+                    ans_data = next(
+                        (a for a in answers_data if str(a.get('question_id')) == str(q.id)),
+                        None
+                    )
+                    if not ans_data:
+                        continue
+
+                    answer = Answer.objects.create(
+                        response=form_response,
+                        question=q,
+                        text_value=ans_data.get('text_value', ''),
+                    )
+
+                    selected_ids = ans_data.get('selected_choice_ids', [])
+                    if selected_ids:
+                        choices = q.choices.filter(id__in=selected_ids)
+                        answer.selected_choices.set(choices)
+
+                    if q.type in ('radio', 'dropdown'):
+                        correct_ids = set(
+                            q.choices.filter(is_correct=True).values_list('id', flat=True)
+                        )
+                        if correct_ids and set(int(i) for i in selected_ids) == correct_ids:
+                            auto_score += q.points
+
+                    elif q.type == 'checkbox':
+                        correct_ids = set(
+                            q.choices.filter(is_correct=True).values_list('id', flat=True)
+                        )
+                        selected_set = set(int(i) for i in selected_ids)
+                        if correct_ids and selected_set == correct_ids:
+                            auto_score += q.points
+
+                    elif q.type == 'number':
+                        correct = q.choices.filter(is_correct=True).first()
+                        if correct and ans_data.get('text_value', '').strip() == correct.text.strip():
+                            auto_score += q.points
+
+                form_response.auto_score = auto_score
+                form_response.total_score = auto_score
+                form_response.save()
+
+                return Response({
+                    'response_id': form_response.id,
+                    'auto_score': auto_score,
+                    'max_score': max_score,
+                    'show_results_after': form.show_results_after,
+                })
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+
+def _get_media_type(filename: str) -> str:
+    if not filename:
+        return 'image'
+    ext = filename.rsplit('.', 1)[-1].lower()
+    if ext in ('mp3', 'ogg'):
+        return 'audio'
+    if ext in ('mp4', 'webm'):
+        return 'video'
+    return 'image'
