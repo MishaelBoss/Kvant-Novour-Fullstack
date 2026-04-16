@@ -350,6 +350,57 @@ export const createForm = async (data: FormCreate, settings: FormSettings): Prom
     }
 };
 
+export const updateForm = async (id: number, data: FormCreate, settings: FormSettings) => {
+    try {
+        const formData = new FormData();
+
+        formData.append('title', data.title);
+        formData.append('description', data.description);
+        formData.append('status', data.status);
+
+        if (data.deadline) {
+            formData.append('deadline', data.deadline);
+        }
+        
+        formData.append('settings', JSON.stringify(settings));
+        
+        const questionsForApi = data.questions.map((q, index) => ({
+            id: q.id,
+            text: q.text,
+            type: q.type,
+            is_required: q.is_required,
+            points: q.points,
+            order: index,
+            choices: q.choices.map(choice => ({
+                id: choice.id,
+                text: choice.text,
+                is_correct: choice.is_correct,
+                order: choice.order
+            })),
+            has_media: !!q.media
+        }));
+        
+        formData.append('questions', JSON.stringify(questionsForApi));
+
+        data.questions.forEach((question, index) => {
+            if (question.media && question.media.file) {
+                formData.append(`question_media_${index}`, question.media.file);
+            }
+        });
+
+        const res = await axios.put(`/form/${id}/update/`, formData, {
+            withCredentials: true,
+        });
+
+        return res.status === 200;
+    } catch (error) {
+        if(axios.isAxiosError(error)) {
+            console.error('Неудалось обновить форму', error.response?.data || error.message);
+        }
+        return false;
+    }
+};
+
 export const getMyFormsList = async (): Promise<FormItem[]> => {
     try {
         const res = await axios.get('/my-forms-list/', { 
@@ -409,3 +460,15 @@ export const submitQuizResults = async (slug: string, payload: QuizSession) => {
         }
     }
 }
+
+export const toggleFormStatus = async (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'draft' : 'active';
+    try {
+        const res = await axios.patch(`/form/${id}/update/`, { status: newStatus }, {
+            withCredentials: true,
+        });
+        return res.status === 200;
+    } catch (error) {
+        return false;
+    }
+};

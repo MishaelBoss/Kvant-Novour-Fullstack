@@ -4,10 +4,10 @@ import { FormCreate, FormSettings, Question } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ModelConfirmAddForm } from "./_components/ModelConfirmAddForm";
-import { Content } from "./_components/Content";
-import { Settings } from "./_components/Settings";
-import { QuestionCard } from "./_components/QuestionCard";
+import { ModelConfirmAddForm } from "../_components/ModelConfirmAddForm";
+import { Content } from "../_components/Content";
+import { Settings } from "../_components/Settings";
+import { QuestionCard } from "../_components/QuestionCard";
 import { createForm } from "@/app/lib/api";
 
 function generateId() {
@@ -185,7 +185,7 @@ export default function NewForm() {
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             {saving ? 'Сохранение...' : 'Сохранить'}
                         </button>
-                        <ModelConfirmAddForm onPublish={() => handleSave('active')}>
+                        <ModelConfirmAddForm onPublish={() => handleSave('active')} isActive={false}>
                             <button
                                 className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
                                 Опубликовать

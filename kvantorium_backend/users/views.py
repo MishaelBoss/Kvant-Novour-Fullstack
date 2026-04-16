@@ -71,6 +71,9 @@ class UserStatusView(APIView):
                 "email": user.email,
                 "role": profile.role,
                 "is_admin": profile.is_admin,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "middle_name": profile.middle_name,
                 "id": user.id
             })
     

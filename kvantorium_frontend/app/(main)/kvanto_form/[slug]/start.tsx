@@ -1,9 +1,10 @@
 "use client";
 
+import { useAuth } from "@/app/context/AuthContext";
 import { ParticipantProfile } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-
 
 const CURRENT_YEAR = new Date().getFullYear();
 const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
@@ -12,8 +13,10 @@ export default function QuizStart() {
     const router = useRouter();
     const params = useParams();
     const slug = params?.slug;
+    
+    const { user } = useAuth();
 
-    const { register, handleSubmit, formState: { errors } } = useForm<ParticipantProfile>({
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm<ParticipantProfile>({
         defaultValues: {
             full_name: '',
             school: '',
@@ -22,6 +25,15 @@ export default function QuizStart() {
             participated_before: false,
         }
     });
+
+    useEffect(() => {
+        if (user) {
+            const fullName = `${user.last_name || ''} ${user.first_name || ''} ${user.middle_name || ''}`.trim();
+            if (fullName) {
+                setValue('full_name', fullName);
+            }
+        }
+    }, [user, setValue]);
 
     const onSubmit = (data: ParticipantProfile) => {
         sessionStorage.setItem(`quiz_profile_${slug}`, JSON.stringify(data));
@@ -101,7 +113,7 @@ export default function QuizStart() {
                         <button
                             type="submit"
                             className="mt-2 w-full py-2.5 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors cursor-pointer font-medium">
-                            Начать тест →
+                            Начать тест
                         </button>
                     </form>
                 </div>

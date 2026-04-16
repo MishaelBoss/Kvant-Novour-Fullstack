@@ -132,7 +132,7 @@ export default function Quiz() {
                     {currentQuestion.media && (
                         <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
                             {currentQuestion.media.type === 'image' && (
-                                <Image src={currentQuestion.media.preview_url.replace('http://localhost', '')} width={100} height={100} alt="" className="w-full max-h-64 object-contain p-2" />
+                                <Image src={currentQuestion.media.preview_url.replace('http://localhost', '')} loading="eager" width={100} height={100} alt="" className="w-full max-h-64 object-contain p-2" />
                             )}
                             {currentQuestion.media.type === 'audio' && (
                                 <div className="p-4">

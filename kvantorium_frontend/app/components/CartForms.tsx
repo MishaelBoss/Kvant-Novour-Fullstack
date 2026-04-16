@@ -41,7 +41,7 @@ export function CartForms({form}: CartFormsProps) {
 
                 <div className="flex gap-2">
                     <Link 
-                        href={`/forms/edit/${form.id}`}
+                        href={`/kvanto_form/edit/${form.id}`}
                         className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
                         title="Редактировать">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -51,7 +51,7 @@ export function CartForms({form}: CartFormsProps) {
                     </Link>
                     
                     <Link 
-                        href={`/forms/preview/${form.id}`}
+                        href={`/kvanto_form/${form.id}`}
                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
                         title="Предпросмотр">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
