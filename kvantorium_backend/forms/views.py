@@ -7,6 +7,7 @@ import json
 from django.db import transaction
 from pytils.translit import slugify
 from users.permissions import *
+from django.shortcuts import get_object_or_404
 
 
 class CreateFormView(APIView):
@@ -113,3 +114,60 @@ class AllFormsList(APIView):
             'count': forms.count(),
             'results': data
         })
+    
+
+class FormDetailView(APIView):
+    def get(self, request, slug):
+        form = get_object_or_404(Form, title__iexact=slug)
+        
+        questions = []
+        for q in form.questions.all():
+            choices = [{
+                'id': c.id,
+                'text': c.text,
+                'order': c.order
+            } for c in q.choices.all()]
+
+            questions.append({
+                'id': q.id,
+                'text': q.text,
+                'type': q.type,
+                'is_required': q.is_required,
+                'points': q.points,
+                'choices': choices
+            })
+
+        return Response({
+            'id': str(form.id),
+            'title': form.title,
+            'settings': {
+                'timer_enabled': form.timer_enabled,
+                'timer_seconds': form.timer_seconds,
+            },
+            'questions': questions
+        })
+    
+
+class SubmitQuizView(APIView):
+    def post(self, request, slug):
+        form = get_object_or_404(Form, id=slug)
+        profile = request.data.get('profile')
+        answers = request.data.get('answers')
+
+        with transaction.atomic():
+            # 1. Создаем запись о прохождении (Submission/Session)
+            submission = Submission.objects.create(
+                form=form,
+                full_name=profile.get('full_name'),
+                school=profile.get('school'),
+                # ... другие поля профиля
+            )
+
+            for ans in answers:
+                Answer.objects.create(
+                    submission=submission,
+                    question_id=ans.get('question_id'),
+                    text_value=ans.get('text_value'),
+                )
+
+        return Response({"status": "ok", "message": "Результаты приняты"}, status=201)

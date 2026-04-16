@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { EditProfile } from "../types/edit_profile.interface";
 import { News } from "../types/news.interface";
 import { User } from "../types/user.interface";
@@ -385,3 +385,30 @@ export const getAllFormsList = async (): Promise<FormItem[]> => {
         return [];
     }
 };
+
+export const getFormDetail = async (slug: string) => {
+    try{
+        const res = await axios.get(`/form/${slug}/`, {
+            withCredentials: true
+        });
+        return res.data.results || res.data;
+    } catch (error) {
+        if(axios.isAxiosError(error)) {
+            console.error('Ошибка получение данных:', error);
+        }
+    }
+}
+
+export async function submitQuizResults(slug: string, payload: any) {
+    try {
+        const res = await axios.post(`/kvanto_form/${slug}/submit/`, {
+            body: JSON.stringify(payload),
+            withCredentials: true
+        });
+        return res.data();
+    } catch (error) {
+        if(axios.isAxiosError(error)) {
+            console.error('Ошибка при отправки', error);
+        }
+    }
+}

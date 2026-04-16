@@ -1,17 +1,21 @@
 import Image from "next/image";
 import { Category } from "../types/category.interface";
+import Link from "next/link";
 
 interface Props {
+    slug: string;
     image?: string | null;
     title: string;
     content: string;
     categories?: Category[];
 }
 
-export function CartNews({image, title, content, categories}: Props){
+export function CartNews({slug, image, title, content, categories}: Props){
     const truncateText = (text: string, limit = 150) => {
         return text.length > limit ? text.substring(0, limit) + "..." : text;
     };
+
+    const isQuiz = categories?.some(cat => cat.slug === "oprosyi");
 
     return (
         <>
@@ -48,9 +52,12 @@ export function CartNews({image, title, content, categories}: Props){
                 </p>
                 
                 <div className="mt-auto">
-                    <button className="w-full bg-[#106fff] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm cursor-pointer">
-                            {categories?.some(cat => cat.slug === "oprosyi") ? 'Принять участие' : 'Подробнее'}
-                    </button>
+                    <Link 
+                        href={isQuiz ? `/kvanto_form/${slug}` : `/news/${slug}`}
+                        className="block w-full text-center bg-[#106fff] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm"
+                    >
+                        {isQuiz ? 'Принять участие' : 'Подробнее'}
+                    </Link>
                 </div>
             </div>
         </div>

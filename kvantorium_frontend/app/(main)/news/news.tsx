@@ -92,7 +92,7 @@ export default function News() {
                 <main className="flex-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredNews?.map((item) => (
-                            <CartNews key={item.id} image={item.image?.toString().replace('http://localhost', '')} title={item.title!} content={item.content!} categories={item.categories}/>
+                            <CartNews key={item.id} image={item.image?.toString().replace('http://localhost', '')} title={item.title!} content={item.content!} categories={item.categories} slug={item.form_slug}/>
                         ))}
                     </div>
                 </main>

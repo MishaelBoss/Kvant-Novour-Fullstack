@@ -10,7 +10,8 @@ const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
 
 export default function QuizStart() {
     const router = useRouter();
-    const { slug } = useParams();
+    const params = useParams();
+    const slug = params?.slug;
 
     const { register, handleSubmit, formState: { errors } } = useForm<ParticipantProfile>({
         defaultValues: {

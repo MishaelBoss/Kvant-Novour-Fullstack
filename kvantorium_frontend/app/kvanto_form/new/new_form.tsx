@@ -47,6 +47,7 @@ export default function NewForm() {
             order: prev.length,
             choices: [],
             media: null,
+            correct_answer: '',
         }]);
     };
 
@@ -68,6 +69,7 @@ export default function NewForm() {
             order: quest.order || prev.length,
             choices: quest.choices || [],
             media: quest.media || null,
+            correct_answer: quest.correct_answer || '',
         }]);
     };
 
@@ -96,6 +98,23 @@ export default function NewForm() {
                 ? { ...q, choices: q.choices.map(c => c.id === choiceId ? { ...c, text } : c) }
                 : q
         ));
+    };
+
+    const updateChoiceCorrect = (questionId: string, choiceId: string, is_correct: boolean) => {
+        setQuestions(prev => prev.map(q => {
+            if (q.id !== questionId) return q;
+
+            const isRadioType = q.type === 'radio' || q.type === 'dropdown';
+            return {
+                ...q,
+                choices: q.choices.map(c => ({
+                    ...c,
+                    is_correct: isRadioType
+                        ? c.id === choiceId
+                        : c.id === choiceId ? is_correct : c.is_correct,
+                })),
+            };
+        }));
     };
 
     const removeChoice = (questionId: string, choiceId: string) => {
@@ -224,6 +243,7 @@ export default function NewForm() {
                             onDuplicate={duplicateQuestion}
                             onAddChoice={addChoice}
                             onUpdateChoice={updateChoice}
+                            onUpdateChoiceCorrect={updateChoiceCorrect}
                             onRemoveChoice={removeChoice}
                         />
                     ))}

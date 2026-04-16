@@ -7,4 +7,6 @@ export interface News {
     categories?: Category[];
     image?: string | File | null;
     created_at?: string;
+    form_slug: string;
+    form_id: number;
 }

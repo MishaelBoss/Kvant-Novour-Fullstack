@@ -25,6 +25,7 @@ export interface Question {
     order: number;
     choices: Choice[];
     media: QuestionMedia | null;
+    correct_answer: string;
 }
 
 export interface FormCreate {

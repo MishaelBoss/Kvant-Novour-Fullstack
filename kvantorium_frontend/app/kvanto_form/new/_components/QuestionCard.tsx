@@ -13,6 +13,7 @@ interface QuestionCardProps {
     onDuplicate: (q: Question) => void;
     onAddChoice: (questionId: string) => void;
     onUpdateChoice: (questionId: string, choiceId: string, text: string) => void;
+    onUpdateChoiceCorrect: (questionId: string, choiceId: string, is_correct: boolean) => void;
     onRemoveChoice: (questionId: string, choiceId: string) => void;
 }
 
@@ -47,6 +48,7 @@ export function QuestionCard({
     onDuplicate,
     onAddChoice,
     onUpdateChoice,
+    onUpdateChoiceCorrect,
     onRemoveChoice,
 }: QuestionCardProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -198,8 +200,47 @@ export function QuestionCard({
                 )}
             </div>
 
+            {q.type !== 'long_text' && (
+                <div className="flex items-center gap-2">
+                    <label className="text-xs text-gray-400 whitespace-nowrap">Баллов за вопрос:</label>
+                    <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={q.points || 0}
+                        onChange={e => onUpdate(q.id, { points: Number(e.target.value) })}
+                        className="w-20 px-2 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors text-center"/>
+                </div>
+            )}
+
+            {q.type === 'number' && (
+                <div className="flex flex-col gap-1.5 pl-1">
+                    <label className="text-xs text-gray-400">Правильный ответ</label>
+                    <input
+                        type="number"
+                        value={q.correct_answer || ''}
+                        onChange={e => onUpdate(q.id, { correct_answer: e.target.value })}
+                        placeholder="Введите число..."
+                        className="w-40 px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
+                </div>
+            )}
+
+            {q.type === 'long_text' && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-100 rounded-lg">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-amber-400 flex-shrink-0">
+                        <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.3"/>
+                        <path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                    </svg>
+                    <span className="text-xs text-amber-600">Проверяется вручную — баллы выставляет автор</span>
+                </div>
+            )}
+
             {WITH_CHOICES.includes(q.type) && (
                 <div className="flex flex-col gap-2 pl-1">
+                    <div className="flex items-center justify-between pr-6">
+                        <span className="text-xs text-gray-400">Варианты ответа</span>
+                        <span className="text-xs text-gray-400">Правильный</span>
+                    </div>
                     {q.choices.map((choice, ci) => (
                         <div key={choice.id} className="flex items-center gap-2">
                             <span className="text-xs text-gray-400 w-4">{ci + 1}.</span>
@@ -207,13 +248,19 @@ export function QuestionCard({
                                 value={choice.text}
                                 onChange={e => onUpdateChoice(q.id, choice.id, e.target.value)}
                                 placeholder={`Вариант ${ci + 1}`}
-                                className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"
-                            />
+                                className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
+                            <label className="flex items-center cursor-pointer" title="Правильный ответ">
+                                <input
+                                    type={q.type === 'radio' || q.type === 'dropdown' ? 'radio' : 'checkbox'}
+                                    name={`correct_${q.id}`}
+                                    checked={choice.is_correct || false}
+                                    onChange={e => onUpdateChoiceCorrect(q.id, choice.id, e.target.checked)}
+                                    className="w-4 h-4 accent-green-500 cursor-pointer"/>
+                            </label>
                             <button
                                 onClick={() => onRemoveChoice(q.id, choice.id)}
                                 className="text-gray-300 hover:text-red-400 transition-colors cursor-pointer"
-                                aria-label={`Удалить вариант ${ci + 1}`}
-                            >
+                                aria-label={`Удалить вариант ${ci + 1}`}>
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                     <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                                 </svg>
