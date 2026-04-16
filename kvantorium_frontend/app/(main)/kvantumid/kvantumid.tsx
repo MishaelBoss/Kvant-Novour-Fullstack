@@ -94,8 +94,7 @@ export default function KvantumID() {
                                 <LogoutConfirmModel>
                                     <button 
                                         type="button" 
-                                        className="text-[#FF005C] text-[15px] hover:underline transition-all cursor-pointer"
-                                    >
+                                        className="text-[#FF005C] text-[15px] hover:underline transition-all cursor-pointer">
                                         Выйти из аккаунта
                                     </button>
                                 </LogoutConfirmModel>

@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 
 
 class CreateFormView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole | IsTeacherRole]
 
     def post(self, request):
 
@@ -39,18 +39,20 @@ class CreateFormView(APIView):
                 )
 
                 for index, q_item in enumerate(questions_data):
+
+                    media_file = request.FILES.get(f'question_media_{index}')
+                    if media_file:
+                        pass
+
                     question = Question.objects.create(
                         form=form,
                         text=q_item.get('text', ''),
                         type=q_item.get('type', 'short_text'),
                         is_required=q_item.get('is_required', False),
                         points=q_item.get('points', 0),
-                        order=index
+                        order=index,
+                        media=media_file
                     )
-
-                    media_file = request.FILES.get(f'question_media_{index}')
-                    if media_file:
-                        pass
 
                     for c_item in q_item.get('choices', []):
                         Choice.objects.create(
@@ -132,12 +134,20 @@ class FormDetailView(APIView):
                 'order': c.order
             } for c in q.choices.all()]
 
+            media_data = None
+            if q.media:
+                media_data = {
+                    'type': 'image',
+                    'preview_url': request.build_absolute_uri(q.media.url)
+                }
+
             questions.append({
                 'id': q.id,
                 'text': q.text,
                 'type': q.type,
                 'is_required': q.is_required,
                 'points': q.points,
+                'media': media_data,
                 'choices': choices
             })
 

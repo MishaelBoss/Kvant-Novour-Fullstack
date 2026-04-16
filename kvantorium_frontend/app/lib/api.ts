@@ -325,19 +325,15 @@ export const createForm = async (data: FormCreate, settings: FormSettings): Prom
         }));
         
         formData.append('questions', JSON.stringify(questionsForApi));
-        
+
         data.questions.forEach((question, index) => {
             if (question.media && question.media.file) {
-                const mediaKey = `media_${question.id || index}`;
-                formData.append(mediaKey, question.media.file);
+                formData.append(`question_media_${index}`, question.media.file);
             }
         });
         
         const res = await axios.post('/run-create-form/', formData, {
             withCredentials: true,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
         });
         
         if (res.status === 201) {

@@ -1,9 +1,10 @@
 "use client";
 
 import { getFormDetail } from "@/app/lib/api";
-import { FormDetail, QuestionAnswer, QuizSession } from "@/app/types/form.interface";
+import { FormDetail, Question, QuestionAnswer } from "@/app/types/form.interface";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function formatTimer(seconds: number): string {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -40,10 +41,9 @@ export default function Quiz() {
                 }
 
                 setForm(data);
-                
                 setTimeLeft(data.settings?.timer_seconds ?? 0); 
 
-                setAnswers(data.questions.map((q: any) => ({
+                setAnswers(data.questions.map((q: Question) => ({
                     question_id: q.id,
                     text_value: '',
                     selected_choice_ids: [],
@@ -55,13 +55,30 @@ export default function Quiz() {
         init();
     }, [slug]);
 
+    const updateAnswer = (patch: Partial<QuestionAnswer>) => {
+        setAnswers(prev => prev.map((a, i) =>
+            i === currentIndex ? { ...a, ...patch } : a
+        ));
+    };
+
+    const handleFinish = useCallback(async () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setFinished(true);
+        
+        const profileRaw = sessionStorage.getItem(`quiz_profile_${slug}`);
+        const profile = profileRaw ? JSON.parse(profileRaw) : {};
+        const session = { profile, answers: answersRef.current };
+
+        sessionStorage.setItem(`quiz_session_${slug}`, JSON.stringify(session));
+        router.push(`/kvanto_form/${slug}/result`);
+    }, [slug, router]);
+
     useEffect(() => {
         if (!form || !form.settings?.timer_enabled || finished) return;
 
         timerRef.current = setInterval(() => {
             setTimeLeft(prev => {
                 if (prev <= 1) {
-                    if (timerRef.current) clearInterval(timerRef.current);
                     handleFinish();
                     return 0;
                 }
@@ -70,26 +87,7 @@ export default function Quiz() {
         }, 1000);
 
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [form, finished]);
-
-    const updateAnswer = (patch: Partial<QuestionAnswer>) => {
-        setAnswers(prev => prev.map((a, i) =>
-            i === currentIndex ? { ...a, ...patch } : a
-        ));
-    };
-
-    const handleFinish = () => {
-        clearInterval(timerRef.current!);
-        setFinished(true);
-
-        const profileRaw = sessionStorage.getItem(`quiz_profile_${slug}`);
-        const profile = profileRaw ? JSON.parse(profileRaw) : {};
-
-        const session: QuizSession = { profile, answers };
-        sessionStorage.setItem(`quiz_session_${slug}`, JSON.stringify(session));
-
-        router.push(`/kvanto_form/${slug}/result`);
-    };
+    }, [form, finished, handleFinish]);
 
     if (!form || answers.length === 0) {
         return (
@@ -126,8 +124,7 @@ export default function Quiz() {
                     <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <div
                             className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                        />
+                            style={{ width: `${progress}%` }}/>
                     </div>
                 </div>
 
@@ -135,15 +132,15 @@ export default function Quiz() {
                     {currentQuestion.media && (
                         <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
                             {currentQuestion.media.type === 'image' && (
-                                <img src={currentQuestion.media.preview_url} alt="" className="w-full max-h-64 object-contain p-2" />
+                                <Image src={currentQuestion.media.preview_url.replace('http://localhost', '')} width={100} height={100} alt="" className="w-full max-h-64 object-contain p-2" />
                             )}
                             {currentQuestion.media.type === 'audio' && (
                                 <div className="p-4">
-                                    <audio controls src={currentQuestion.media.preview_url} className="w-full" />
+                                    <audio controls src={currentQuestion.media.preview_url.replace('http://localhost', '')} className="w-full" />
                                 </div>
                             )}
                             {currentQuestion.media.type === 'video' && (
-                                <video controls src={currentQuestion.media.preview_url} className="w-full max-h-64" />
+                                <video controls src={currentQuestion.media.preview_url.replace('http://localhost', '')} className="w-full max-h-64" />
                             )}
                         </div>
                     )}
@@ -227,6 +224,7 @@ export default function Quiz() {
 
                     {currentQuestion.type === 'dropdown' && (
                         <select
+                            aria-label={currentQuestion.text} 
                             value={answer?.selected_choice_ids[0] || ''}
                             onChange={e => updateAnswer({ selected_choice_ids: [e.target.value] })}
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors bg-white cursor-pointer">
@@ -250,7 +248,7 @@ export default function Quiz() {
                         <button
                             onClick={handleFinish}
                             className="px-6 py-2.5 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors cursor-pointer font-medium">
-                            Завершить тест ✓
+                            Завершить тест
                         </button>
                     ) : (
                         <button
@@ -260,7 +258,6 @@ export default function Quiz() {
                         </button>
                     )}
                 </div>
-
             </div>
         </div>
     );

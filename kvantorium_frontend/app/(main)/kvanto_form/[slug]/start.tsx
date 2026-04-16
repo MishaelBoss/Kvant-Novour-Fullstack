@@ -33,7 +33,6 @@ export default function QuizStart() {
             <div className="w-full max-w-[520px] flex flex-col gap-6">
                 <div className="text-center flex flex-col gap-1">
                     <h1 className="text-2xl font-bold text-gray-800">Перед началом</h1>
-                    <p className="text-sm text-gray-500">Заполните данные — они нужны для учёта результатов</p>
                 </div>
 
                 <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50">
@@ -56,7 +55,7 @@ export default function QuizStart() {
                             <label className="text-sm text-gray-600">Учебное заведение</label>
                             <input
                                 {...register('school')}
-                                placeholder="Школа №1"
+                                placeholder="Школа №48"
                                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
                         </div>
 
