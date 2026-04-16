@@ -1,23 +1,22 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import "./header.css";
 import Link from 'next/link';
 import { PAGES } from '@/app/config/page';
-import { checkAuthStatus } from '@/app/lib/api';
-import { User } from '../types/user.interface';
 import { AuthModal } from '@/app/(auth)/_components/AuthModal';
 import { DropdownMenu } from "radix-ui";
+import { useAuth } from '../context/AuthContext';
 
 interface Props {
     className?: string;
 }
 
 export const Header: React.FC<Props> = ({ className }) => {
-    const [user, setUser] = useState<User | null>(null);
     const [open, setOpen] = useState(false);
     const timerRef = useRef<number>(0);
     const [countNotifications, setCountNotifications] = useState(0);
+    const { user } = useAuth();
 
     const handleOpen = () => {
         window.clearTimeout(timerRef.current);
@@ -29,37 +28,6 @@ export const Header: React.FC<Props> = ({ className }) => {
             setOpen(false);
         }, 150);
     }
-
-    useEffect(() => {
-        const handleAuthChange = () => {
-            fetchUser();
-        };
-
-        const fetchUser = async () => {
-            const userData = await checkAuthStatus();
-
-            if (userData){
-                setUser(userData);
-            }
-        }
-
-        fetchUser();
-
-        const handlePageShow = (event: PageTransitionEvent) => {
-            if (event.persisted) {
-                fetchUser();
-            }
-        };
-
-
-        window.addEventListener("pageshow", handlePageShow);
-        window.addEventListener("fetchUser", handleAuthChange);
-
-        return () => {
-            window.removeEventListener("pageshow", handlePageShow);
-            window.removeEventListener("fetchUser", handleAuthChange);
-        };
-    }, []);
 
     return(
         <header className={`Header ${className || '' }`}>
@@ -121,8 +89,7 @@ export const Header: React.FC<Props> = ({ className }) => {
                                 <DropdownMenu.Content 
                                     className="DropdownMenuContent" 
                                     sideOffset={5}
-                                    onMouseEnter={handleOpen} 
-                                >
+                                    onMouseEnter={handleOpen}>
                                     <div className="Ozon-Menu-Items">
                                         <DropdownMenu.Item className="DropdownMenuItem" asChild>
                                             <Link href={`${PAGES.MY_PROFILE()}?tab=personal`}>
@@ -139,7 +106,6 @@ export const Header: React.FC<Props> = ({ className }) => {
                                         <DropdownMenu.Item className="DropdownMenuItem" asChild>
                                             <Link href={`${PAGES.MY_PROFILE()}?tab=notifications`}>
                                                 <span className="ItemTitle">Сообщения</span>
-                                                <span className="Badge">22</span>
                                             </Link>
                                         </DropdownMenu.Item>
 

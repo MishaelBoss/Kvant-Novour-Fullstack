@@ -1,9 +1,7 @@
 'use client';
 
-import { PAGES } from "@/app/config/page";
-import { logout } from "@/app/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface LogoutConfirmModelProps {
@@ -11,13 +9,8 @@ interface LogoutConfirmModelProps {
 }
 
 export function LogoutConfirmModel({children}: LogoutConfirmModelProps){
+    const { logout } = useAuth();
     const [open, setOpen] = useState(false);
-    const router = useRouter();
-
-    const onLogout = async () => {
-        await logout();
-        router.push(PAGES.HOME());
-    };
 
     return (
         <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -46,7 +39,7 @@ export function LogoutConfirmModel({children}: LogoutConfirmModelProps){
                         color="red" 
                         size="3" 
                         style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
-                        onClick={onLogout}
+                        onClick={logout}
                     >
                         Выйти
                     </Button>

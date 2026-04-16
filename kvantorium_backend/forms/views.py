@@ -352,3 +352,16 @@ def _get_media_type(filename: str) -> str:
     if ext in ('mp4', 'webm'):
         return 'video'
     return 'image'
+
+
+class FormDeleteView(APIView):
+    permission_classes = [IsAdminRole | IsTeacherRole]
+
+    def delete(self, request, pk):
+        form = get_object_or_404(Form, id=pk, owner=request.user)
+
+        try:
+            form.delete()
+            return Response({"status": "success"}, status=204)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)

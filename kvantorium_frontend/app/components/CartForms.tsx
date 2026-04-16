@@ -1,11 +1,25 @@
 import Link from "next/link";
 import { FormItem } from "../types/form.interface";
+import { deleteForm } from "../lib/api";
 
 interface CartFormsProps {
     form: FormItem;
 }
 
 export function CartForms({form}: CartFormsProps) {
+
+    const handleDelete = async (id: number) => {
+        if (confirm('Вы уверены, что хотите полностью удалить эту форму и все результаты?')) {
+            const success = await deleteForm(id);
+            if (success) {
+                window.dispatchEvent(new Event("fetchFormsList"));
+                alert('Форма удалена');
+            } else {
+                alert('Не удалось удалить форму');
+            }
+        }
+    };
+
     return (
         <div className="relative group bg-white border border-gray-100 rounded-3xl p-6 transition-all hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
             <div className="flex items-center justify-between mb-4">
@@ -49,6 +63,16 @@ export function CartForms({form}: CartFormsProps) {
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </Link>
+
+                    <button 
+                        type="button"
+                        onClick={() => handleDelete(form.id)}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+                        title="Удалить">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path fill="currentColor" fillRule="evenodd" d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4H5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </button>
                     
                     <Link 
                         href={`/kvanto_form/${form.id}`}

@@ -5,25 +5,29 @@ import { PAGES } from "@/app/config/page";
 import { getMyFormsList } from "@/app/lib/api";
 import { FormItem } from "@/app/types/form.interface";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function KvantoForm(){
     const [forms, setForms] = useState<FormItem[]>([]);
 
-    useEffect(() => {
-        const fetchForms = async () => {
-            const res = await getMyFormsList();
-
-            if(Array.isArray(res)){ 
-                setForms(res);
-            }
-            else {
-                setForms([]);
-            }
+    const fetchForms = useCallback(async () => {
+        const res = await getMyFormsList();
+        if (Array.isArray(res)) { 
+            setForms(res);
+        } else {
+            setForms([]);
         }
-
-        fetchForms();
     }, []);
+
+    useEffect(() => {
+        fetchForms();
+
+        window.addEventListener("fetchFormsList", fetchForms);
+
+        return () => {
+            window.removeEventListener("fetchFormsList", fetchForms);
+        };
+    }, [fetchForms]);
 
     if (forms.length === 0) {
         return (

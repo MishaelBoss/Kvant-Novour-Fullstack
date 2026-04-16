@@ -55,9 +55,9 @@ export default function Quiz() {
         init();
     }, [slug]);
 
-    const updateAnswer = (patch: Partial<QuestionAnswer>) => {
-        setAnswers(prev => prev.map((a, i) =>
-            i === currentIndex ? { ...a, ...patch } : a
+    const updateAnswerById = (qId: string, patch: Partial<QuestionAnswer>) => {
+        setAnswers(prev => prev.map((a) =>
+            a.question_id === qId ? { ...a, ...patch } : a
         ));
     };
 
@@ -122,148 +122,175 @@ export default function Quiz() {
                     )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-xs text-gray-400">
-                        <span>Вопрос {currentIndex + 1} из {form.questions.length}</span>
-                        <span>{Math.round(progress)}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}/>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
-                    {currentQuestion.media && (
-                        <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
-                            {currentQuestion.media.type === 'image' && (
-                                <Image src={currentQuestion.media.preview_url.replace('http://localhost', '')} loading="eager" width={100} height={100} alt="" className="w-full max-h-64 object-contain p-2" />
-                            )}
-                            {currentQuestion.media.type === 'audio' && (
-                                <div className="p-4">
-                                    <audio controls src={currentQuestion.media.preview_url.replace('http://localhost', '')} className="w-full" />
-                                </div>
-                            )}
-                            {currentQuestion.media.type === 'video' && (
-                                <video controls src={currentQuestion.media.preview_url.replace('http://localhost', '')} className="w-full max-h-64" />
-                            )}
+                {form.settings.one_question_per_page && (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex justify-between text-xs text-gray-400">
+                            <span>Вопрос {currentIndex + 1} из {form.questions.length}</span>
+                            <span>{Math.round(progress)}%</span>
                         </div>
-                    )}
-
-                    <div className="flex flex-col gap-1">
-                        <p className="text-base font-medium text-gray-800">
-                            {currentQuestion.text}
-                            {currentQuestion.is_required && <span className="text-red-400 ml-1">*</span>}
-                        </p>
-                        {currentQuestion.points > 0 && (
-                            <p className="text-xs text-gray-400">{currentQuestion.points} балл(ов)</p>
-                        )}
+                        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${progress}%` }}/>
+                        </div>
                     </div>
+                )}
 
-                    {currentQuestion.type === 'short_text' && (
-                        <input
-                            value={answer?.text_value || ''}
-                            onChange={e => updateAnswer({ text_value: e.target.value })}
-                            placeholder="Ваш ответ..."
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
-                    )}
-
-                    {currentQuestion.type === 'long_text' && (
-                        <textarea
-                            value={answer?.text_value || ''}
-                            onChange={e => updateAnswer({ text_value: e.target.value })}
-                            placeholder="Ваш ответ..."
-                            rows={4}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors resize-none"/>
-                    )}
-
-                    {currentQuestion.type === 'number' && (
-                        <input
-                            type="number"
-                            value={answer?.text_value || ''}
-                            onChange={e => updateAnswer({ text_value: e.target.value })}
-                            placeholder="Введите число..."
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
-                    )}
-
-                    {currentQuestion.type === 'radio' && (
-                        <div className="flex flex-col gap-2">
-                            {currentQuestion.choices.map(choice => (
-                                <label key={choice.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name={`q_${currentQuestion.id}`}
-                                        checked={answer?.selected_choice_ids[0] === choice.id}
-                                        onChange={() => updateAnswer({ selected_choice_ids: [choice.id] })}
-                                        className="w-4 h-4 accent-blue-500 cursor-pointer flex-shrink-0"/>
-                                    <span className="text-sm text-gray-700">{choice.text}</span>
-                                </label>
-                            ))}
-                        </div>
-                    )}
-
-                    {currentQuestion.type === 'checkbox' && (
-                        <div className="flex flex-col gap-2">
-                            {currentQuestion.choices.map(choice => {
-                                const checked = answer?.selected_choice_ids.includes(choice.id);
-                                return (
-                                    <label key={choice.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={checked}
-                                            onChange={() => {
-                                                const ids = answer?.selected_choice_ids || [];
-                                                updateAnswer({
-                                                    selected_choice_ids: checked
-                                                        ? ids.filter(id => id !== choice.id)
-                                                        : [...ids, choice.id],
-                                                });
-                                            }}
-                                            className="w-4 h-4 accent-blue-500 cursor-pointer flex-shrink-0"/>
-                                        <span className="text-sm text-gray-700">{choice.text}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    {currentQuestion.type === 'dropdown' && (
-                        <select
-                            aria-label={currentQuestion.text} 
-                            value={answer?.selected_choice_ids[0] || ''}
-                            onChange={e => updateAnswer({ selected_choice_ids: [e.target.value] })}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors bg-white cursor-pointer">
-                            <option value="">Выберите вариант...</option>
-                            {currentQuestion.choices.map(choice => (
-                                <option key={choice.id} value={choice.id}>{choice.text}</option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-
-                <div className="flex justify-between gap-3">
-                    <button
-                        onClick={() => setCurrentIndex(i => i - 1)}
-                        disabled={currentIndex === 0}
-                        className="px-5 py-2.5 text-sm text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
-                        ← Назад
-                    </button>
-
-                    {isLast ? (
-                        <button
-                            onClick={handleFinish}
-                            className="px-6 py-2.5 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors cursor-pointer font-medium">
-                            Завершить тест
-                        </button>
+                <div className="flex flex-col gap-6">
+                    {form.settings.one_question_per_page ? (
+                        <QuestionItem 
+                            question={form.questions[currentIndex]} 
+                            answer={answers[currentIndex]} 
+                            onUpdate={(patch) => updateAnswerById(form.questions[currentIndex].id, patch)} 
+                        />
                     ) : (
-                        <button
-                            onClick={() => setCurrentIndex(i => i + 1)}
-                            className="px-5 py-2.5 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors cursor-pointer">
-                            Далее →
+                        form.questions.map((q, idx) => (
+                            <QuestionItem 
+                                key={q.id}
+                                index={idx}
+                                question={q} 
+                                answer={answers.find(a => a.question_id === q.id)!} 
+                                onUpdate={(patch) => updateAnswerById(q.id, patch)} 
+                            />
+                        ))
+                    )}
+                </div>
+
+                <div className="flex justify-between gap-4">
+                    {form.settings.one_question_per_page ? (
+                        <>
+                            <button 
+                                disabled={currentIndex === 0}
+                                onClick={() => setCurrentIndex(prev => prev - 1)}
+                                className="px-6 py-2.5 text-sm text-gray-500 disabled:opacity-30">
+                                Назад
+                            </button>
+                            <button 
+                                onClick={isLast ? handleFinish : () => setCurrentIndex(prev => prev + 1)}
+                                className="flex-1 bg-blue-500 text-white font-medium py-2.5 rounded-xl">
+                                {isLast ? 'Завершить' : 'Далее →'}
+                            </button>
+                        </>
+                    ) : (
+                        <button 
+                            onClick={handleFinish}
+                            className="w-full bg-blue-500 text-white font-medium py-3 rounded-xl shadow-lg">
+                            Завершить и отправить результаты
                         </button>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+}
+
+
+function QuestionItem({ 
+    question, 
+    answer, 
+    onUpdate, 
+    index 
+}: { 
+    question: Question, 
+    answer: QuestionAnswer, 
+    onUpdate: (patch: Partial<QuestionAnswer>) => void,
+    index?: number 
+}) {
+    return (
+        <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
+            {question.media && (
+                <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                    {question.media.type === 'image' && (
+                        <Image src={question.media.preview_url.replace('http://localhost', '')} width={100} height={100} loading="eager" alt="" className="w-full max-h-64 object-contain p-2" />
+                    )}
+                    {question.media.type === 'audio' && (
+                        <div className="p-4">
+                            <audio controls src={question.media.preview_url.replace('http://localhost', '')} className="w-full" />
+                        </div>
+                    )}
+                    {question.media.type === 'video' && (
+                        <video controls src={question.media.preview_url.replace('http://localhost', '')} className="w-full max-h-64" />
+                    )}
+                </div>
+            )}
+
+            <div className="flex flex-col gap-1">
+                <p className="text-base font-medium text-gray-800">
+                    {index !== undefined && <span className="text-gray-400 mr-2">{index + 1}.</span>}
+                    {question.text}
+                    {question.is_required && <span className="text-red-400 ml-1">*</span>}
+                </p>
+                {question.points > 0 && (
+                    <p className="text-xs text-gray-400">{question.points} балл(ов)</p>
+                )}
+            </div>
+
+            <div className="flex flex-col gap-3">
+                {question.type === 'short_text' && (
+                    <input
+                        value={answer?.text_value || ''}
+                        onChange={e => onUpdate({ text_value: e.target.value })}
+                        placeholder="Ваш ответ..."
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"
+                    />
+                )}
+
+                {question.type === 'long_text' && (
+                    <textarea
+                        value={answer?.text_value || ''}
+                        onChange={e => onUpdate({ text_value: e.target.value })}
+                        placeholder="Ваш ответ..."
+                        rows={4}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors resize-none"
+                    />
+                )}
+
+                {question.type === 'number' && (
+                    <input
+                        type="number"
+                        value={answer?.text_value || ''}
+                        onChange={e => onUpdate({ text_value: e.target.value })}
+                        placeholder="Введите число..."
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"
+                    />
+                )}
+
+                {(question.type === 'radio' || question.type === 'dropdown') && (
+                    <div className="flex flex-col gap-2">
+                        {question.choices.map(choice => (
+                            <label key={choice.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name={`q_${question.id}`}
+                                    checked={answer?.selected_choice_ids?.includes(choice.id)}
+                                    onChange={() => onUpdate({ selected_choice_ids: [choice.id] })}
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer flex-shrink-0"
+                                />
+                                <span className="text-sm text-gray-700">{choice.text}</span>
+                            </label>
+                        ))}
+                    </div>
+                )}
+
+                {question.type === 'checkbox' && (
+                    <div className="flex flex-col gap-2">
+                        {question.choices.map(choice => (
+                            <label key={choice.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={answer?.selected_choice_ids?.includes(choice.id)}
+                                    onChange={(e) => {
+                                        const current = answer?.selected_choice_ids || [];
+                                        const next = e.target.checked 
+                                            ? [...current, choice.id]
+                                            : current.filter(id => id !== choice.id);
+                                        onUpdate({ selected_choice_ids: next });
+                                    }}
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer flex-shrink-0"
+                                />
+                                <span className="text-sm text-gray-700">{choice.text}</span>
+                            </label>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

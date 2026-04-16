@@ -4,6 +4,7 @@ import "./globals.css";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import AxiosConfig from "./components/AxiosConfig";
+import { AuthProvider } from "./context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,8 +37,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Theme appearance="light" hasBackground={false} suppressHydrationWarning>
-          <AxiosConfig/>
-          {children}
+          <AuthProvider>
+            <AxiosConfig/>
+            {children}
+          </AuthProvider>
         </Theme>
       </body>
     </html>

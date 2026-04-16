@@ -1,4 +1,4 @@
-import axios, { Axios } from "axios";
+import axios from "axios";
 import { EditProfile } from "../types/edit_profile.interface";
 import { News } from "../types/news.interface";
 import { User } from "../types/user.interface";
@@ -461,18 +461,6 @@ export const submitQuizResults = async (slug: string, payload: QuizSession) => {
     }
 }
 
-export const toggleFormStatus = async (id: number, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'draft' : 'active';
-    try {
-        const res = await axios.patch(`/form/${id}/update/`, { status: newStatus }, {
-            withCredentials: true,
-        });
-        return res.status === 200;
-    } catch (error) {
-        return false;
-    }
-};
-
 export async function submitFormResponse(slug: string, session: QuizSession): Promise<{
     response_id: number;
     auto_score: number;
@@ -485,3 +473,18 @@ export async function submitFormResponse(slug: string, session: QuizSession): Pr
 
     return res.data.results || res.data;
 }
+
+export const deleteForm = async (id: number) => {
+    try {
+        const res = await axios.delete(`/form/${id}/delete/`, {
+            withCredentials: true,
+        });
+
+        return res.status === 204 || res.status === 200;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при удалении формы:', error);
+        }
+        return false;
+    }
+};
