@@ -411,8 +411,8 @@ class FormResponsesListView(APIView):
                 "submitted_at": r.submitted_at,
                 "total_score": r.total_score,
                 "needs_review": needs_review,
-                "school": r.respondent_school,
-                "grade": r.respondent_grade
+                "school": r.respondent_school or "-",
+                "grade": r.respondent_grade or "-"
             })
             
         return Response(data)
