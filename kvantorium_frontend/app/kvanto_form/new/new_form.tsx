@@ -125,7 +125,7 @@ export default function NewForm() {
         ));
     };
 
-    const handleSave = async (status: 'draft' | 'active') => {
+    const handleSave = async (status: 'draft' | 'active', newsImage: File | null = null) => {
         if (!title.trim()) {
             setError('Введите название формы');
             return;
@@ -143,7 +143,7 @@ export default function NewForm() {
                 questions: questions
             };
             
-            const success = await createForm(formData, settings);
+            const success = await createForm(formData, settings, newsImage);
 
             setSaving(success);
             
@@ -185,7 +185,7 @@ export default function NewForm() {
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             {saving ? 'Сохранение...' : 'Сохранить'}
                         </button>
-                        <ModelConfirmAddForm onPublish={() => handleSave('active')} isActive={false}>
+                        <ModelConfirmAddForm onPublish={(file) => handleSave('active', file)} isActive={false}>
                             <button
                                 className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
                                 Опубликовать

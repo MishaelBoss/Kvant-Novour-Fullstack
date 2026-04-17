@@ -67,11 +67,14 @@ class CreateFormView(APIView):
                         )
 
                 if status_val == 'active':
+                    news_image = request.FILES.get('news_image')
+
                     new_post = News.objects.create(
                         title=f"Новый опрос: {form.title}",
                         content=form.description or "Пройдите наш новый опрос!",
                         form_id=form.id,
-                        form_slug=generated_slug
+                        form_slug=generated_slug,
+                        image=news_image
                     )
                     category, _ = Category.objects.get_or_create(name="Опросы")
                     new_post.categories.add(category)
@@ -112,12 +115,15 @@ class UpdateFormView(APIView):
                 form.save()
 
                 if new_status == 'active':
+                    news_image = request.FILES.get('news_image')
+
                     News.objects.update_or_create(
                         form_id=form.id,
                         defaults={
                             'title': f"Новый опрос: {form.title}",
                             'content': form.description or "Пройдите наш новый опрос!",
-                            'form_slug': generated_slug
+                            'form_slug': generated_slug,
+                            'image': news_image
                         }
                     )
 

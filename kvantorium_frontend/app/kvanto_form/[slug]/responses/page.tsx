@@ -6,16 +6,30 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { FormResponseSummary } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function ResponsesList() {
     const [responses, setResponses] = useState<FormResponseSummary[]>([]);
+    const { user, isLoading: isAuthLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const params = useParams();
     const slug = params?.slug;
 
     useEffect(() => {
-        if (!slug) return;
+        if (!isAuthLoading) {
+            const role = user?.role?.toLowerCase() ?? '';
+            const canAccess = role === 'admin' || role === 'teacher';
+
+            if (!user || !canAccess) {
+                router.replace('/');
+            }
+        }
+    }, [user, isAuthLoading, router]);
+
+    useEffect(() => {
+        if (!slug || isAuthLoading || !user) return;
+
         const loadData = async () => {
             setLoading(true);
             try {
@@ -28,13 +42,21 @@ export default function ResponsesList() {
             }
         };
         loadData();
-    }, [slug]);
+    }, [slug, isAuthLoading, user]);
 
     const needsReviewCount = responses.filter(r => r.needs_review).length;
 
     const handleExport = () => {
         window.open(`http://localhost:8080/api/form/${slug}/export/`, '_blank');
     };
+
+    if (isAuthLoading) {
+        return <div className="min-h-screen bg-[#f4f5f7] p-8 animate-pulse">Загрузка доступа...</div>;
+    }
+
+    if (!user || !['admin', 'teacher'].includes(user.role?.toLowerCase() ?? '')) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">

@@ -295,13 +295,17 @@ export const createUser = async (data: User): Promise<boolean> => {
     }
 }
 
-export const createForm = async (data: FormCreate, settings: FormSettings): Promise<boolean> => {
+export const createForm = async (data: FormCreate, settings: FormSettings, newsImage?: File | null): Promise<boolean> => {
     try {
         const formData = new FormData();
         
         formData.append('title', data.title);
         formData.append('description', data.description);
         formData.append('status', data.status);
+
+        if (newsImage) {
+            formData.append('news_image', newsImage);
+        }
         
         if (data.deadline) {
             formData.append('deadline', data.deadline);
@@ -351,13 +355,17 @@ export const createForm = async (data: FormCreate, settings: FormSettings): Prom
     }
 };
 
-export const updateForm = async (id: number, data: FormCreate, settings: FormSettings) => {
+export const updateForm = async (id: number, data: FormCreate, settings: FormSettings, newsImage?: File | null) => {
     try {
         const formData = new FormData();
 
         formData.append('title', data.title);
         formData.append('description', data.description);
         formData.append('status', data.status);
+
+        if (newsImage) {
+            formData.append('news_image', newsImage);
+        }
 
         if (data.deadline) {
             formData.append('deadline', data.deadline);

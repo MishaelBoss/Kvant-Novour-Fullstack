@@ -147,7 +147,7 @@ export default function UpdateForm() {
         loadForm();
     }, [formId]);
 
-    const handleSave = async (status: 'draft' | 'active', isStatusToggle = false) => {
+    const handleSave = async (status: 'draft' | 'active', isStatusToggle = false, newsImage: File | null = null) => {
         if (!title.trim()) {
             setError('Введите название формы');
             return;
@@ -167,7 +167,7 @@ export default function UpdateForm() {
                 questions: questions
             };
             
-            const success = await updateForm(Number(formId), formData, settings);
+            const success = await updateForm(Number(formId), formData, settings, newsImage);
 
             setSaving(success);
             
@@ -213,7 +213,7 @@ export default function UpdateForm() {
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             {saving ? 'Сохранение...' : 'Сохранить'}
                         </button>
-                        <ModelConfirmAddForm onPublish={() => handleSave(form?.status === 'active' ? 'draft' : 'active', true)} isActive={form?.status === 'active'}>
+                        <ModelConfirmAddForm onPublish={(file) => handleSave(form?.status === 'active' ? 'draft' : 'active', true, file)} isActive={form?.status === 'active'}>
                             <button
                                 type="button"
                                 className={`px-4 py-2 text-sm text-white rounded-lg transition-colors cursor-pointer ${
