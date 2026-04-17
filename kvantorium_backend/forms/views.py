@@ -1,5 +1,4 @@
 from datetime import timezone
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import *
@@ -11,7 +10,8 @@ from users.permissions import *
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from django.db.models import Count
-
+import openpyxl
+from django.http import HttpResponse
 
 
 class CreateFormView(APIView):
@@ -475,3 +475,37 @@ class GradeAnswerView(APIView):
         response.save()
 
         return Response({"status": "success", "new_total": new_total})
+    
+
+class ExportFormResultsView(APIView):
+    permission_classes = [IsAdminRole | IsTeacherRole]
+
+    def get(self, request, slug):
+        if slug.isdigit():
+            form = get_object_or_404(Form, id=slug, owner=request.user)
+        else:
+            form = get_object_or_404(Form, slug=slug, owner=request.user)
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Результаты"
+
+        headers = ['Участник', 'Школа', 'Класс', 'Дата прохождения', 'Итоговый балл']
+        ws.append(headers)
+
+        responses = form.responses.all().order_by('-submitted_at')
+        for r in responses:
+            ws.append([
+                r.respondent_name,
+                r.respondent_school or "—",
+                r.respondent_grade or "—",
+                r.submitted_at.replace(tzinfo=None), # Excel не любит часовые пояса
+                r.total_score
+            ])
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename=results_{slug}.xlsx'
+        wb.save(response)
+        return response

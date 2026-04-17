@@ -32,6 +32,10 @@ export default function ResponsesList() {
 
     const needsReviewCount = responses.filter(r => r.needs_review).length;
 
+    const handleExport = () => {
+        window.open(`http://localhost:8080/api/form/${slug}/export/`, '_blank');
+    };
+
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
             <div className="max-w-[860px] mx-auto flex flex-col gap-6">
@@ -47,6 +51,7 @@ export default function ResponsesList() {
                 </div>
 
                 {!loading && responses.length > 0 && (
+                    <>
                     <div className="grid grid-cols-3 gap-3">
                         {[
                             { label: 'Всего ответов', value: responses.length, color: 'text-gray-800' },
@@ -59,6 +64,15 @@ export default function ResponsesList() {
                             </div>
                         ))}
                     </div>
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-emerald-100 cursor-pointer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Скачать список участников в Excel
+                    </button>
+                    </>
                 )}
 
                 <div className="bg-white rounded-[24px] shadow-sm border border-gray-200/50 overflow-hidden">
@@ -141,7 +155,6 @@ export default function ResponsesList() {
                         </>
                     )}
                 </div>
-
             </div>
         </div>
     );

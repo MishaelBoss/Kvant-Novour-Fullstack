@@ -11,5 +11,6 @@ urlpatterns = [
     path('form/<slug:slug>/submit/', SubmitResponseView.as_view(), name='submit-response'),
     path('form/<int:pk>/delete/', FormDeleteView.as_view(), name='form-delete'),
     path('answers/<int:pk>/grade/', GradeAnswerView.as_view(), name='answers'),
-    path('responses/<int:pk>/', ResponseDetailView.as_view())
+    path('responses/<int:pk>/', ResponseDetailView.as_view()),
+    path('form/<slug:slug>/export/', ExportFormResultsView.as_view(), name='export-results'),
 ]
