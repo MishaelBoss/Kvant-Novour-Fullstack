@@ -50,6 +50,7 @@ export interface FormItem {
     description: string;
     status: 'draft' | 'active';
     created_at: string;
+    responses_count: number;
 }
 
 export interface ParticipantProfile {
@@ -80,4 +81,14 @@ export interface QuestionAnswer {
 export interface QuizSession {
     profile: ParticipantProfile;
     answers: QuestionAnswer[];
+}
+
+export interface FormResponseSummary {
+    id: number;
+    full_name: string;
+    submitted_at: string;
+    total_score: number;
+    needs_review: boolean;
+    school: string;
+    grade: string;
 }

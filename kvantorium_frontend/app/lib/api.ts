@@ -4,6 +4,7 @@ import { News } from "../types/news.interface";
 import { User } from "../types/user.interface";
 import { UserLogin } from "../types/user_login.interface";
 import { FormCreate, FormItem, FormSettings, QuizSession } from "../types/form.interface";
+import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
 
 export const checkAuthStatus = async () => {
     try {
@@ -485,6 +486,44 @@ export const deleteForm = async (id: number) => {
         if (axios.isAxiosError(error)) {
             console.error('Ошибка при удалении формы:', error);
         }
+        return false;
+    }
+};
+
+export const getFormResponses = async (slug: string) => {
+    try {
+        const res = await axios.get(`/form/${slug}/responses/`, {
+            withCredentials: true
+        });
+
+        return res.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка ответов:", error);
+        return [];
+    }
+};
+
+export const getResponseDetail = async (id: number): Promise<FullResponseDetail | null> => {
+    try {
+        const res = await axios.get(`/responses/${id}/`, {
+            withCredentials: true
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Ошибка при получении деталей ответа:", error);
+        return null;
+    }
+};
+
+export const gradeAnswer = async (answerId: number, score: number): Promise<boolean> => {
+    try {
+        const res = await axios.patch(`/answers/${answerId}/grade/`, 
+            { manual_score: score }, 
+            { withCredentials: true }
+        );
+        return res.status === 200;
+    } catch (error) {
+        console.error("Ошибка при выставлении баллов:", error);
         return false;
     }
 };

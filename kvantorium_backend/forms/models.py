@@ -24,7 +24,7 @@ class Form(models.Model):
     require_profile = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.title}"
+        return f"{self.title} {self.id}"
     
 class Question(models.Model):
     TYPE = [
@@ -74,13 +74,15 @@ class FormResponse(models.Model):
     manual_score = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"{self.form.title} — {self.respondent_name or 'Аноним'}"
+        return f"{self.form.title} — {self.respondent_name or 'Аноним'} {self.id}"
     
 class Answer(models.Model):
     response = models.ForeignKey(FormResponse, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text_value = models.TextField(blank=True)
     selected_choices = models.ManyToManyField(Choice, blank=True)
+    manual_score = models.IntegerField(default=0)
+    is_reviewed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Ответ на: {self.question.text}"

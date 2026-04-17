@@ -2,7 +2,6 @@ from datetime import timezone
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from .models import *
 from news.models import *
 import json
@@ -10,6 +9,9 @@ from django.db import transaction
 from pytils.translit import slugify
 from users.permissions import *
 from django.shortcuts import get_object_or_404
+from django.db.models import Sum
+from django.db.models import Count
+
 
 
 class CreateFormView(APIView):
@@ -171,7 +173,7 @@ class MyFormsListView(APIView):
     permission_classes = [IsAdminRole | IsTeacherRole]
 
     def get(self, request):
-        forms = Form.objects.filter(owner=request.user).order_by('-created_at')
+        forms = Form.objects.filter(owner=request.user).annotate(responses_count=Count('responses')).order_by('-created_at')
         
         data = []
         for f in forms:
@@ -181,11 +183,12 @@ class MyFormsListView(APIView):
                 'description': f.description,
                 'status': f.status,
                 'created_at': f.created_at,
+                'responses_count': f.responses_count,
             })
             
         return Response({
             'count': forms.count(),
-            'results': data
+            'results': data,
         })
     
 
@@ -193,7 +196,7 @@ class AllFormsList(APIView):
     permission_classes = [IsAdminRole]
 
     def get(self, request):
-        forms = Form.objects.all().order_by('-created_at')
+        forms = Form.objects.all().annotate(responses_count=Count('responses')).order_by('-created_at')
 
         data = []
         for f in forms:
@@ -203,6 +206,7 @@ class AllFormsList(APIView):
                 'description': f.description,
                 'status': f.status,
                 'created_at': f.created_at,
+                'responses_count': f.responses_count,
             })
 
         return Response({
@@ -365,3 +369,109 @@ class FormDeleteView(APIView):
             return Response({"status": "success"}, status=204)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+        
+
+class FormResultsListView(APIView):
+    permission_classes = [IsAdminRole | IsTeacherRole]
+
+    def get(self, request, form_id):
+        responses = FormResponse.objects.filter(form_id=form_id).order_by('-submitted_at')
+        data = [{
+            "id": r.id,
+            "full_name": r.full_name,
+            "submitted_at": r.submitted_at,
+            "total_score": r.total_score,
+            "is_fully_checked": not r.answers.filter(is_reviewed=False).exists()
+        } for r in responses]
+        return Response(data)
+    
+
+class FormResponsesListView(APIView):
+    permission_classes = [IsAdminRole | IsTeacherRole]
+
+    def get(self, request, slug):
+        if slug.isdigit():
+            form = get_object_or_404(Form, id=slug, owner=request.user)
+        else:
+            form = get_object_or_404(Form, slug=slug, owner=request.user)
+        
+        responses = form.responses.all().order_by('-submitted_at')
+        
+        data = []
+        for r in responses:
+            needs_review = r.answers.filter(
+                question__type__in=['short_text', 'long_text'],
+                question__points__gt=0,
+                is_reviewed=False
+            ).exists()
+
+            data.append({
+                "id": r.id,
+                "full_name": r.respondent_name,
+                "submitted_at": r.submitted_at,
+                "total_score": r.total_score,
+                "needs_review": needs_review,
+                "school": r.respondent_school,
+                "grade": r.respondent_grade
+            })
+            
+        return Response(data)
+    
+
+class ResponseDetailView(APIView):
+    permission_classes = [IsAdminRole | IsTeacherRole]
+
+    def get(self, request, pk):
+        response = get_object_or_404(FormResponse, id=pk, form__owner=request.user)
+        
+        answers_data = []
+        for ans in response.answers.all().select_related('question'):
+            choices = [c.text for c in ans.selected_choices.all()]
+            
+            answers_data.append({
+                "id": ans.id,
+                "question_text": ans.question.text,
+                "question_type": ans.question.type,
+                "max_points": ans.question.points,
+                "text_value": ans.text_value,
+                "selected_choices": choices,
+                "manual_score": ans.manual_score,
+                "is_reviewed": ans.is_reviewed
+            })
+
+        return Response({
+            "id": response.id,
+            "respondent_name": response.respondent_name,
+            "school": response.respondent_school,
+            "grade": response.respondent_grade,
+            "submitted_at": response.submitted_at,
+            "total_score": response.total_score,
+            "answers": answers_data
+        })
+    
+
+class GradeAnswerView(APIView):
+    permission_classes = [IsAdminRole | IsTeacherRole]
+
+    def patch(self, request, pk):
+        answer = get_object_or_404(Answer, id=pk, response__form__owner=request.user)
+        score = request.data.get('manual_score', 0)
+
+        max_p = answer.question.points
+        if score > max_p:
+            score = max_p
+        elif score < 0:
+            score = 0
+        
+        answer.manual_score = score
+        answer.is_reviewed = True
+        answer.save()
+        
+        response = answer.response
+        
+        new_total = response.answers.aggregate(total=Sum('manual_score'))['total'] or 0
+        
+        response.total_score = new_total
+        response.save()
+
+        return Response({"status": "success", "new_total": new_total})
