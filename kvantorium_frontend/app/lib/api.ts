@@ -1,6 +1,6 @@
 import axios from "axios";
 import { EditProfile } from "../types/edit_profile.interface";
-import { News } from "../types/news.interface";
+import { NewsCreateInput } from "../types/news.interface";
 import { User, UserLogin, UserRegister } from "../types/user.interface";
 import { FormCreate, FormItem, FormSettings, QuizSession } from "../types/form.interface";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
@@ -140,7 +140,7 @@ export const logout = async () => {
     }
 }
 
-export const createNews = async (data: News): Promise<boolean> => {
+export const createNews = async (data: NewsCreateInput): Promise<boolean> => {
     try {
         const formData = new FormData();
 
@@ -151,9 +151,9 @@ export const createNews = async (data: News): Promise<boolean> => {
             formData.append('image', data.image);
         }
 
-        if (Array.isArray(data.categories)) {
-            data.categories.forEach((c) => {
-                formData.append('categories', c.value.toString());
+        if (Array.isArray(data.category_ids)) {
+            data.category_ids.forEach((id) => {
+                formData.append('categories', id.toString());
             });
         }
 

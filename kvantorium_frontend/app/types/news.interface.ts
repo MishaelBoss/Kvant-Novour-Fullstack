@@ -10,3 +10,7 @@ export interface News {
     form_slug: string;
     form_id: number;
 }
+
+export interface NewsCreateInput extends Omit<News, 'categories'> {
+    category_ids?: number[];
+}

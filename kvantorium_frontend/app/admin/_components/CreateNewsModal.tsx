@@ -2,7 +2,7 @@
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createNews, getCategories } from "@/app/lib/api";
 import { Category } from "@/app/types/category.interface";
-import { News } from "@/app/types/news.interface";
+import { News, NewsCreateInput } from "@/app/types/news.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -77,7 +77,12 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
     };
 
     const onSubmit = async (data: NewsFormValues) => {
-        const isSuccess = await createNews(data); 
+        const payload: NewsCreateInput = {
+            ...data,
+            category_ids: data.categories.map(c => c.value),
+        };
+        
+        const isSuccess = await createNews(payload); 
         
         if(isSuccess) setOpen(false);
     };
