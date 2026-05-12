@@ -1,8 +1,7 @@
 import axios from "axios";
 import { EditProfile } from "../types/edit_profile.interface";
 import { News } from "../types/news.interface";
-import { User } from "../types/user.interface";
-import { UserLogin } from "../types/user_login.interface";
+import { User, UserLogin, UserRegister } from "../types/user.interface";
 import { FormCreate, FormItem, FormSettings, QuizSession } from "../types/form.interface";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
 
@@ -26,7 +25,7 @@ export const checkAuthStatus = async () => {
     }
 };
 
-export const login = async (data: UserLogin): Promise<boolean> => {
+export const login = async (data: UserLogin) => {
     try{
         const res = await axios.post(`/login/`, data, {
             withCredentials: true, 
@@ -34,19 +33,23 @@ export const login = async (data: UserLogin): Promise<boolean> => {
 
         if (res.status >= 200 || res.status < 300){
             window.dispatchEvent(new Event("fetchUser"));
-            return true; 
+            return;
         };
 
-        return false;
+        throw new Error("Ошибка входа");
     } catch (error){
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка входа:', error.response?.data || error.message);
+        if (axios.isAxiosError(error) && error.response?.data) {
+            throw new Error(
+                typeof error.response.data === 'string'
+                    ? error.response.data
+                    : error.response.data.message || error.response.data.detail || JSON.stringify(error.response.data)
+            );
         }
-        return false;
+        throw error;
     }
 };
 
-export const register = async (data: UserLogin): Promise<boolean> => {
+export const register = async (data: UserRegister) => {
     try{
         const res =  await axios.post(`/register/`, data, {
             headers: {
@@ -57,15 +60,20 @@ export const register = async (data: UserLogin): Promise<boolean> => {
 
         if (res.status === 200 || res.status === 201){
             window.dispatchEvent(new Event("fetchUser"));
-            return true;
+            return;
         };
 
-        return false;
+        throw new Error("Ошибка регистрации");
     } catch (error){
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка регистрации:', error.response?.data || error.message);
+        if (axios.isAxiosError(error) && error.response?.data) {
+            console.error('Ошибка при регистрации:', error.response.data || error.message);
+            throw new Error(
+                typeof error.response.data === 'string'
+                    ? error.response.data
+                    : error.response.data.message || error.response.data.detail || JSON.stringify(error.response.data)
+            );
         }
-        return false;
+        throw error;
     }
 };
 

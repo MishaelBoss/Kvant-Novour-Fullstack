@@ -371,6 +371,7 @@ class FormDeleteView(APIView):
         form = get_object_or_404(Form, id=pk, owner=request.user)
 
         try:
+            News.objects.filter(form=form).delete()
             form.delete()
             return Response({"status": "success"}, status=204)
         except Exception as e:

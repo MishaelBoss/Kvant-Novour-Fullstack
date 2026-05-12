@@ -1,5 +1,5 @@
 'use client'
-import { PAGES } from "@/app/config/page";
+import { PAGES } from "@/app/config/pages.config";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
 import { useRouter } from "next/navigation";
 

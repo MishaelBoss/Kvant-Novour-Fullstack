@@ -3,7 +3,7 @@ import { User } from "@/app/types/user.interface";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { PAGES } from "@/app/config/page";
+import { PAGES } from "@/app/config/pages.config";
 import { CreateUserModal } from "./CreateUserModal";
 
 interface UsersProps {

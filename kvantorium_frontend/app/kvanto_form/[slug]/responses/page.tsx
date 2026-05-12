@@ -119,7 +119,7 @@ export default function ResponsesList() {
                         <>
 
                             <div className="grid grid-cols-[1fr_1fr_100px_80px_120px] px-6 py-3 bg-gray-50 border-b border-gray-100">
-                                {['Участник', 'Данные', 'Дата', 'Баллы', 'Статус'].map(h => (
+                                {['Участник', 'Данные', 'Статус'].map(h => (
                                     <span key={h} className="text-xs font-semibold text-gray-400 uppercase tracking-wider last:text-right">{h}</span>
                                 ))}
                             </div>
@@ -152,12 +152,6 @@ export default function ResponsesList() {
                                                     <span className="text-xs text-gray-300 italic">Не заполнено</span>
                                                 )}
                                             </div>
-
-                                            <p className="text-xs text-gray-400">
-                                                {format(new Date(res.submitted_at), 'd MMM HH:mm', { locale: ru })}
-                                            </p>
-
-                                            <p className="text-sm font-bold text-blue-500">{res.total_score}</p>
 
                                             <div className="flex justify-end">
                                                 {res.needs_review ? (

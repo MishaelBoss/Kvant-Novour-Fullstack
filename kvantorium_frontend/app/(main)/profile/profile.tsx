@@ -1,5 +1,5 @@
 'use client'
-import { PAGES } from "@/app/config/page";
+import { PAGES } from "@/app/config/pages.config";
 import { getProfile } from "@/app/lib/api";
 import { User } from "@/app/types/user.interface";
 import Link from "next/link";

@@ -1,7 +1,7 @@
 "use client";
 
 import { CartForms } from "@/app/components/CartForms";
-import { PAGES } from "@/app/config/page";
+import { PAGES } from "@/app/config/pages.config";
 import { getMyFormsList } from "@/app/lib/api";
 import { FormItem } from "@/app/types/form.interface";
 import Link from "next/link";

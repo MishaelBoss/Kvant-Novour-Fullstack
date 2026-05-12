@@ -4,7 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { User } from '@/app/types/user.interface';
 import { checkAuthStatus, logout as logoutUser } from '../lib/api';
 import { useRouter, usePathname } from 'next/navigation';
-import { PAGES } from '../config/page';
+import { PAGES } from '../config/pages.config';
 
 interface AuthContextType {
     user: User | null;

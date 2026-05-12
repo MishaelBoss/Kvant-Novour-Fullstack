@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PAGES } from "../config/page";
+import { PAGES } from "../config/pages.config";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "../types/user.interface";

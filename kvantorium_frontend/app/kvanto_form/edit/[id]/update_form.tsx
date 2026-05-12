@@ -168,7 +168,7 @@ export default function UpdateForm() {
             };
             
             const success = await updateForm(Number(formId), formData, settings, newsImage);
-
+            
             setSaving(success);
             
             if (success) {

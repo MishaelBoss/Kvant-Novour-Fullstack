@@ -43,7 +43,8 @@ class Question(models.Model):
     order = models.PositiveIntegerField(default=0)
     points = models.PositiveIntegerField(default=0)
     media = models.FileField(upload_to='question_media/', null=True, blank=True)
-
+    correct_answer = models.TextField(blank=True, null=True, verbose_name="Правильный ответ")
+    
     class Meta:
         ordering = ['order']
 

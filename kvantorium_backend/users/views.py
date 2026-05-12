@@ -7,20 +7,52 @@ from django.conf import settings
 from .authentication import *
 from .models import *
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import *
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Пользователь успешно создан"}, status=status.HTTP_201_CREATED)
+            serializer = LoginSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            user = serializer.validated_data['user']
+            refresh = RefreshToken.for_user(user)
+
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            response = Response({"message": "Успех"}, status=status.HTTP_201_CREATED)
+
+            response.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax',
+                max_age=3600
+            )
+
+            response.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax',
+                max_age=3600 * 24 * 7
+            )
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

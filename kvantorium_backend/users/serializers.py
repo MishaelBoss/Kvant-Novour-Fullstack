@@ -7,20 +7,28 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     first_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
-    middle_name = serializers.CharField(write_only=True)
-    phone = serializers.CharField(write_only=True)
+    middle_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
     email = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'middle_name', 'phone', 'email']
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'middle_name']
+
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким email уже существует")
+        return value
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким именем уже существует")
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password')
 
         profile = {
-            'middle_name': validated_data.get('middle_name', ''),
-            'phone': validated_data.get('phone', ''),
+            'middle_name': validated_data.get('middle_name', '')
         }
 
         user = User.objects.create_user(
