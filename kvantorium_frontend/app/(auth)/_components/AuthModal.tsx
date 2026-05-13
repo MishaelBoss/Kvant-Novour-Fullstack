@@ -15,7 +15,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
 
-    const { register, handleSubmit, formState: { errors }, reset, clearErrors, trigger } = useForm<UserRegister>({
+    const { register, handleSubmit, formState: { errors }, reset, clearErrors } = useForm<UserRegister>({
         mode: 'onBlur',
         reValidateMode: 'onBlur',
     });
