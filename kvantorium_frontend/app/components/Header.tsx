@@ -1,33 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import "./header.css";
 import Link from 'next/link';
 import { PAGES } from '@/app/config/pages.config';
 import { AuthModal } from '@/app/(auth)/_components/AuthModal';
 import { DropdownMenu } from "radix-ui";
 import { useAuth } from '../context/AuthContext';
+import { HoverDropdown } from './HoverDropdown';
 
 interface Props {
     className?: string;
 }
 
 export const Header: React.FC<Props> = ({ className }) => {
-    const [open, setOpen] = useState(false);
-    const timerRef = useRef<number>(0);
     const [countNotifications, setCountNotifications] = useState(0);
     const { user } = useAuth();
-
-    const handleOpen = () => {
-        window.clearTimeout(timerRef.current);
-        setOpen(true);
-    }
-
-    const handleClose = () => {
-        timerRef.current = window.setTimeout(() => {
-            setOpen(false);
-        }, 150);
-    }
 
     return(
         <header className={`Header ${className || '' }`}>
@@ -51,29 +39,36 @@ export const Header: React.FC<Props> = ({ className }) => {
                         <span className="Item-text">Новости</span>
                     </Link>
 
-                    <Link href={PAGES.QUANTS()} className="Header-item">
-                        <div className="Icon-wrapper">
-                            <svg color='rgba(0, 26, 52, 0.4)' xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-                            </svg>
+                    <HoverDropdown
+                        trigger={
+                            <Link href={PAGES.MY_PROFILE()} className="Header-item focus-visible:outline-none outline-none">
+                                <div className="Icon-wrapper">
+                                    <svg color='rgba(0, 26, 52, 0.4)' xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                                    </svg>
+                                </div>
+                                <span className="Item-text">Программы</span>
+                            </Link>
+                        }
+                    >
+                        <div className="Ozon-Menu-Items">
+                            <DropdownMenu.Item className="DropdownMenuItem" asChild>
+                                <Link href={PAGES.QUANTS()}>
+                                    <span className="ItemTitle">Основные</span>
+                                </Link>
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Item className="DropdownMenuItem" asChild>
+                                <Link href={`${PAGES.QUANTS()}?tab=achievements`}>
+                                    <span className="ItemTitle">Платные курсы</span>
+                                </Link>
+                            </DropdownMenu.Item>
                         </div>
-                        <span className="Item-text">Обучение</span>
-                    </Link>
-
-                    <Link href={PAGES.HOME()} className="Header-item">
-                        <div className="Icon-wrapper">
-                            <svg color='rgba(0, 26, 52, 0.4)' xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
-                            </svg>
-                        </div>
-                        <span className="Item-text">Доп.курсы</span>
-                    </Link>
-
+                    </HoverDropdown>
+                    
                     {user?.is_authenticated && user?.username ? (
                         <>
-                        <div onMouseEnter={handleOpen} onMouseLeave={handleClose}>
-                            <DropdownMenu.Root open={open} onOpenChange={setOpen} modal={false}>
-                                <DropdownMenu.Trigger asChild>
+                        <HoverDropdown 
+                            trigger={
                                 <Link href={PAGES.MY_PROFILE()} className="Header-item focus-visible:outline-none outline-none">
                                     <div className="Icon-wrapper">
                                         <svg color='rgba(0, 26, 52, 0.4)' xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
@@ -83,46 +78,33 @@ export const Header: React.FC<Props> = ({ className }) => {
                                     </div>
                                     <span className="Item-text">{user.username}</span>
                                 </Link>
-                                </DropdownMenu.Trigger>
-
-                                <DropdownMenu.Portal>
-                                <DropdownMenu.Content 
-                                    className="DropdownMenuContent" 
-                                    sideOffset={5}
-                                    onMouseEnter={handleOpen}>
-                                    <div className="Ozon-Menu-Items">
-                                        <DropdownMenu.Item className="DropdownMenuItem" asChild>
-                                            <Link href={`${PAGES.MY_PROFILE()}?tab=personal`}>
-                                                <span className="ItemTitle">Личный кабинет</span>
-                                            </Link>
-                                        </DropdownMenu.Item>
-
-                                        <DropdownMenu.Item className="DropdownMenuItem" asChild>
-                                            <Link href={`${PAGES.MY_PROFILE()}?tab=achievements`}>
-                                                <span className="ItemTitle">Мои достижения</span>
-                                            </Link>
-                                        </DropdownMenu.Item>
-
-                                        <DropdownMenu.Item className="DropdownMenuItem" asChild>
-                                            <Link href={`${PAGES.MY_PROFILE()}?tab=notifications`}>
-                                                <span className="ItemTitle">Сообщения</span>
-                                            </Link>
-                                        </DropdownMenu.Item>
-
-                                        {user?.role === 'admin' &&  
-                                        <DropdownMenu.Item className="DropdownMenuItem" asChild>
-                                            <Link href={PAGES.ADMINPANEL()}>
-                                                <span className="ItemTitle">Админ панель</span>
-                                            </Link>
-                                        </DropdownMenu.Item>
-                                        }
-                                    </div>
-                                    
-                                    <DropdownMenu.Arrow className="DropdownMenuArrow" fill="white" />
-                                </DropdownMenu.Content>
-                                </DropdownMenu.Portal>
-                            </DropdownMenu.Root>
-                        </div>
+                            }
+                        >
+                            <div className="Ozon-Menu-Items">
+                                <DropdownMenu.Item className="DropdownMenuItem" asChild>
+                                    <Link href={`${PAGES.MY_PROFILE()}?tab=personal`}>
+                                        <span className="ItemTitle">Личный кабинет</span>
+                                    </Link>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item className="DropdownMenuItem" asChild>
+                                    <Link href={`${PAGES.MY_PROFILE()}?tab=achievements`}>
+                                        <span className="ItemTitle">Мои достижения</span>
+                                    </Link>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item className="DropdownMenuItem" asChild>
+                                    <Link href={`${PAGES.MY_PROFILE()}?tab=notifications`}>
+                                        <span className="ItemTitle">Сообщения</span>
+                                    </Link>
+                                </DropdownMenu.Item>
+                                {user?.role === 'admin' &&  
+                                <DropdownMenu.Item className="DropdownMenuItem" asChild>
+                                    <Link href={PAGES.ADMINPANEL()}>
+                                        <span className="ItemTitle">Админ панель</span>
+                                    </Link>
+                                </DropdownMenu.Item>
+                                }
+                            </div>
+                        </HoverDropdown>
                         </>
                     ) : (
                         <AuthModal>
