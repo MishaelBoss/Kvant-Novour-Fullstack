@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -127,3 +129,18 @@ class StudyGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudyGroup
         fields = '__all__'
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+        profile = getattr(user, 'userprofile', None)
+        is_profile_admin = profile.role == 'admin' if profile else False
+
+        token['is_admin'] = user.is_staff or user.is_superuse or is_profile_admin
+        token['username'] = user.username
+        token['role'] = profile.role if profile else 'user'
+
+        return token

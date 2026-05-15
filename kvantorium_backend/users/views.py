@@ -58,7 +58,7 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data['user']
-        refresh = RefreshToken.for_user(user)
+        refresh = MyTokenObtainPairSerializer.get_token(user)
 
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
@@ -103,6 +103,7 @@ class UserStatusView(APIView):
                 "email": user.email,
                 "role": profile.role,
                 "is_admin": profile.is_admin,
+                "is_teacher": profile.is_teacher,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "middle_name": profile.middle_name,

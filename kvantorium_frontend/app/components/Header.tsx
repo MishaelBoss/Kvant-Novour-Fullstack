@@ -15,7 +15,7 @@ interface Props {
 
 export const Header: React.FC<Props> = ({ className }) => {
     const [countNotifications, setCountNotifications] = useState(0);
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
 
     return(
         <header className={`Header ${className || '' }`}>
@@ -64,7 +64,7 @@ export const Header: React.FC<Props> = ({ className }) => {
                             </DropdownMenu.Item>
                         </div>
                     </HoverDropdown>
-                    
+
                     {user?.is_authenticated && user?.username ? (
                         <>
                         <HoverDropdown 
@@ -96,7 +96,7 @@ export const Header: React.FC<Props> = ({ className }) => {
                                         <span className="ItemTitle">Сообщения</span>
                                     </Link>
                                 </DropdownMenu.Item>
-                                {user?.role === 'admin' &&  
+                                {isAdmin &&  
                                 <DropdownMenu.Item className="DropdownMenuItem" asChild>
                                     <Link href={PAGES.ADMINPANEL()}>
                                         <span className="ItemTitle">Админ панель</span>

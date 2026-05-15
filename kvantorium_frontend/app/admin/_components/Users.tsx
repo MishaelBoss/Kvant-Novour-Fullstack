@@ -5,14 +5,12 @@ import { useEffect, useState } from "react";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { PAGES } from "@/app/config/pages.config";
 import { CreateUserModal } from "./CreateUserModal";
+import { useAuth } from "@/app/context/AuthContext";
 
-interface UsersProps {
-    currentAdminId: User | null;
-}
-
-export function Users({currentAdminId}: UsersProps) {
+export function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [count, setCountNews] = useState(0);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -80,7 +78,7 @@ export function Users({currentAdminId}: UsersProps) {
                                     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
                                 </svg>
                             </button>
-                            {currentAdminId?.id !== item.id && (
+                            {user?.id !== item.id && (
                                 <DeleteConfirmModal title={item.username} onConfirm={async () => deleteUser(item.id)}>
                                     <button title="Удалить" 
                                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
@@ -91,7 +89,7 @@ export function Users({currentAdminId}: UsersProps) {
                                 </DeleteConfirmModal>
                             )}
 
-                            {currentAdminId?.id === item.id && (
+                            {user?.id === item.id && (
                                 <span className="text-[12px] text-gray-400 italic px-2">Это вы</span>
                             )}
                         </div>

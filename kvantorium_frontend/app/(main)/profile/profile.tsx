@@ -14,30 +14,22 @@ import { KvantoForm } from "./_components/KvantoForm";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function MyProfile() {
-    const { user, isLoading: isAuthLoading } = useAuth(); 
+    const { user, isLoading: isAuthLoading, isAdmin, isTeacher } = useAuth(); 
     const searchParams = useSearchParams();
     const [profile, setProfile] = useState<User | null>(null);
     const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'kvantoForm';
     const activeTab = tabFromUrl || 'personal';
     const router = useRouter();
 
-    const canAccessKvanto = ['admin', 'teacher'].includes(user?.role?.toLowerCase() ?? '');
-
     const setActiveTab = (tab: string) => {
         router.push(`?tab=${tab}`, { scroll: false });
     };
 
     useEffect(() => {
-    if (user) {
-        getProfile().then(setProfile);
-    }
-}, [user]);
-
-    useEffect(() => {
-        if (!isAuthLoading && !user) {
-            router.push(PAGES.HOME());
+        if (user) {
+            getProfile().then(setProfile);
         }
-    }, [user, isAuthLoading, router]);
+    }, [user]);
 
     if (isAuthLoading) {
         return <Skeleton />; 
@@ -76,7 +68,7 @@ export default function MyProfile() {
                             Сообщения
                         </button>
 
-                        {canAccessKvanto && <button onClick={() => setActiveTab('kvantoForm')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'kvantoForm' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                        {(isTeacher || isAdmin) && <button onClick={() => setActiveTab('kvantoForm')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'kvantoForm' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
                             Кванто форм (beta)
                         </button>}
 
@@ -84,7 +76,7 @@ export default function MyProfile() {
                             Моя учетная запись
                         </Link>
 
-                        {profile?.role?.toLowerCase() === "admin" && <Link href={PAGES.ADMINPANEL()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
+                        {isAdmin && <Link href={PAGES.ADMINPANEL()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
                             Админ панель
                         </Link>}
                     </nav>
@@ -93,7 +85,7 @@ export default function MyProfile() {
                 {activeTab === 'personal' && <PersonalData user={profile} />}
                 {activeTab === 'achievements' && <Achievements user={profile} />}
                 {activeTab === 'notifications' && <Notifications/>}
-                {activeTab === 'kvantoForm' && <KvantoForm/>}
+                {activeTab === 'kvantoForm' && (isTeacher || isAdmin) && <KvantoForm/>}
             </div>
         </div>
     );

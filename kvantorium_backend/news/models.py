@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from pytils.translit import slugify
+from forms.models import * 
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -21,7 +22,7 @@ class News(models.Model):
     categories = models.ManyToManyField(Category)
     image = models.ImageField(upload_to='news/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    form_id = models.IntegerField(null=True, blank=True)
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='news', null=True, blank=True)
     form_slug = models.CharField(max_length=100, blank=True)
 
     def __str__(self):

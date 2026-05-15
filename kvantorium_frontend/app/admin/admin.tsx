@@ -10,11 +10,7 @@ import { Users } from "./_components/Users";
 import { News } from "./_components/News";
 import { Forms } from "./_components/Forms";
 
-interface AdminProps {
-    currentUser: User | null;
-}
-
-export default function Admin({currentUser}: AdminProps) {
+export default function Admin() {
     const [user, setUser] = useState<User | null>(null);
     const searchParams = useSearchParams();
     const tabFromUrl = searchParams.get('tab') as 'users' | 'news' | 'forms';
@@ -70,7 +66,7 @@ export default function Admin({currentUser}: AdminProps) {
                     </nav>
                 </aside>
 
-                {activeTab === 'users' && <Users currentAdminId={currentUser}/>}
+                {activeTab === 'users' && <Users/>}
                 {activeTab === 'news' && <News/>}
                 {activeTab === 'forms' && <Forms/>}
             </main>

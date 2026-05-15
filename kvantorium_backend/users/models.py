@@ -48,6 +48,9 @@ class UserProfile(models.Model):
     def is_parent(self):
         return self.role == 'parent'
     
+    def __str__(self):
+        return self.user.username
+    
 
 class StudyGroup(models.Model):
     name = models.CharField(max_length=255)
