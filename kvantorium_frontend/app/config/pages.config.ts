@@ -23,6 +23,9 @@ export const PAGES = new class PageConfig{
     QUANTS() {
         return "/quants/"
     }
+    PAID_COURSES() {
+        return "/paid-courses/"
+    }
     KVANTUM_FORM_NEW() {
         return "/kvanto_form/new/"
     }
