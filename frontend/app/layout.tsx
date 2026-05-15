@@ -9,19 +9,21 @@ import { AuthProvider } from "./context/AuthContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: 'swap', 
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: 'swap', 
 });
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Mikhailovsk",
-    template: "%s | Mikhailovsk"
+    absolute: "Техенопарк 'Kванториум' МАУ ДО 'СЮТ'",
+    template: "%s | Kванториум Новоуральск",
   },
-  description: "Мини магазин 'Mikhailovsk'",
+  description: "Технопарк 'Kванториум'",
 };
 
 export default function RootLayout({

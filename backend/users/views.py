@@ -91,10 +91,14 @@ class LoginView(APIView):
 
 class UserStatusView(APIView):
     authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         user = request.user
+
+        if not user or not user.is_authenticated:
+            return Response({"is_authenticated": False}, status=status.HTTP_200_OK)
+        
         profile = get_object_or_404(UserProfile, user=user)
 
         return Response({

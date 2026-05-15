@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import { PAGES } from "@/app/config/pages.config";
 import { getProfile } from "@/app/lib/api";
 import { User } from "@/app/types/user.interface";
@@ -6,12 +7,12 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Skeleton } from "@radix-ui/themes";
 import { Achievements } from "./_components/Achievements";
 import { PersonalData } from "./_components/PersonalData";
 import { Notifications } from "./_components/Notifications";
 import { KvantoForm } from "./_components/KvantoForm";
 import { useAuth } from "@/app/context/AuthContext";
+import { ProfileSkeleton } from "./_components/profile-skeleton";
 
 export default function MyProfile() {
     const { user, isLoading: isAuthLoading, isAdmin, isTeacher } = useAuth(); 
@@ -32,7 +33,7 @@ export default function MyProfile() {
     }, [user]);
 
     if (isAuthLoading) {
-        return <Skeleton />; 
+        return <ProfileSkeleton />;
     }
 
     if (!user) return null;

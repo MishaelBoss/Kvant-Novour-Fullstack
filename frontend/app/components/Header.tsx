@@ -41,7 +41,7 @@ export const Header: React.FC<Props> = ({ className }) => {
 
                     <HoverDropdown
                         trigger={
-                            <Link href={PAGES.MY_PROFILE()} className="Header-item focus-visible:outline-none outline-none">
+                            <Link href={PAGES.QUANTS()} className="Header-item focus-visible:outline-none outline-none">
                                 <div className="Icon-wrapper">
                                     <svg color='rgba(0, 26, 52, 0.4)' xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
@@ -58,7 +58,7 @@ export const Header: React.FC<Props> = ({ className }) => {
                                 </Link>
                             </DropdownMenu.Item>
                             <DropdownMenu.Item className="DropdownMenuItem" asChild>
-                                <Link href={`${PAGES.QUANTS()}?tab=achievements`}>
+                                <Link href={PAGES.PAID_COURSES()}>
                                     <span className="ItemTitle">Платные курсы</span>
                                 </Link>
                             </DropdownMenu.Item>
