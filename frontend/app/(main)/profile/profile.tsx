@@ -162,7 +162,7 @@ export default function MyProfile() {
                     </aside>
 
                     {activeTab === 'personal' && <PersonalData user={user} />}
-                    {activeTab === 'achievements' && <Achievements user={user} />}
+                    {activeTab === 'achievements' && <Achievements/>}
                     {activeTab === 'notifications' && <Notifications/>}
                     {activeTab === 'kvantoForm' && (isTeacher || isAdmin) && <KvantoForm/>}
                 </div>

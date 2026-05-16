@@ -20,7 +20,10 @@ export function KvantoForm(){
     }, []);
 
     useEffect(() => {
-        fetchForms();
+        const forms = async () => {
+            await fetchForms();
+        }
+        forms();
 
         window.addEventListener("fetchFormsList", fetchForms);
 
