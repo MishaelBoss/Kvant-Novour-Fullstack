@@ -1,9 +1,10 @@
 "use client";
 
 import { useAuth } from "@/app/context/AuthContext";
-import { IParticipantProfile } from "@/app/types/form.interface";
+import { getFormDetail } from "@/app/lib/api";
+import { IFormDetail, IParticipantProfile } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -15,6 +16,10 @@ export default function QuizStart() {
     const params = useParams();
     const slug = params?.slug;
 
+    const [form, setForm] = useState<IFormDetail | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<IParticipantProfile>({
         defaultValues: {
             full_name: '',
@@ -24,6 +29,45 @@ export default function QuizStart() {
             participated_before: false,
         }
     });
+
+    useEffect(() => {
+        if (!slug) return;
+
+        async function init() {
+            try {
+                const data = await getFormDetail(slug as string);
+                if (!data) {
+                    setError("Форма не найдена");
+                    setLoading(false);
+                    return;
+                }
+
+                setForm(data);
+
+                // Проверка survey_for_authorized_users
+                if (data.settings?.survey_for_authorized_users && !user) {
+                    setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
+                    setLoading(false);
+                    return;
+                }
+
+                // Проверка one_time_participation_survey
+                if (data.settings?.one_time_participation_survey && data.has_user_participated) {
+                    setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
+                    setLoading(false);
+                    return;
+                }
+
+                setLoading(false);
+            } catch (err) {
+                console.error("Ошибка загрузки формы:", err);
+                setError("Не удалось загрузить форму");
+                setLoading(false);
+            }
+        }
+
+        init();
+    }, [slug, user]);
 
     useEffect(() => {
         if (user) {
@@ -38,6 +82,38 @@ export default function QuizStart() {
         sessionStorage.setItem(`quiz_profile_${slug}`, JSON.stringify(data));
         router.push(`/kvanto_form/${slug}/quiz`);
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+                <p className="text-gray-400 text-sm">Загрузка...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+                <div className="w-full max-w-[520px] bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 text-center flex flex-col gap-4">
+                    <div className="text-4xl">⚠️</div>
+                    <p className="text-gray-700 text-sm">{error}</p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="mt-2 w-full py-2.5 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors cursor-pointer font-medium">
+                        На главную
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!form) {
+        return (
+            <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+                <p className="text-gray-400 text-sm">Форма не найдена</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">

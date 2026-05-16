@@ -71,6 +71,7 @@ export interface IFormDetail {
     status: FormStatus;
     deadline: string | null;
     settings: IFormSettings;
+    has_user_participated: boolean;
     questions: IQuestion[];
 }
 

@@ -254,6 +254,10 @@ class FormDetailView(APIView):
                 } if q.media else None,
             })
 
+        has_user_participated = False
+        if request.user.is_authenticated:
+            has_user_participated = FormResponse.objects.filter(form=form, user=request.user).exists()
+
         return Response({
             'id': str(form.id),
             'title': form.title,
@@ -265,7 +269,10 @@ class FormDetailView(APIView):
                 'one_question_per_page': form.one_question_per_page,
                 'show_results_after': form.show_results_after,
                 'require_profile': form.require_profile,
+                'survey_for_authorized_users': form.survey_for_authorized_users,
+                'one_time_participation_survey': form.one_time_participation_survey,
             },
+            'has_user_participated': has_user_participated,
             'questions': questions
         })
     
@@ -282,6 +289,15 @@ class SubmitResponseView(APIView):
         if form.deadline and form.deadline < timezone.now():
             return Response({"error": "Время приёма ответов истекло"}, status=400)
 
+        if form.survey_for_authorized_users and not request.user.is_authenticated:
+            return Response({"error": "Этот опрос доступен только авторизованным пользователям"}, status=403)
+
+        if form.one_time_participation_survey:
+            if not request.user.is_authenticated:
+                return Response({"error": "Для одноразового участия необходимо авторизоваться"}, status=403)
+            if FormResponse.objects.filter(form=form, user=request.user).exists():
+                return Response({"error": "Вы уже проходили этот опрос"}, status=400)
+
         profile = request.data.get('profile', {})
         answers_data = request.data.get('answers', [])
 
@@ -289,6 +305,7 @@ class SubmitResponseView(APIView):
             with transaction.atomic():
                 form_response = FormResponse.objects.create(
                     form=form,
+                    user=request.user if request.user.is_authenticated else None,
                     respondent_name=profile.get('full_name', ''),
                     respondent_school=profile.get('school', ''),
                     respondent_grade=profile.get('grade', ''),

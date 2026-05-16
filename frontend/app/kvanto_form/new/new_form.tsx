@@ -31,6 +31,8 @@ export default function NewForm() {
         one_question_per_page: true,
         show_results_after: true,
         require_profile: true,
+        survey_for_authorized_users: false,
+        one_time_participation_survey: false,
     });
 
     const updateSettings = (patch: Partial<IFormSettings>) => {
