@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-import uuid
 
 class Form(models.Model):
     STATUS = [
@@ -22,7 +21,8 @@ class Form(models.Model):
     one_question_per_page = models.BooleanField(default=True)
     show_results_after = models.BooleanField(default=True)
     require_profile = models.BooleanField(default=True)
-
+    survey_for_authorized_users = models.BooleanField(default=False)
+    one_time_participation_survey = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.title} {self.id}"
     

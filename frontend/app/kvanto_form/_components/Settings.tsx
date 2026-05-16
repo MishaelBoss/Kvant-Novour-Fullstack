@@ -112,6 +112,38 @@ export function Settings ({settings, updateSettings}: SettingsProps) {
                         }`}/>
                     </div>
                 </label>
+
+                <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <p className="text-sm text-gray-700">Опрос для авторизованных</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Только зарегистрированные пользователи могут участвовать</p>
+                    </div>
+                    <div
+                        onClick={() => updateSettings({ survey_for_authorized_users: !settings.survey_for_authorized_users })}
+                        className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
+                            settings.survey_for_authorized_users ? 'bg-blue-500' : 'bg-gray-200'
+                        }`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
+                            settings.survey_for_authorized_users ? 'left-5' : 'left-1'
+                        }`}/>
+                    </div>
+                </label>
+
+                <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <p className="text-sm text-gray-700">Опрос для одноразового участия</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Участник может участвовать только один раз</p>
+                    </div>
+                    <div
+                        onClick={() => updateSettings({ one_time_participation_survey: !settings.one_time_participation_survey })}
+                        className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer ${
+                            settings.one_time_participation_survey ? 'bg-blue-500' : 'bg-gray-200'
+                        }`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
+                            settings.one_time_participation_survey ? 'left-5' : 'left-1'
+                        }`}/>
+                    </div>
+                </label>
             </div>
         </div>
     );

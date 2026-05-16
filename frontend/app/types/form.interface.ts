@@ -42,6 +42,8 @@ export interface IFormSettings {
     one_question_per_page: boolean;
     show_results_after: boolean;
     require_profile: boolean;
+    survey_for_authorized_users: boolean;
+    one_time_participation_survey: boolean;
 }
 
 export interface IFormItem {

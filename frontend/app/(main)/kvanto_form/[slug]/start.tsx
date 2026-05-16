@@ -10,11 +10,10 @@ const CURRENT_YEAR = new Date().getFullYear();
 const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
 
 export default function QuizStart() {
+    const { user } = useAuth();
     const router = useRouter();
     const params = useParams();
     const slug = params?.slug;
-    
-    const { user } = useAuth();
 
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<IParticipantProfile>({
         defaultValues: {
@@ -39,7 +38,7 @@ export default function QuizStart() {
         sessionStorage.setItem(`quiz_profile_${slug}`, JSON.stringify(data));
         router.push(`/kvanto_form/${slug}/quiz`);
     };
-    
+
     return (
         <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
             <div className="w-full max-w-[520px] flex flex-col gap-6">
