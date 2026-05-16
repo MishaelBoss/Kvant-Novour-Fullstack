@@ -1,18 +1,18 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { User } from '@/app/types/user.interface';
 import { checkAuthStatus, logout as logoutUser } from '../lib/api';
 import { usePathname, useRouter } from 'next/navigation';
+import { IUser } from '../types/user.interface';
 
 interface AuthContextType {
-    user: User | null;
+    user: IUser | null;
     isLoading: boolean;
     isAdmin: boolean;
     isTeacher: boolean;
     refreshAuth: () => Promise<void>;
     logout: () => Promise<void>;
-    updateUser: (data: Partial<User>) => void;
+    updateUser: (data: Partial<IUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -20,12 +20,12 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 const PROTECTED_PATHS = ['/profile', '/admin', '/kvantumid'];
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<IUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const pathname = usePathname();
 
-    const checkAndRedirect = useCallback((currentUser: User | null) => {
+    const checkAndRedirect = useCallback((currentUser: IUser | null) => {
         const isProtected = PROTECTED_PATHS.some(path => pathname?.startsWith(path));
         
         if (!currentUser && isProtected) {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [checkAndRedirect]);
 
-    const updateUser = useCallback((data: Partial<User>) => {
+    const updateUser = useCallback((data: Partial<IUser>) => {
         setUser(prev => prev ? { ...prev, ...data } : null);
     }, []);
 

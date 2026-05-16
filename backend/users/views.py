@@ -101,8 +101,11 @@ class UserStatusView(APIView):
         
         profile = get_object_or_404(UserProfile, user=user)
 
+        avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
+
         return Response({
                 "is_authenticated": True,
+                "id": user.id,
                 "username": user.username,
                 "email": user.email,
                 "role": profile.role,
@@ -112,7 +115,8 @@ class UserStatusView(APIView):
                 "last_name": user.last_name,
                 "middle_name": profile.middle_name,
                 "phone": profile.phone,
-                "id": user.id
+                "avatar": avatar_url,
+                "date_joined": user.date_joined,
             })
     
 
@@ -144,31 +148,6 @@ class EditProfileView(APIView):
         return Response(serializer.errors, status=400)
     
 
-class MyProfileView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user 
-        profile = user.userprofile
-        try:
-            return Response({
-                "id": user.id,
-                "username": user.username,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "middle_name": profile.middle_name,
-                "phone": profile.phone,
-                "email": user.email,
-                "date_joined": user.date_joined,
-                "role": profile.role,
-                "is_admin": profile.is_admin,
-                "is_authenticated": True,
-                "avatar": request.build_absolute_uri(profile.image.url) if profile.image else None
-            })
-        except User.DoesNotExist:
-            return Response({"error": "Пользователь не найден"}, status=404)
-
-
 class ProfileViewView(APIView):
     permission_classes = [IsAdminRole | IsTeacherRole]
 
@@ -176,11 +155,14 @@ class ProfileViewView(APIView):
         profile = get_object_or_404(UserProfile, user=request.user)
         try:
             user = User.objects.get(pk=pk)
+
+            avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
+            
             return Response({
                 "username": user.username,
                 "first_name": user.first_name,
                 "date_joined": user.date_joined,
-                "image": profile.image.url if profile.image else ""
+                "avatar": avatar_url
             })
         except User.DoesNotExist:
             return Response({"error": "Пользователь не найден"}, status=404)
@@ -190,12 +172,14 @@ class ListUsersView(APIView):
     permission_classes = [IsAdminRole]
     
     def get(self, request):
-        users = User.objects.all();
+        users = User.objects.select_related('userprofile').all();
 
         data = []
 
         for u in users:
-            p = UserProfile.objects.get(user=u)
+            p = u.userprofile
+            avatar_url = request.build_absolute_uri(p.avatar.url) if p.avatar else ''
+
             data.append({
                 'id': u.id,
                 'username': u.username,
@@ -204,7 +188,7 @@ class ListUsersView(APIView):
                 'first_name': u.first_name,
                 'last_name': u.last_name,
                 'middle_name': p.middle_name,
-                'avatar': p.image.path if p.image else '',
+                'avatar': avatar_url,
                 'date_joined': u.date_joined,
             })
         return Response({

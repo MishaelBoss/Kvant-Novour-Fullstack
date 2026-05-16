@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { PAGES } from "../config/pages.config";
-import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User } from "../types/user.interface";
-import { getProfile } from "../lib/api";
 import { Users } from "./_components/Users";
 import { News } from "./_components/News";
 import { Forms } from "./_components/Forms";
+import { useAuth } from "../context/AuthContext";
 
 export default function Admin() {
-    const [user, setUser] = useState<User | null>(null);
+    const { user } = useAuth();
     const searchParams = useSearchParams();
     const tabFromUrl = searchParams.get('tab') as 'users' | 'news' | 'forms';
     const activeTab = tabFromUrl || 'users';
@@ -21,20 +19,6 @@ export default function Admin() {
         router.push(`?tab=${tab}`, { scroll: false });
     };
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            const data: User = await getProfile();
-
-            if (data?.is_authenticated) {
-                setUser(data);
-            } else{
-                router.push(PAGES.HOME());
-            }
-        };
-    
-        fetchUser();
-    }, [router]);
-    
     return (
         <div className="min-h-screen bg-white font-sans text-[#2B2E33]">
             <header className="max-w-[1416px] mx-auto pt-8 px-4">

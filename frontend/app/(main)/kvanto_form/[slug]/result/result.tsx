@@ -1,28 +1,25 @@
 "use client";
 
-import { QuizSession } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-interface QuizResult {
-    response_id: number;
-    auto_score: number;
-    max_score: number;
-    show_results_after: boolean;
-}
+import { useState } from "react";
 
 export default function Result() {
     const { slug } = useParams();
     const router = useRouter();
-    const [result, setResult] = useState<QuizResult | null>(null);
-    const [session, setSession] = useState<QuizSession | null>(null);
-
-    useEffect(() => {
-        const rawResult = sessionStorage.getItem(`quiz_result_${slug}`);
-        const rawSession = sessionStorage.getItem(`quiz_profile_${slug}`);
-        if (rawResult) setResult(JSON.parse(rawResult));
-        if (rawSession) setSession({ profile: JSON.parse(rawSession), answers: [] });
-    }, [slug]);
+    const [result] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const rawResult = sessionStorage.getItem(`quiz_result_${slug}`);
+            return rawResult ? JSON.parse(rawResult) : null;
+        }
+        return null;
+    });
+    const [session] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const rawSession = sessionStorage.getItem(`quiz_profile_${slug}`);
+            return rawSession ? { profile: JSON.parse(rawSession), answers: [] } : null;
+        }
+        return null;
+    });
 
     const percentage = result && result.max_score > 0
         ? Math.round((result.auto_score / result.max_score) * 100)

@@ -2,21 +2,20 @@
 
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { editProfile } from "@/app/lib/api";
-import { EditProfile } from "@/app/types/edit_profile.interface";
-import { User } from "@/app/types/user.interface";
+import { IEditProfile, IUser } from "@/app/types/user.interface";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 interface EditProfileModalProps {
     children: React.ReactNode;
-    user: User | null;
+    user: IUser | null;
 }
 
 export function EditProfileModal({children, user}: EditProfileModalProps){
     const [open, setOpen] = useState(false);
 
-    const methods = useForm<EditProfile>({
+    const methods = useForm<IEditProfile>({
         defaultValues: {
             username: user?.username || '',
             first_name: user?.first_name || '',
@@ -40,7 +39,7 @@ export function EditProfileModal({children, user}: EditProfileModalProps){
         }
     }, [user, methods]);
 
-    const onSubmit = async (data: EditProfile) => {
+    const onSubmit = async (data: IEditProfile) => {
         const isSuccess = await editProfile(data);
 
         if(isSuccess){

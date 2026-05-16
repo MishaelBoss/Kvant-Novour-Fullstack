@@ -1,12 +1,12 @@
 import { CartForms } from "@/app/components/CartForms";
 import { PAGES } from "@/app/config/pages.config";
 import { getAllFormsList } from "@/app/lib/api";
-import { FormItem } from "@/app/types/form.interface";
+import { IFormItem } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 export function Forms() {
-    const [forms, setForms] = useState<FormItem[]>([]);
+    const [forms, setForms] = useState<IFormItem[]>([]);
 
     const fetchForms = useCallback(async () => {
         const res = await getAllFormsList();

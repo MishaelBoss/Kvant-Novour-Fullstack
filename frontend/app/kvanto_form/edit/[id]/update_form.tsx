@@ -1,6 +1,6 @@
 'use client';
 
-import { FormCreate, FormDetail, FormSettings, Question } from "@/app/types/form.interface";
+import { IFormCreate, IFormDetail, IFormSettings, IQuestion } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,15 +20,15 @@ export default function UpdateForm() {
     const formId = params?.id as string; 
 
     const [saving, setSaving] = useState(false);
-    const [form, setForm] = useState<FormDetail | null>(null);
+    const [form, setForm] = useState<IFormDetail | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [deadline, setDeadline] = useState('');
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<IQuestion[]>([]);
 
-    const [settings, setSettings] = useState<FormSettings>({
+    const [settings, setSettings] = useState<IFormSettings>({
         timer_enabled: false,
         timer_seconds: 1800,
         one_question_per_page: true,
@@ -36,7 +36,7 @@ export default function UpdateForm() {
         require_profile: true,
     });
 
-    const updateSettings = (patch: Partial<FormSettings>) => {
+    const updateSettings = (patch: Partial<IFormSettings>) => {
         setSettings(prev => ({ ...prev, ...patch }));
     };
 
@@ -54,7 +54,7 @@ export default function UpdateForm() {
         }]);
     };
 
-    const updateQuestion = (id: string, patch: Partial<Question>) => {
+    const updateQuestion = (id: string, patch: Partial<IQuestion>) => {
         setQuestions(prev => prev.map(q => q.id === id ? { ...q, ...patch } : q));
     };
 
@@ -62,7 +62,7 @@ export default function UpdateForm() {
         setQuestions(prev => prev.filter(q => q.id !== id));
     };
 
-    const duplicateQuestion = (quest: Question) => {
+    const duplicateQuestion = (quest: IQuestion) => {
         setQuestions(prev => [...prev, {
             id: generateId(),
             text: quest.text || '',
@@ -132,7 +132,7 @@ export default function UpdateForm() {
         async function loadForm() {
             if (!formId) return;
             try {
-                const data: FormDetail = await getFormDetail(formId); 
+                const data: IFormDetail = await getFormDetail(formId); 
                 setForm(data);
                 setTitle(data.title);
                 setDescription(data.description);
@@ -159,7 +159,7 @@ export default function UpdateForm() {
         try {
             const finalStatus = isStatusToggle ? status : (form?.status === 'active' ? 'active' : status);
 
-            const formData: FormCreate = {
+            const formData: IFormCreate = {
                 title: title,
                 description: description,
                 deadline: deadline,

@@ -2,8 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
+import os
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -68,23 +68,33 @@ class LoginSerializer(serializers.Serializer):
 
 class UpdateProfile(serializers.ModelSerializer):
     middle_name = serializers.CharField(source='userprofile.middle_name', required=False, allow_blank=True)
-    phone = serializers.CharField(source='userprofile.phone', required=False)
+    phone = serializers.CharField(source='userprofile.phone', required=False, allow_blank=True, allow_null=True)
+    avatar = serializers.ImageField(source='userprofile.avatar', required=False, allow_null=True)
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email']
+        fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'avatar']
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('userprofile', {})
-        middle_name = profile_data.get('middle_name', '')
-        phone = profile_data.get('phone')
 
         instance = super().update(instance, validated_data)
 
-        if middle_name is not None:
+        if profile_data is not None:
             profile = instance.userprofile
-            profile.middle_name = middle_name
-            profile.phone = phone
+            if 'middle_name' in profile_data:
+                profile.middle_name = profile_data['middle_name']
+            if 'phone' in profile_data:
+                profile.phone = profile_data['phone']
+            if 'avatar' in profile_data:
+                new_avatar = profile_data['avatar']
+                
+                if profile.avatar and os.path.isfile(profile.avatar.path):
+                    try:
+                        os.remove(profile.avatar.path)
+                    except Exception as e:
+                        print(f"Не удалось удалить старый файл: {e}")
+                profile.avatar = new_avatar
             profile.save()
 
         return instance

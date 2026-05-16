@@ -1,9 +1,8 @@
 import axios from "axios";
-import { EditProfile } from "../types/edit_profile.interface";
-import { NewsCreateInput } from "../types/news.interface";
-import { User, UserLogin, UserRegister } from "../types/user.interface";
-import { FormCreate, FormItem, FormSettings, QuizSession } from "../types/form.interface";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
+import { IEditProfile, IUser, IUserLogin, IUserRegister } from "../types/user.interface";
+import { INewsCreateInput } from "../types/news.interface";
+import { IFormCreate, IFormItem, IFormSettings, IQuizSession } from "../types/form.interface";
 
 export const checkAuthStatus = async () => {
     try {
@@ -25,7 +24,7 @@ export const checkAuthStatus = async () => {
     }
 };
 
-export const login = async (data: UserLogin) => {
+export const login = async (data: IUserLogin) => {
     try{
         const res = await axios.post(`/login/`, data, {
             withCredentials: true, 
@@ -49,7 +48,7 @@ export const login = async (data: UserLogin) => {
     }
 };
 
-export const register = async (data: UserRegister) => {
+export const register = async (data: IUserRegister) => {
     try{
         const res =  await axios.post(`/register/`, data, {
             headers: {
@@ -77,36 +76,20 @@ export const register = async (data: UserRegister) => {
     }
 };
 
-export const getProfile = async (): Promise<User> => {
+export const editProfile = async (data: IEditProfile): Promise<boolean> => {
     try{
-        const res = await axios.get(`/my-profile/`, {
-            withCredentials: true, 
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                formData.append(key, value as string | Blob);
+            }
         });
 
-        if (res.status === 401) {
-            console.warn("Пользователь не авторизован (401)");
-            return { is_authenticated: false }
-        }
-
-        const data = await res.data;
-
-        return {
-            ...data, 
-            is_authenticated: true 
-        };
-    } catch (error){
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при получений данных:', error.response?.data || error.message);
-        }
-        return {
-            is_authenticated: false
-        }
-    }
-};
-
-export const editProfile = async (data: EditProfile): Promise<boolean> => {
-    try{
-        const res = await axios.patch(`/edit-profile/`, data, {
+        const res = await axios.patch(`/edit-profile/`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
             withCredentials: true, 
         })
 
@@ -140,7 +123,7 @@ export const logout = async () => {
     }
 }
 
-export const createNews = async (data: NewsCreateInput): Promise<boolean> => {
+export const createNews = async (data: INewsCreateInput): Promise<boolean> => {
     try {
         const formData = new FormData();
 
@@ -270,7 +253,7 @@ export const deleteUser = async (id: number | undefined) => {
     }
 }
 
-export const createUser = async (data: User): Promise<boolean> => {
+export const createUser = async (data: IUser): Promise<boolean> => {
     try{
         const formData = new FormData();
 
@@ -303,7 +286,7 @@ export const createUser = async (data: User): Promise<boolean> => {
     }
 }
 
-export const createForm = async (data: FormCreate, settings: FormSettings, newsImage?: File | null): Promise<boolean> => {
+export const createForm = async (data: IFormCreate, settings: IFormSettings, newsImage?: File | null): Promise<boolean> => {
     try {
         const formData = new FormData();
         
@@ -363,7 +346,7 @@ export const createForm = async (data: FormCreate, settings: FormSettings, newsI
     }
 };
 
-export const updateForm = async (id: number, data: FormCreate, settings: FormSettings, newsImage?: File | null) => {
+export const updateForm = async (id: number, data: IFormCreate, settings: IFormSettings, newsImage?: File | null) => {
     try {
         const formData = new FormData();
 
@@ -418,7 +401,7 @@ export const updateForm = async (id: number, data: FormCreate, settings: FormSet
     }
 };
 
-export const getMyFormsList = async (): Promise<FormItem[]> => {
+export const getMyFormsList = async (): Promise<IFormItem[]> => {
     try {
         const res = await axios.get('/my-forms-list/', { 
             withCredentials: true 
@@ -434,7 +417,7 @@ export const getMyFormsList = async (): Promise<FormItem[]> => {
     }
 };
 
-export const getAllFormsList = async (): Promise<FormItem[]> => {
+export const getAllFormsList = async (): Promise<IFormItem[]> => {
     try {
         const res = await axios.get('/all-forms-list/', {
             withCredentials: true
@@ -464,7 +447,7 @@ export const getFormDetail = async (slug: string) => {
     }
 }
 
-export const submitQuizResults = async (slug: string, payload: QuizSession) => {
+export const submitQuizResults = async (slug: string, payload: IQuizSession) => {
     try {
         const res = await axios.post(`/form/${slug}/submit/`, payload, {
             withCredentials: true
@@ -478,7 +461,7 @@ export const submitQuizResults = async (slug: string, payload: QuizSession) => {
     }
 }
 
-export async function submitFormResponse(slug: string, session: QuizSession): Promise<{
+export async function submitFormResponse(slug: string, session: IQuizSession): Promise<{
     response_id: number;
     auto_score: number;
     max_score: number;

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { CreateNewsModal } from "./CreateNewsModal"
 import { deleteNews, getListNews } from "@/app/lib/api";
-import type { News } from "@/app/types/news.interface";
 import Link from "next/link";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { INews } from "@/app/types/news.interface";
 
 export function News() {
-    const [news, setNews] = useState<News[]>([]);
+    const [news, setNews] = useState<INews[]>([]);
     const [count, setCountNews] = useState(0);
 
     useEffect(() => {

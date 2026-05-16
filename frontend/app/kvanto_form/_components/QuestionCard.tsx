@@ -1,16 +1,16 @@
 "use client";
 
-import { Question, QuestionType, MediaType } from "@/app/types/form.interface";
+import { IQuestion, MediaType, QuestionType } from "@/app/types/form.interface";
 import { DropdownMenu } from "@radix-ui/themes";
 import Image from "next/image";
 import { useRef } from "react";
 
 interface QuestionCardProps {
-    question: Question;
+    question: IQuestion;
     index: number;
-    onUpdate: (id: string, patch: Partial<Question>) => void;
+    onUpdate: (id: string, patch: Partial<IQuestion>) => void;
     onRemove: (id: string) => void;
-    onDuplicate: (q: Question) => void;
+    onDuplicate: (q: IQuestion) => void;
     onAddChoice: (questionId: string) => void;
     onUpdateChoice: (questionId: string, choiceId: string, text: string) => void;
     onUpdateChoiceCorrect: (questionId: string, choiceId: string, is_correct: boolean) => void;

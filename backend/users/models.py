@@ -15,8 +15,8 @@ class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='userprofile')
     role = models.CharField(max_length=10, choices=USER_ROLES, default='user')
     middle_name = models.CharField(max_length=150, null=True, blank=True)
-    phone = models.TextField(blank=True)
-    image = models.ImageField(upload_to='user/', blank=True, null=True)
+    phone = models.TextField(blank=True, null=True)
+    avatar = models.ImageField(upload_to='user/', blank=True, null=True)
     is_public = models.BooleanField(default=True)
 
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)

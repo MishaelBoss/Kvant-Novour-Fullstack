@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/app/context/AuthContext";
-import { ParticipantProfile } from "@/app/types/form.interface";
+import { IParticipantProfile } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -16,7 +16,7 @@ export default function QuizStart() {
     
     const { user } = useAuth();
 
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm<ParticipantProfile>({
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm<IParticipantProfile>({
         defaultValues: {
             full_name: '',
             school: '',
@@ -35,7 +35,7 @@ export default function QuizStart() {
         }
     }, [user, setValue]);
 
-    const onSubmit = (data: ParticipantProfile) => {
+    const onSubmit = (data: IParticipantProfile) => {
         sessionStorage.setItem(`quiz_profile_${slug}`, JSON.stringify(data));
         router.push(`/kvanto_form/${slug}/quiz`);
     };

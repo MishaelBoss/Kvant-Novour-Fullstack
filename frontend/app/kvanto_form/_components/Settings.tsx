@@ -1,10 +1,10 @@
 'use client';
 
-import { FormSettings } from "@/app/types/form.interface";
+import { IFormSettings } from "@/app/types/form.interface";
 
 interface SettingsProps {
-    settings: FormSettings;
-    updateSettings: (patch: Partial<FormSettings>) => void;
+    settings: IFormSettings;
+    updateSettings: (patch: Partial<IFormSettings>) => void;
 }
 
 const TIMER_PRESETS = [

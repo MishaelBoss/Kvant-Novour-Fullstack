@@ -1,8 +1,7 @@
 'use client';
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createNews, getCategories } from "@/app/lib/api";
-import { Category } from "@/app/types/category.interface";
-import { News, NewsCreateInput } from "@/app/types/news.interface";
+import { ICategory, INews, INewsCreateInput } from "@/app/types/news.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -11,15 +10,15 @@ import Select from "react-select";
 
 interface CreateNewsModalProps {
     children: React.ReactNode;
-    news: News | null;
+    news: INews | null;
 }
 
-interface NewsFormValues extends Omit<News, 'categories'> {
+interface NewsFormValues extends Omit<INews, 'categories'> {
     categories: { value: number; label: string }[];
 }
 
 export function CreateNewsModal({children, news}: CreateNewsModalProps){
-    const [categories, setCategories] = useState<Category[]>([]); 
+    const [categories, setCategories] = useState<ICategory[]>([]); 
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(typeof news?.image === 'string' ? news.image : null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +76,7 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
     };
 
     const onSubmit = async (data: NewsFormValues) => {
-        const payload: NewsCreateInput = {
+        const payload: INewsCreateInput = {
             ...data,
             category_ids: data.categories.map(c => c.value),
         };

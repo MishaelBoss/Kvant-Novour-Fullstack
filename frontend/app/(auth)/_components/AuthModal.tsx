@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { login, register as registerApi } from "@/app/lib/api";
 import { useRouter } from "next/navigation";
 import { PAGES } from "@/app/config/pages.config";
-import { UserLogin, UserRegister } from "@/app/types/user.interface";
+import { IUserRegister, IUserLogin } from "@/app/types/user.interface";
 
 export function AuthModal({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false); 
@@ -15,12 +15,12 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
 
-    const { register, handleSubmit, formState: { errors }, reset, clearErrors } = useForm<UserRegister>({
+    const { register, handleSubmit, formState: { errors }, reset, clearErrors } = useForm<IUserRegister>({
         mode: 'onBlur',
         reValidateMode: 'onBlur',
     });
 
-    const onSubmit = async (data: UserLogin | UserRegister) => {
+    const onSubmit = async (data: IUserLogin | IUserRegister) => {
         reset();
         clearErrors(); 
         setStep(1);
@@ -28,9 +28,9 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
 
         try {
             if (isLogin) {
-                await login(data as UserLogin);
+                await login(data as IUserLogin);
             } else {
-                await registerApi(data as UserRegister);
+                await registerApi(data as IUserRegister);
             }
 
             setOpen(false);

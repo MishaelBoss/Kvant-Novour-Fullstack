@@ -1,6 +1,6 @@
 'use client';
 
-import { FormCreate, FormSettings, Question } from "@/app/types/form.interface";
+import { IFormCreate, IFormSettings, IQuestion } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,9 +23,9 @@ export default function NewForm() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [deadline, setDeadline] = useState('');
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<IQuestion[]>([]);
 
-    const [settings, setSettings] = useState<FormSettings>({
+    const [settings, setSettings] = useState<IFormSettings>({
         timer_enabled: false,
         timer_seconds: 1800,
         one_question_per_page: true,
@@ -33,7 +33,7 @@ export default function NewForm() {
         require_profile: true,
     });
 
-    const updateSettings = (patch: Partial<FormSettings>) => {
+    const updateSettings = (patch: Partial<IFormSettings>) => {
         setSettings(prev => ({ ...prev, ...patch }));
     };
 
@@ -51,7 +51,7 @@ export default function NewForm() {
         }]);
     };
 
-    const updateQuestion = (id: string, patch: Partial<Question>) => {
+    const updateQuestion = (id: string, patch: Partial<IQuestion>) => {
         setQuestions(prev => prev.map(q => q.id === id ? { ...q, ...patch } : q));
     };
 
@@ -59,7 +59,7 @@ export default function NewForm() {
         setQuestions(prev => prev.filter(q => q.id !== id));
     };
 
-    const duplicateQuestion = (quest: Question) => {
+    const duplicateQuestion = (quest: IQuestion) => {
         setQuestions(prev => [...prev, {
             id: generateId(),
             text: quest.text || '',
@@ -135,7 +135,7 @@ export default function NewForm() {
         setSaving(true);
 
         try {
-            const formData: FormCreate = {
+            const formData: IFormCreate = {
                 title: title,
                 description: description,
                 deadline: deadline,

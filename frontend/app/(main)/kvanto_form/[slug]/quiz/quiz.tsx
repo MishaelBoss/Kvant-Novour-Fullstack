@@ -1,7 +1,7 @@
 "use client";
 
 import { getFormDetail, submitFormResponse } from "@/app/lib/api";
-import { FormDetail, Question, QuestionAnswer } from "@/app/types/form.interface";
+import { IFormDetail, IQuestion, IQuestionAnswer } from "@/app/types/form.interface";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,9 +16,9 @@ export default function Quiz() {
     const router = useRouter();
     const { slug } = useParams();
 
-    const [form, setForm] = useState<FormDetail | null>(null);
+    const [form, setForm] = useState<IFormDetail | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [answers, setAnswers] = useState<QuestionAnswer[]>([]);
+    const [answers, setAnswers] = useState<IQuestionAnswer[]>([]);
     const [timeLeft, setTimeLeft] = useState(0);
     const [finished, setFinished] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -43,7 +43,7 @@ export default function Quiz() {
                 setForm(data);
                 setTimeLeft(data.settings?.timer_seconds ?? 0); 
 
-                setAnswers(data.questions.map((q: Question) => ({
+                setAnswers(data.questions.map((q: IQuestion) => ({
                     question_id: q.id,
                     text_value: '',
                     selected_choice_ids: [],
@@ -55,7 +55,7 @@ export default function Quiz() {
         init();
     }, [slug]);
 
-    const updateAnswerById = (qId: string, patch: Partial<QuestionAnswer>) => {
+    const updateAnswerById = (qId: string, patch: Partial<IQuestionAnswer>) => {
         setAnswers(prev => prev.map((a) =>
             a.question_id === qId ? { ...a, ...patch } : a
         ));
@@ -189,9 +189,9 @@ function QuestionItem({
     onUpdate, 
     index 
 }: { 
-    question: Question, 
-    answer: QuestionAnswer, 
-    onUpdate: (patch: Partial<QuestionAnswer>) => void,
+    question: IQuestion, 
+    answer: IQuestionAnswer, 
+    onUpdate: (patch: Partial<IQuestionAnswer>) => void,
     index?: number 
 }) {
     return (

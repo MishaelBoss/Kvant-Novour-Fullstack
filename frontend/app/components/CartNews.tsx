@@ -1,13 +1,13 @@
 import Image from "next/image";
-import { Category } from "../types/category.interface";
 import Link from "next/link";
+import { ICategory } from "../types/news.interface";
 
 interface Props {
     slug: string;
     image?: string | null;
     title: string;
     content: string;
-    categories?: Category[];
+    categories?: ICategory[];
 }
 
 export function CartNews({slug, image, title, content, categories}: Props){

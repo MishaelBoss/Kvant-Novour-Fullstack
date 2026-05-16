@@ -1,11 +1,11 @@
 import * as Separator from '@radix-ui/react-separator';
 import { FormatPhoneNumber } from "@/app/utils/FormatPhoneNumber";
-import { User } from '@/app/types/user.interface';
+import { IUser } from '@/app/types/user.interface';
 import Link from 'next/link';
 import { PAGES } from '@/app/config/pages.config';
 
 interface PersonalDataProps {
-    user: User | null;
+    user: IUser | null;
 }
 
 export function PersonalData({user} : PersonalDataProps) {

@@ -3,40 +3,40 @@ export type MediaType = 'image' | 'audio' | 'video';
 
 export type FormStatus = 'draft' | 'active' | 'closed';
 
-export interface Choice {
+export interface IChoice {
     id: string;
     text: string;
     is_correct: boolean;
     order: number;
 }
 
-export interface QuestionMedia {
+export interface IQuestionMedia {
     type: MediaType;
     file: File;
     preview_url: string;
 }
 
-export interface Question {
+export interface IQuestion {
     id: string;
     text: string;
     type: QuestionType;
     is_required: boolean;
     points: number;
     order: number;
-    choices: Choice[];
-    media: QuestionMedia | null;
+    choices: IChoice[];
+    media: IQuestionMedia | null;
     correct_answer: string;
 }
 
-export interface FormCreate {
+export interface IFormCreate {
     title: string;
     description: string;
     deadline: string;
     status: FormStatus;
-    questions: Question[];
+    questions: IQuestion[];
 }
 
-export interface FormSettings {
+export interface IFormSettings {
     timer_enabled: boolean;
     timer_seconds: number;
     one_question_per_page: boolean;
@@ -44,7 +44,7 @@ export interface FormSettings {
     require_profile: boolean;
 }
 
-export interface FormItem {
+export interface IFormItem {
     id: number;
     title: string;
     description: string;
@@ -53,7 +53,7 @@ export interface FormItem {
     responses_count: number;
 }
 
-export interface ParticipantProfile {
+export interface IParticipantProfile {
     full_name: string;
     school: string;
     grade: string;
@@ -61,29 +61,29 @@ export interface ParticipantProfile {
     participated_before: boolean;
 }
 
-export interface FormDetail {
+export interface IFormDetail {
     id: number;
     title: string;
     description: string;
     slug: string;
     status: FormStatus;
     deadline: string | null;
-    settings: FormSettings;
-    questions: Question[];
+    settings: IFormSettings;
+    questions: IQuestion[];
 }
 
-export interface QuestionAnswer {
+export interface IQuestionAnswer {
     question_id: string;
     text_value: string;
     selected_choice_ids: string[];
 }
 
-export interface QuizSession {
-    profile: ParticipantProfile;
-    answers: QuestionAnswer[];
+export interface IQuizSession {
+    profile: IParticipantProfile;
+    answers: IQuestionAnswer[];
 }
 
-export interface FormResponseSummary {
+export interface IFormResponseSummary {
     id: number;
     full_name: string;
     submitted_at: string;

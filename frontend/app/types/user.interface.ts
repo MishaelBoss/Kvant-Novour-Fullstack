@@ -1,4 +1,4 @@
-export interface User {
+export interface IUser {
     id?: number;
     role?: 'student' | 'parent' | 'user' | 'teacher' | 'admin';
     is_admin?: boolean;
@@ -15,12 +15,22 @@ export interface User {
     password?: string; 
 }
 
-export interface UserLogin {
+export interface IEditProfile {
+    username: string;
+    first_name: string;
+    last_name: string;
+    middle_name: string;
+    phone: string;
+    email: string;
+    avatar?: string | File | null;
+}
+
+export interface IUserLogin {
     username: string;
     password: string;
 }
 
-export interface UserRegister {
+export interface IUserRegister {
     username: string;
     email: string;
     first_name: string;

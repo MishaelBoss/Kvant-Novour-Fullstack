@@ -7,7 +7,6 @@ urlpatterns = [
     path('is_authenticated/', UserStatusView.as_view(), name='is_authenticated'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('edit-profile/', EditProfileView.as_view(), name='edit-profile'),
-    path('my-profile/', MyProfileView.as_view(), name='profile'),
     path('profile/<int:profile_id>/', ProfileViewView.as_view(), name='profile'),
     path('users-list/', ListUsersView.as_view(), name='users-list'),
     path('user-delete/<int:id>/', UserDeleteView.as_view(), name='user-delete'),

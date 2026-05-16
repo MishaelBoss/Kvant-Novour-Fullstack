@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { FormItem } from "../types/form.interface";
 import { deleteForm } from "../lib/api";
+import { IFormItem } from "../types/form.interface";
 
 interface CartFormsProps {
-    form: FormItem;
+    form: IFormItem;
 }
 
 export function CartForms({form}: CartFormsProps) {

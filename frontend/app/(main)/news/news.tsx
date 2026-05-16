@@ -3,13 +3,12 @@
 import { CartNews } from "@/app/components/CartNews";
 import { CartNewsSkeleton } from "@/app/components/CartNewsSkeleton";
 import { getCategories, getListNews } from "@/app/lib/api";
-import { Category } from "@/app/types/category.interface";
-import { News as INews } from "@/app/types/news.interface";
+import { ICategory, INews } from "@/app/types/news.interface";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function News() {
-    const [categories, setCategories] = useState<Category[]>([]); 
+    const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedValue, setSelectedValue] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const savedValue = localStorage.getItem('myAppSelectValue');

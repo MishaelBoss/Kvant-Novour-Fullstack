@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { getFormResponses } from "@/app/lib/api";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { FormResponseSummary } from "@/app/types/form.interface";
+import { IFormResponseSummary } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function ResponsesList() {
-    const [responses, setResponses] = useState<FormResponseSummary[]>([]);
+    const [responses, setResponses] = useState<IFormResponseSummary[]>([]);
     const { user, isLoading: isAuthLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const router = useRouter();

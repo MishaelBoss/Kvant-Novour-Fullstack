@@ -1,22 +1,22 @@
 'use client'
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createUser } from "@/app/lib/api";
-import { User } from "@/app/types/user.interface";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
 import { useState } from "react";
 import { RadioGroup } from "radix-ui";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import { IUser } from "@/app/types/user.interface";
 
 interface CreateUserModalProps {
     children: React.ReactNode;
-    user: User | null;
+    user: IUser | null;
 }
 
 export function CreateUserModal({children, user}: CreateUserModalProps){
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
 
-    const methods = useForm<User>({
+    const methods = useForm<IUser>({
         defaultValues: {
             username: user?.username || '',
             password: user?.password || '',
@@ -28,7 +28,7 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
         }
     }); 
 
-    const onSubmit = async (data: User) => {
+    const onSubmit = async (data: IUser) => {
         if (step === 1) {
             setStep(2);
             return;
