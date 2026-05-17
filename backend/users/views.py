@@ -9,6 +9,10 @@ from .models import *
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import *
+from notifications.models import *
+import requests
+from django_user_agents.utils import get_user_agent
+from django.utils import timezone
 
 
 class RegisterView(APIView):
@@ -84,6 +88,44 @@ class LoginView(APIView):
             secure=not settings.DEBUG,
             samesite='Lax',
             max_age=3600 * 24 * 7
+        )
+
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
+
+        if ip in ('127.0.0.1', '::1'):
+            location = "Локальная сеть"
+        else:
+            try:
+                geo_res = requests.get(f"http://ip-api.com{ip}?lang=ru", timeout=2).json()
+                if geo_res.get('status') == 'success':
+                    location = f"{geo_res.get('city', 'Неизвестный город')}, {geo_res.get('country', 'Россия')}"
+                else:
+                    location = "Не удалось определить город"
+            except Exception:
+                location = "Не удалось определить город (ошибка сети)"
+
+        user_agent = get_user_agent(request)
+        browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
+        os_platform = user_agent.os.family
+
+        current_time = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M MSK')
+
+        description_text = (
+            f"Вход в аккаунт. Браузер {browser} на {os_platform}.\n"
+            f"Город: {location}, IP {ip}.\n"
+            f"Дата и время входа: {current_time}.\n"
+            f"Если это были не вы — напишите в поддержку и в настройках аккаунта завершите сеанс на подозрительном устройстве."
+        )
+
+        Notification.objects.create(
+            user=user,
+            type='system',
+            title='Вход с нового устройства',
+            description=description_text
         )
 
         return response

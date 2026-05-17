@@ -442,7 +442,7 @@ export const getFormDetail = async (slug: string) => {
         return res.data.results || res.data;
     } catch (error) {
         if(axios.isAxiosError(error)) {
-            console.error('Ошибка получение данных:', error);
+            console.error('Ошибка получение данных:', error.response?.data || error.message);
         }
     }
 }
@@ -456,7 +456,7 @@ export const submitQuizResults = async (slug: string, payload: IQuizSession) => 
         return res.data.results || res.data;
     } catch (error) {
         if(axios.isAxiosError(error)) {
-            console.error('Ошибка при отправки', error);
+            console.error('Ошибка при отправки', error.response?.data || error.message);
         }
     }
 }
@@ -483,7 +483,7 @@ export const deleteForm = async (id: number) => {
         return res.status === 204 || res.status === 200;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            console.error('Ошибка при удалении формы:', error);
+            console.error('Ошибка при удалении формы:', error.response?.data || error.message);
         }
         return false;
     }
@@ -497,7 +497,9 @@ export const getFormResponses = async (slug: string) => {
 
         return res.data;
     } catch (error) {
-        console.error("Ошибка при получении списка ответов:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при получении списка ответов:', error.response?.data || error.message);
+        }
         return [];
     }
 };
@@ -509,7 +511,9 @@ export const getResponseDetail = async (id: number): Promise<FullResponseDetail 
         });
         return res.data;
     } catch (error) {
-        console.error("Ошибка при получении деталей ответа:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при получении деталей ответа:', error.response?.data || error.message);
+        }
         return null;
     }
 };
@@ -522,7 +526,49 @@ export const gradeAnswer = async (answerId: number, score: number): Promise<bool
         );
         return res.status === 200;
     } catch (error) {
-        console.error("Ошибка при выставлении баллов:", error);
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при выставлении баллов:', error.response?.data || error.message);
+        }
         return false;
+    }
+};
+
+export const getNotificationsList = async () => {
+    try {
+        const res = await axios.get('/notifications-list/', {
+            withCredentials: true,
+        });
+
+        return res.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при удалении формы:', error.response?.data || error.message);
+        }
+
+        return null;
+    }
+};
+
+export const readNotification = async (id: number) => {
+    try {
+        await axios.post(`/notifications/${id}/read/`, {
+            withCredentials: true,
+        });
+    } catch(error){
+        if(axios.isAxiosError(error)){
+            console.error('Не удалось изменить статус', error.response?.data || error.message);
+        }
+    }
+};
+
+export const readAllNotifications = async () => {
+    try {
+        await axios.post('/notifications/read-all/', {
+            withCredentials: true,
+        });
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Не удалось изменить статус', error.response?.data || error.message);
+        }
     }
 };

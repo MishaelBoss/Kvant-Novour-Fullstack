@@ -1,5 +1,5 @@
 const SidebarSkeleton = () => (
-    <aside className="w-64 bg-white rounded-2xl p-4 shadow-sm h-fit animate-pulse">
+    <aside className="w80 bg-white rounded-2xl p-4 shadow-sm h-fit animate-pulse">
         <div className="flex items-center gap-3 mb-6 px-2">
             <div className="w-[80px] h-[80px] rounded-full bg-gray-200" />
             <div className="flex-1">

@@ -45,8 +45,10 @@ INSTALLED_APPS = [
     'events',
     'news',
     'forms',
+    'notifications',
     'corsheaders',
     'rest_framework',
+    'django_user_agents',
 ]
 
 MIDDLEWARE = [
