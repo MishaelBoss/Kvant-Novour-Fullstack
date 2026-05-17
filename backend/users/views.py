@@ -178,6 +178,7 @@ class ListUsersView(APIView):
 
         for u in users:
             p = u.userprofile
+            
             avatar_url = request.build_absolute_uri(p.avatar.url) if p.avatar else ''
 
             data.append({

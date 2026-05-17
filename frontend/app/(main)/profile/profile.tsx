@@ -13,7 +13,7 @@ import { Notifications } from "./_components/Notifications";
 import { KvantoForm } from "./_components/KvantoForm";
 import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/profile-skeleton";
-import { Button, Flex } from "@radix-ui/themes";
+import { Flex } from "@radix-ui/themes";
 import { useForm, FormProvider } from "react-hook-form";
 
 export default function MyProfile() {
@@ -89,11 +89,11 @@ export default function MyProfile() {
                 <div className="max-w-[1416px] mx-auto flex flex-col md:flex-row gap-8">
                     <aside className="w-64 bg-white rounded-2xl p-4 shadow-sm h-fit">
                         <div className="flex items-center gap-3 mb-6 px-2">
-                            <div className="relative w-[80px] h-[80px] aspect-square flex-shrink-0 rounded-full overflow-hidden bg-blue-500">
+                            <div onClick={() => fileInputRef.current?.click()} className="relative w-[80px] h-[80px] aspect-square flex-shrink-0 rounded-full overflow-hidden bg-blue-500">
                                 <Image src={user?.avatar?.replace('http://localhost', '') || '/default-avatar.png'} loading="eager" fill alt={user?.username || "Avatar"} className="object-cover"/>
                                 <form onSubmit={methods.handleSubmit(onSubmit)}>
                                     <Flex 
-                                        className="image-overlay"
+                                        className="image-overlay cursor-pointer"
                                         align="center" 
                                         justify="center"
                                         style={{
@@ -107,11 +107,9 @@ export default function MyProfile() {
                                         onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                         onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
                                     >
-                                        <Button variant="ghost" type="submit" size="2">
-                                            <svg color='#fff' xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-                                                <path fill="currentColor" d="M14.465 2a2 2 0 0 1 1.664.89L17.535 5H19a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4h1.465L7.87 2.89A2 2 0 0 1 9.535 2zM7.832 6.555A1 1 0 0 1 7 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2a1 1 0 0 1-.832-.445L14.465 4h-4.93zM12 8a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6M6 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
-                                            </svg>
-                                        </Button>
+                                        <svg color='#fff' xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                                            <path fill="currentColor" d="M14.465 2a2 2 0 0 1 1.664.89L17.535 5H19a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4h1.465L7.87 2.89A2 2 0 0 1 9.535 2zM7.832 6.555A1 1 0 0 1 7 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2a1 1 0 0 1-.832-.445L14.465 4h-4.93zM12 8a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6M6 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                                        </svg>
                                     </Flex>
 
                                     <input 
@@ -119,7 +117,7 @@ export default function MyProfile() {
                                         type="file" 
                                         accept="image/*"
                                         onChange={handleImageChange}
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                        className="hiden"
                                         aria-label="Выберите изображение для загрузки" 
                                     />
                                 </form>
