@@ -6,7 +6,7 @@ export const config = {
     matcher: ['/admin/:path*', '/profile/:path*', '/kvantumid/:path*'],
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const accessToken = request.cookies.get('access_token')?.value;
     const { pathname } = request.nextUrl;
     const homeUrl = new URL('/', request.url);

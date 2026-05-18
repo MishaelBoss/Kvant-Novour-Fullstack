@@ -12,7 +12,7 @@ import { PersonalData } from "./_components/PersonalData";
 import { Notifications } from "./_components/Notifications";
 import { KvantoForm } from "./_components/KvantoForm";
 import { useAuth } from "@/app/context/AuthContext";
-import { ProfileSkeleton } from "./_components/profile-skeleton";
+import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { Flex } from "@radix-ui/themes";
 import { useForm, FormProvider } from "react-hook-form";
 

@@ -11,10 +11,15 @@ import { DropdownMenu } from '@radix-ui/themes';
 import { LogoutConfirmModel } from './_components/LogoutConfirmModel';
 import { DeleteConfirmModal } from './_components/DeleteConfirmModel';
 import { useAuth } from '@/app/context/AuthContext';
+import { KvantumIDSkeleton } from './_components/KvantumIDSkeleton';
 
 export default function KvantumID() {
-    const { user } = useAuth();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+
+    if (isAuthLoading) {
+        return <KvantumIDSkeleton />;
+    }
 
     return (
         <div className="min-h-screen bg-white font-sans text-[#2B2E33]">
