@@ -25,13 +25,7 @@ export function PersonalData({user} : PersonalDataProps) {
                     <DataBlock label="ФИО" value={`${user?.last_name} ${user?.first_name} ${user?.middle_name}`} />
                     <DataBlock label="Телефон" value={FormatPhoneNumber(user?.phone)} />
                     <DataBlock label="Логин" value={`${user?.username}`} />
-                
-                    <div>
-                        <p className="text-[12px] text-gray-400 mb-1">Почта</p>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{user?.email || 'не указанно'}</span>
-                        </div>
-                    </div>
+                    <DataBlock label="Почта" value={`${user?.email || 'не указано'}`} />
                 </div>
                 <Link href={PAGES.KVANTUMID()} className="mt-8 text-sm text-blue-600 font-medium hover:underline">
                     Изменить в Kvantum ID →
@@ -57,7 +51,7 @@ export function PersonalData({user} : PersonalDataProps) {
 function DataBlock({ label, value }: { label: string; value: string }) {
     return (
         <div>
-            <p className="text-[12px] text-gray-400 mb-1">{label}</p>
+            <p className="text-[12px] text-gray-600 mb-1">{label}</p>
             <p className="text-sm font-medium text-gray-900">{value}</p>
         </div>
     );

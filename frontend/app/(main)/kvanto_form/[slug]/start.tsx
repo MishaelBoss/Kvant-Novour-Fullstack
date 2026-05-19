@@ -1,8 +1,11 @@
 "use client";
 
+import { PAGES } from "@/app/config/pages.config";
 import { useAuth } from "@/app/context/AuthContext";
 import { getFormDetail } from "@/app/lib/api";
 import { IFormDetail, IParticipantProfile } from "@/app/types/form.interface";
+import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,14 +47,12 @@ export default function QuizStart() {
 
                 setForm(data);
 
-                // Проверка survey_for_authorized_users
                 if (data.settings?.survey_for_authorized_users && !user) {
                     setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
                     setLoading(false);
                     return;
                 }
 
-                // Проверка one_time_participation_survey
                 if (data.settings?.one_time_participation_survey && data.has_user_participated) {
                     setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
                     setLoading(false);
@@ -95,13 +96,13 @@ export default function QuizStart() {
         return (
             <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
                 <div className="w-full max-w-[520px] bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 text-center flex flex-col gap-4">
-                    <div className="text-4xl">⚠️</div>
+                    <div className="text-4xl flex justify-center"><Image src='/undraw_notify_drs8.svg' alt="Error" width={150} height={150}/></div>
                     <p className="text-gray-700 text-sm">{error}</p>
-                    <button
-                        onClick={() => router.push('/')}
+                    <Link
+                        href={PAGES.NEWS()}
                         className="mt-2 w-full py-2.5 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors cursor-pointer font-medium">
                         На главную
-                    </button>
+                    </Link>
                 </div>
             </div>
         );

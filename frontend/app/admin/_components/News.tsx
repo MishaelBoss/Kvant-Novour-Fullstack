@@ -50,7 +50,7 @@ export function News() {
                                 <h3 className="text-lg font-semibold text-gray-900 truncate">
                                     {item.title}
                                 </h3>
-                                <span className="text-xs text-gray-400 shrink-0">
+                                <span className="text-xs text-[#656d78] shrink-0">
                                     {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Нет даты'}
                                 </span>
                             </div>

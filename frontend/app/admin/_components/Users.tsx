@@ -50,10 +50,10 @@ export function Users() {
                     >
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-1">
-                                <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                <h2 className="text-lg font-semibold text-gray-900 truncate">
                                     {item.username}
-                                </h3>
-                                <span className="text-xs text-gray-400 shrink-0">
+                                </h2>
+                                <span className="text-xs text-[#656d78] shrink-0">
                                     {item.date_joined ? new Date(item.date_joined).toLocaleDateString() : 'Нет даты'}
                                 </span>
                             </div>
@@ -90,7 +90,7 @@ export function Users() {
                             )}
 
                             {user?.id === item.id && (
-                                <span className="text-[12px] text-gray-400 italic px-2">Это вы</span>
+                                <span className="text-[12px] text-gray-500 italic px-2">Это вы</span>
                             )}
                         </div>
                     </div>

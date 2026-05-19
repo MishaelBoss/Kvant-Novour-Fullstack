@@ -2,6 +2,11 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
+import uuid
+
+def user_avatar_path(instance, filename):
+    ext = filename.split('.')[-1].lower()
+    return f'user/user_avatar_{instance.user.id}.{ext}'
 
 class UserProfile(models.Model):
     USER_ROLES = (
@@ -16,7 +21,7 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=10, choices=USER_ROLES, default='user')
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     phone = models.TextField(blank=True, null=True)
-    avatar = models.ImageField(upload_to='user/', blank=True, null=True)
+    avatar = models.ImageField(upload_to=user_avatar_path, blank=True, null=True)
     is_public = models.BooleanField(default=True)
 
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)

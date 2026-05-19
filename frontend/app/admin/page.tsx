@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Admin from "./admin";
 
 export const metadata = {
@@ -7,7 +8,9 @@ export const metadata = {
 export default async function Page() {
     return (
         <>
-        <Admin/>
+        <Suspense fallback={<div>Загрузка...</div>}>
+            <Admin />
+        </Suspense>
         </>
     );
 }

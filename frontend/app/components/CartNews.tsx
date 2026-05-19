@@ -53,7 +53,7 @@ export function CartNews({slug, image, title, content, categories}: Props){
                 <div className="mt-auto">
                     <Link 
                         href={isQuiz ? `/kvanto_form/${slug}` : `/news/${slug}`}
-                        className="block w-full text-center bg-[#106fff] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm">
+                        className="block w-full text-center bg-[#106ceb] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm">
                         {isQuiz ? 'Принять участие' : 'Подробнее'}
                     </Link>
                 </div>
