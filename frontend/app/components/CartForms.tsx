@@ -39,11 +39,11 @@ export function CartForms({form}: CartFormsProps) {
                     : 'bg-amber-50 text-amber-600'
                 }`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${form.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-[10px] text-[#656d78] font-bold uppercase tracking-wider">
                         {form.status === 'active' ? 'Опубликован' : 'Черновик'}
                     </span>
                 </div>
-                <span className="text-[12px] text-gray-400 font-medium">
+                <span className="text-[12px] text-[#656d78] font-medium">
                     {new Date(form.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
                 </span>
             </div>
@@ -71,7 +71,7 @@ export function CartForms({form}: CartFormsProps) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
+                    <span className="text-[11px] font-bold text-[#595e68] uppercase tracking-tight">
                         {form.responses_count} {getNoun(form.responses_count, 'ответ', 'ответа', 'ответов')}
                     </span>
                 </div>

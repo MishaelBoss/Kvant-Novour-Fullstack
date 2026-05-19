@@ -47,14 +47,14 @@ export default function KvantumID() {
                             
                             <div className="flex gap-16">
                                 <div>
-                                    <p className="text-[12px] text-gray-400 mb-1">Телефон</p>
+                                    <p className="text-[12px] text-gray-600 mb-1">Телефон</p>
                                     <p className="text-[14px]">{FormatPhoneNumber(user?.phone)}</p>
                                     <EditProfileModal user={user}>
                                         <Link href="#" className="text-[13px] text-[#005BFF] mt-2 hover:underline" style={{ cursor: "pointer" }}>Изменить</Link>
                                     </EditProfileModal>
                                 </div>
                                 <div>
-                                    <p className="text-[12px] text-gray-400 mb-1">Почта</p>
+                                    <p className="text-[12px] text-gray-600 mb-1">Почта</p>
                                     <p className="text-[14px]">{user?.email || 'не указанно'}</p>
                                     <EditProfileModal user={user}>
                                         <Link href="#" className="text-[13px] text-[#005BFF] mt-2 hover:underline" style={{ cursor: "pointer" }}>Изменить</Link>
@@ -70,7 +70,7 @@ export default function KvantumID() {
                             <div>
                                 <h2 className="text-[20px] font-bold mb-2">Управление аккаунтом</h2>
                                 {user?.date_joined && (
-                                    <p className="text-[15px] text-gray-400 mb-6">
+                                    <p className="text-[15px] text-[#6b7280] mb-6">
                                         Вы с нами с {new Date(user?.date_joined).toLocaleDateString('ru-RU', {
                                             day: 'numeric',
                                             month: 'long',
@@ -82,7 +82,7 @@ export default function KvantumID() {
                                 <LogoutConfirmModel>
                                     <button 
                                         type="button" 
-                                        className="text-[#FF005C] text-[15px] hover:underline transition-all cursor-pointer">
+                                        className="text-[#e60053] text-[15px] hover:underline transition-all cursor-pointer">
                                         Выйти из аккаунта
                                     </button>
                                 </LogoutConfirmModel>

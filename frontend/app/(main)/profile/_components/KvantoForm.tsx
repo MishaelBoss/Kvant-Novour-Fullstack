@@ -65,7 +65,7 @@ export function KvantoForm(){
         <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xl font-bold text-gray-800">Мои формы</h2>
-                <Link href={PAGES.KVANTUM_FORM_NEW()} className="px-4 py-2 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-all shadow-sm shadow-blue-200">
+                <Link href={PAGES.KVANTUM_FORM_NEW()} className="px-4 py-2 text-sm text-white bg-[#1a6edb] rounded-xl hover:bg-blue-600 transition-all shadow-sm shadow-blue-200">
                     + Новая форма
                 </Link>
             </div>

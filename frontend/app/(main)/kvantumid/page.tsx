@@ -1,7 +1,7 @@
 import KvantumID from "./kvantumid";
 
 export const metadata = {
-    title: 'Мой профиль',
+    title: 'Мой квантум ID',
 };
 
 export default function Page() {

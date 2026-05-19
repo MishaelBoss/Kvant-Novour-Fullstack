@@ -61,7 +61,7 @@ export default function News() {
             <div className="max-w-[1416px] mx-auto flex flex-col md:flex-row gap-8">
                 <aside className="w-full md:w-64 bg-white rounded-2xl p-5 shadow-sm h-fit">
                     <nav className="flex flex-col gap-4">
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                        <p className="text-sm font-bold text-gray-600 uppercase text-[#717171] tracking-wider">
                             Фильтры
                         </p>
                         
