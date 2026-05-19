@@ -542,7 +542,7 @@ export const getNotificationsList = async () => {
         return res.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            console.error('Ошибка при удалении формы:', error.response?.data || error.message);
+            console.error('Ошибка при получении списка уведомлений:', error.response?.data || error.message);
         }
 
         return null;
