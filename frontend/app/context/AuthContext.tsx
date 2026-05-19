@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { checkAuthStatus, logout as logoutUser } from '../lib/api';
+import { checkAuthStatus, logout as logoutUser, NotificationsCount } from '../lib/api';
 import { usePathname, useRouter } from 'next/navigation';
 import { IUser } from '../types/user.interface';
 
@@ -10,6 +10,8 @@ interface AuthContextType {
     isLoading: boolean;
     isAdmin: boolean;
     isTeacher: boolean;
+    countNotifications: number;
+    setCountNotifications: React.Dispatch<React.SetStateAction<number>>;
     refreshAuth: () => Promise<void>;
     logout: () => Promise<void>;
     updateUser: (data: Partial<IUser>) => void;
@@ -22,6 +24,7 @@ const PROTECTED_PATHS = ['/profile', '/admin', '/kvantumid'];
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<IUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [countNotifications, setCountNotifications] = useState(0);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -41,12 +44,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (userData && userData.is_authenticated) {
                 setUser(userData);
                 checkAndRedirect(userData);
+
+                const notificationsCount = await NotificationsCount();
+
+                setCountNotifications(notificationsCount.count);
             } else {
                 setUser(null);
+                setCountNotifications(0);
                 checkAndRedirect(null);
             }
         } catch (error) {
             setUser(null);
+            setCountNotifications(0);
             checkAndRedirect(null);
         } finally {
             setIsLoading(false);
@@ -78,6 +87,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         isAdmin,
         isTeacher,
+        countNotifications,
+        setCountNotifications,
         refreshAuth,
         logout,
         updateUser
@@ -86,6 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading, 
         isAdmin, 
         isTeacher,
+        countNotifications,
         refreshAuth, 
         logout, 
         updateUser

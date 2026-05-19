@@ -5,6 +5,7 @@ import { SystemNotificationCard } from "./SystemNotificationCard";
 import { ChatNotificationCard } from "./ChatNotificationCard";
 import { getNotificationsList, readAllNotifications, readNotification } from "@/app/lib/api";
 import { INotifications } from "@/app/types/notifications.interface";
+import { NewsNotificationsCard } from "./NewsNotificationsCard";
 
 export function Notifications() {
     const [latestDates, setLatestDates] = useState({ system: '', chat: '', news: '' });
@@ -141,15 +142,25 @@ export function Notifications() {
                                     </div>
                                 )}
 
-                                {notif.type === 'system' ? (
+                                {notif.type === 'system' && (
                                     <SystemNotificationCard 
                                         notif={notif}
                                     />
-                                ) : (
+                                )}
+
+                                {notif.type === 'chat' && (
                                     <ChatNotificationCard 
                                         notif={notif} 
                                         onRead={toggleRead} 
                                     />
+                                )}
+
+                                {notif.type === 'news' && (
+                                    <div className="w-[460] max-w-[460px] max-w-[740px] xl:max-w-none gap-6 auto-rows-fr">
+                                        <NewsNotificationsCard
+                                            notif={notif}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         );

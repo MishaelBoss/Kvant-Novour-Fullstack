@@ -14,8 +14,7 @@ interface Props {
 }
 
 export const Header: React.FC<Props> = ({ className }) => {
-    const [countNotifications, setCountNotifications] = useState(0);
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, countNotifications } = useAuth();
 
     return(
         <header className={`Header ${className || '' }`}>

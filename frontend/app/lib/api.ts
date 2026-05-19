@@ -572,3 +572,19 @@ export const readAllNotifications = async () => {
         }
     }
 };
+
+export const NotificationsCount = async () => {
+    try{
+        const res = await axios.get('/notifications/count/', {
+            withCredentials: true
+        });
+
+        return res.data || 0;
+    } catch (error){
+        if(axios.isAxiosError(error)){
+            console.error('Ошибка при получение количеств уведомлений', error.response?.data || error.message);
+        }
+        
+        return 0;
+    }
+}

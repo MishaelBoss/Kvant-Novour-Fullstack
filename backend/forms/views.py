@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import *
 from news.models import *
+from notifications.models import *
 import json
 from django.db import transaction
 from pytils.translit import slugify
@@ -78,6 +79,21 @@ class CreateFormView(APIView):
                     )
                     category, _ = Category.objects.get_or_create(name="Опросы")
                     new_post.categories.add(category)
+
+                    users = User.objects.filter(is_active=True).exclude(id=request.user.id)
+
+                    notifications_to_create = [
+                        Notification(
+                            user=user,
+                            type='news',
+                            title=f"Доступен новый опрос: {form.title}",
+                            description=form.description or "Пройдите наш новый опрос!",
+                        )
+                        for user in users
+                    ]
+                    
+                    if notifications_to_create:
+                        Notification.objects.bulk_create(notifications_to_create)
 
                 return Response({"id": form.id, "slug": form.slug}, status=201)
 

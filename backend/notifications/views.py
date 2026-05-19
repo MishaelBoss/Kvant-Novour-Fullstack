@@ -61,3 +61,11 @@ class ReadAllNotification(APIView):
             return Response({
                 'status:', 'Not found'
             }, status=status.HTTP_404_NOT_FOUND)
+        
+
+class CountNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notification_count = Notification.objects.filter(user=request.user, is_read=False).count()
+        return Response({'count': notification_count})
