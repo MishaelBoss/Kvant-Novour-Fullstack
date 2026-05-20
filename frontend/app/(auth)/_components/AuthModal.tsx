@@ -26,6 +26,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
         reset();
         clearErrors(); 
         setStep(1);
+        setShowPass(false);
         setError('');
 
         try {
@@ -58,7 +59,9 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                 setError('');
                 setStep(1);
                 setMode('login');
-        }}}>
+                setShowPass(false);
+            }
+        }}>
             <Dialog.Trigger>{children}</Dialog.Trigger>
             
             {isLogin ? (
@@ -84,7 +87,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                     {...register("username", { required: "Введите никнейм" })}
                                 >
                                     <TextField.Slot>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <User size={16} />
                                     </TextField.Slot>
                                 </TextField.Root>
                                 {errors.username && (
@@ -101,8 +104,9 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                     {...register("password", { required: "Введите пароль", minLength: 6 })}
                                 >
                                     <TextField.Slot>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className=""><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        <Lock size={16} />
                                     </TextField.Slot>
+
                                     <button
                                         className="flex items-center justify-center gap-10 text-[#a0a0a0] cursor-pointer p-1"
                                         type="button"
@@ -123,7 +127,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                 Войти
                             </Button>
                         
-                            <Button variant="ghost" color="gray" size="2" style={{ cursor: 'pointer' }} onClick={() => { clearErrors(); setError(''); setMode('register'); }}>
+                            <Button variant="ghost" color="gray" size="2" style={{ cursor: 'pointer' }} onClick={() => { clearErrors(); setError(''); setMode('register'); setShowPass(false);}}>
                                 Нет аккаунта? Зарегистрироваться
                             </Button>
                         </Flex>
@@ -152,7 +156,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         {...register("username", { required: "Введите никнейм" })}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            <User size={16} />
                                         </TextField.Slot>
                                     </TextField.Root>
                                     {errors.username && (
@@ -168,7 +172,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         {...register("email", { required: "Введите email" })}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><polyline points="22,7 12,14 2,7"/></svg>
+                                            <Mail size={16} />
                                         </TextField.Slot>
                                     </TextField.Root>
                                     {errors.email && (
@@ -188,7 +192,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         {...register("first_name", { required: "Введите имя" })}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            <User size={16} />
                                         </TextField.Slot>
                                     </TextField.Root>
                                     {errors.first_name && (
@@ -204,7 +208,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         {...register("last_name", { required: "Введите фамилию" })}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            <User size={16} />
                                         </TextField.Slot>
                                     </TextField.Root>
                                     {errors.last_name && (
@@ -220,7 +224,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         {...register("middle_name")}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            <User size={16} />
                                         </TextField.Slot>
                                     </TextField.Root>
                                 </Box>
@@ -232,14 +236,23 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                 <Box>
                                     <Text as="div" size="2" mb="2" weight="bold">Пароль</Text>
                                     <TextField.Root 
-                                        type="password"
+                                        type={showPass ? 'text' : 'password'}
                                         placeholder="Ваш пароль" 
                                         size="3" 
                                         {...register("password", { required: "Введите пароль",  minLength: { value: 6, message: "Минимум 6 символов" } })}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                            <Lock size={16} />
                                         </TextField.Slot>
+
+                                        <button
+                                            className="flex items-center justify-center gap-10 text-[#a0a0a0] cursor-pointer p-1"
+                                            type="button"
+                                            onClick={() => setShowPass(p => !p)}
+                                            aria-label="Скрыть или показать пароль"
+                                        >
+                                            {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
                                     </TextField.Root>
                                     {errors.password && (
                                         <Text color="red" size="1" mt="1">{errors.password.message}</Text>
@@ -260,7 +273,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                             })}
                                     >
                                         <TextField.Slot>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                            <Lock size={16} />
                                         </TextField.Slot>
                                     </TextField.Root>
                                     {errors.confirmPassword && (
@@ -280,7 +293,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         color="indigo" 
                                         size="3" 
                                         style={{ cursor: 'pointer', borderRadius: '12px', width: '50%', fontWeight: '600' }} 
-                                        onClick={() => { clearErrors(); setError(''); setStep(step - 1); }}
+                                        onClick={() => { clearErrors(); setError(''); setStep(step - 1); setShowPass(false); }}
                                     >
                                         Назад
                                     </Button>

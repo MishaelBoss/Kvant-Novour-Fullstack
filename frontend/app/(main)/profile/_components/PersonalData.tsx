@@ -22,7 +22,7 @@ export function PersonalData({user} : PersonalDataProps) {
                     Вы можете менять свои личные данные и управлять безопасностью.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
-                    <DataBlock label="ФИО" value={`${user?.last_name} ${user?.first_name} ${user?.middle_name}`} />
+                    <DataBlock label="ФИО" value={`${user?.last_name && user.first_name ? `${user.last_name} ${user.first_name} ${user?.middle_name}` : 'не указано'}`} />
                     <DataBlock label="Телефон" value={FormatPhoneNumber(user?.phone)} />
                     <DataBlock label="Логин" value={`${user?.username}`} />
                     <DataBlock label="Почта" value={`${user?.email || 'не указано'}`} />

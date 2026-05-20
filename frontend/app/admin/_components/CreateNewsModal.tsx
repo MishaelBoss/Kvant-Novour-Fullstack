@@ -3,6 +3,7 @@ import { InputWithClear } from "@/app/components/InputWithClear";
 import { createNews, getCategories } from "@/app/lib/api";
 import { ICategory, INews, INewsCreateInput } from "@/app/types/news.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
+import { PenLine } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -101,7 +102,7 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                                 name="title" 
                                 placeholder="Введите название новостей"
                                 rules={{ required: "Обязательно" }}
-                                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} 
+                                icon={<PenLine size={16} />}
                             />
 
                             <InputWithClear 
@@ -109,7 +110,7 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                                 name="content" 
                                 placeholder="Введите Содержание"
                                 rules={{ required: "Обязательно" }}
-                                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} 
+                                icon={<PenLine size={16} />} 
                             />
 
                             <Box>
