@@ -6,10 +6,12 @@ import { login, register as registerApi } from "@/app/lib/api";
 import { useRouter } from "next/navigation";
 import { PAGES } from "@/app/config/pages.config";
 import { IUserRegister, IUserLogin } from "@/app/types/user.interface";
+import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
 export function AuthModal({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false); 
     const [mode, setMode] = useState<'login' | 'register'>('login');
+    const [showPass, setShowPass] = useState(false);
     const isLogin = mode === 'login';
     const router = useRouter();
     const [step, setStep] = useState(1);
@@ -93,14 +95,22 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                             <Box>
                                 <Text as="div" size="2" mb="2" weight="bold">Пароль</Text>
                                 <TextField.Root 
-                                    type="password"
+                                    type={showPass ? 'text' : 'password'}
                                     placeholder="Ваш пароль" 
                                     size="3" 
                                     {...register("password", { required: "Введите пароль", minLength: 6 })}
                                 >
                                     <TextField.Slot>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className=""><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                     </TextField.Slot>
+                                    <button
+                                        className="flex items-center justify-center gap-10 text-[#a0a0a0] cursor-pointer p-1"
+                                        type="button"
+                                        onClick={() => setShowPass(p => !p)}
+                                        aria-label="Скрыть или показать пароль"
+                                    >
+                                        {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
                                 </TextField.Root>
                                 {errors.password && (
                                     <Text color="red" size="1" mt="1">{errors.password.message}</Text>
