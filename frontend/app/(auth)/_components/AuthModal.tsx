@@ -16,6 +16,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const { register, handleSubmit, formState: { errors }, reset, clearErrors } = useForm<IUserRegister>({
         mode: 'onBlur',
@@ -28,12 +29,21 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
         setStep(1);
         setShowPass(false);
         setError('');
+        setIsLoading(true);
 
         try {
             if (isLogin) {
-                await login(data as IUserLogin);
+                try {
+                    await login(data as IUserLogin);
+                } finally {
+                    setIsLoading(false);
+                }
             } else {
-                await registerApi(data as IUserRegister);
+                try{
+                    await registerApi(data as IUserRegister);
+                } finally {
+                    setIsLoading(false);
+                }
             }
 
             setOpen(false);
@@ -111,7 +121,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         className="flex items-center justify-center gap-10 text-[#a0a0a0] cursor-pointer p-1"
                                         type="button"
                                         onClick={() => setShowPass(p => !p)}
-                                        aria-label="Скрыть или показать пароль"
+                                        aria-label={showPass ? "Скрыть пароль" : "Показать пароль"}
                                     >
                                         {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
                                     </button>
@@ -123,11 +133,11 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                         </Flex>
 
                         <Flex direction="column" gap="3" mt="6">
-                            <Button type="submit" variant="solid" color="indigo" size="3" style={{ cursor: 'pointer', borderRadius: '12px' }}>
-                                Войти
+                            <Button type="submit" disabled={isLoading} variant="solid" color="indigo" size="3" aria-label="Войти" style={{ cursor: 'pointer', borderRadius: '12px' }}>
+                                {isLoading ? 'Загрузка...' : 'Войти'}
                             </Button>
                         
-                            <Button variant="ghost" color="gray" size="2" style={{ cursor: 'pointer' }} onClick={() => { clearErrors(); setError(''); setMode('register'); setShowPass(false);}}>
+                            <Button variant="ghost" color="gray" size="2" style={{ cursor: 'pointer' }} aria-label="Нет аккаунта? Зарегистрироваться" onClick={() => { clearErrors(); setError(''); setMode('register'); setShowPass(false);}}>
                                 Нет аккаунта? Зарегистрироваться
                             </Button>
                         </Flex>
@@ -249,7 +259,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                             className="flex items-center justify-center gap-10 text-[#a0a0a0] cursor-pointer p-1"
                                             type="button"
                                             onClick={() => setShowPass(p => !p)}
-                                            aria-label="Скрыть или показать пароль"
+                                            aria-label={showPass ? "Скрыть пароль" : "Показать пароль"}
                                         >
                                             {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>
@@ -301,17 +311,19 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
 
                                 <Button 
                                     type={step === 3 ? "submit" : "button"} 
+                                    disabled={isLoading}
                                     variant="solid" 
                                     color="indigo" 
                                     size="3" 
                                     style={{ cursor: 'pointer', borderRadius: '12px', width: step > 1 ? '50%' : '100%' }} 
                                     onClick={() => { clearErrors(); setError(''); if (step < 3) setStep(step + 1); }}
+                                    aria-label={`${step === 3 ? "Создать аккаунт" : "Далее"}`}
                                 >
-                                    {step === 3 ? "Создать аккаунт" : "Далее"}
+                                    {isLoading ? 'Загрузка...' : step === 3 ? "Создать аккаунт" : "Далее"}
                                 </Button>
                             </Flex>
                         
-                            <Button variant="ghost" color="gray" size="2" style={{ cursor: 'pointer' }} onClick={() => { clearErrors(); setError(''); setMode('login'); }}>
+                            <Button variant="ghost" color="gray" size="2" style={{ cursor: 'pointer' }}  aria-label="Уже есть аккаунт? Войти" onClick={() => { clearErrors(); setError(''); setMode('login'); }}>
                                 Уже есть аккаунт? Войти
                             </Button>
                         </Flex>
