@@ -222,6 +222,7 @@ class AllFormsList(APIView):
         forms = Form.objects.all().annotate(responses_count=Count('responses')).order_by('-created_at')
 
         data = []
+
         for f in forms:
             data.append({
                 'id': f.id,

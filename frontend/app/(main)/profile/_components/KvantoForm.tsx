@@ -12,23 +12,20 @@ export function KvantoForm(){
 
     const fetchForms = useCallback(async () => {
         const res = await getMyFormsList();
-        if (Array.isArray(res)) { 
-            setForms(res);
-        } else {
-            setForms([]);
-        }
+        setForms(Array.isArray(res) ? res : []);
     }, []);
 
     useEffect(() => {
-        const forms = async () => {
-            await fetchForms();
-        }
-        forms();
+        fetchForms();
 
-        window.addEventListener("fetchFormsList", fetchForms);
+        const handleCustomEvent = () => {
+            fetchForms();
+        };
+
+        window.addEventListener("fetchFormsList", handleCustomEvent);
 
         return () => {
-            window.removeEventListener("fetchFormsList", fetchForms);
+            window.removeEventListener("fetchFormsList", handleCustomEvent);
         };
     }, [fetchForms]);
 

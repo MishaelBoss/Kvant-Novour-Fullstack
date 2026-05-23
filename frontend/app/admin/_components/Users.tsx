@@ -1,7 +1,7 @@
 import { deleteUser, getListUsers } from "@/app/lib/api";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { useCallback, useEffect, useState } from "react";
+import { DeleteConfirmModal } from "../../components/DeleteConfirmModal";
 import { PAGES } from "@/app/config/pages.config";
 import { CreateUserModal } from "./CreateUserModal";
 import { useAuth } from "@/app/context/AuthContext";
@@ -12,22 +12,28 @@ export function Users() {
     const [count, setCountNews] = useState(0);
     const { user } = useAuth();
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            const data = await getListUsers();
+    const fetchUsers = useCallback(async () => {
+        const res = await getListUsers();
 
-            if (data && data.results) {
-                setUsers(data.results);
-                setCountNews(data.count);
-            }
+        if (Array.isArray(res?.results)) {
+            setUsers(res.results);
+            setCountNews(res.count ?? 0);
+        } else {
+            setUsers([]);
         }
-        
+    }, []);
+
+    useEffect(() => {
         fetchUsers();
 
-        window.addEventListener("fetchListUsers", fetchUsers);
+        const handleCustomEvent = () => {
+            fetchUsers();
+        };
+
+        window.addEventListener("fetchListUsers", handleCustomEvent);
 
         return () => {
-            window.removeEventListener("fetchListUsers", fetchUsers);
+            window.removeEventListener("fetchListUsers", handleCustomEvent);
         };
     }, [])
     

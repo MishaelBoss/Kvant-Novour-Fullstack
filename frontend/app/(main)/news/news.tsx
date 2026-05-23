@@ -5,7 +5,7 @@ import { CartNewsSkeleton } from "@/app/components/CartNewsSkeleton";
 import { getCategories, getListNews } from "@/app/lib/api";
 import { ICategory, INews } from "@/app/types/news.interface";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function News() {
     const [categories, setCategories] = useState<ICategory[]>([]); 
@@ -25,21 +25,29 @@ export default function News() {
         localStorage.setItem('myAppSelectValue', newValue);
     };
 
+    const fetchNews = useCallback(async () => {
+        const [resListNews, resCategories] = await Promise.all([
+            getListNews(),
+            getCategories()
+        ])
+
+        if (Array.isArray(resListNews?.results)) {
+            setNews(resListNews.results);
+        } else {
+            setNews([]);
+        }
+        if (Array.isArray(resCategories?.results)) {
+            setCategories(resCategories.results);
+        } else {
+            setCategories([]);
+        }
+    }, []);
+
     useEffect(() => {
         const init = async () => {
             setIsLoading(true); 
             try {
-                const [dataListNews, dataCategories] = await Promise.all([
-                    getListNews(),
-                    getCategories()
-                ]);
-
-                if (dataListNews && dataListNews.results) {
-                    setNews(dataListNews.results);
-                }
-                if (dataCategories && dataCategories.results) {
-                    setCategories(dataCategories.results);
-                }
+                await fetchNews();
             }
             catch (error) {
                 console.error('Error fetching news:', error);
@@ -49,7 +57,7 @@ export default function News() {
         };
 
         init();
-    }, [])
+    }, [fetchNews])
 
     const filteredNews = selectedValue === 'all' || selectedValue === '' ? news : news.filter(item => 
         item.categories?.some(c => c.value.toString() === selectedValue.toString())

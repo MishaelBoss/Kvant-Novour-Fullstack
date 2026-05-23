@@ -22,7 +22,7 @@ class NotificationListView(APIView):
 
         serializer = NotificationSerializer(notification, many=True, context={'request': request})
         return Response({
-            'notifications': serializer.data,
+            'results': serializer.data,
             'latest_dates': {
                 'system': latest_dates_dict.get('system', ''),
                 'chat': latest_dates_dict.get('chat', ''),

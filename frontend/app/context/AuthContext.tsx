@@ -45,22 +45,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setUser(userData);
                 checkAndRedirect(userData);
 
-                const notificationsCount = await NotificationsCount();
+                try {
+                    const notificationsCount = await NotificationsCount();
 
-                setCountNotifications(notificationsCount.count);
+                    setCountNotifications(notificationsCount?.count ?? 0);
+                } catch {
+                    setCountNotifications(0); 
+                }
             } else {
-                setUser(null);
-                setCountNotifications(0);
-                checkAndRedirect(null);
+                handleLogout();
             }
         } catch (error) {
-            setUser(null);
-            setCountNotifications(0);
-            checkAndRedirect(null);
+            handleLogout();
         } finally {
             setIsLoading(false);
         }
     }, [checkAndRedirect]);
+
+    function handleLogout() {
+        setUser(null);
+        setCountNotifications(0);
+        checkAndRedirect(null);
+    }
 
     const updateUser = useCallback((data: Partial<IUser>) => {
         setUser(prev => prev ? { ...prev, ...data } : null);

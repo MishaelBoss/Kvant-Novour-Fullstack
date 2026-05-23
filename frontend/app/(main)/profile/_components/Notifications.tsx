@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { NotificationSidebar } from "./NotificationSidebar";
 import { SystemNotificationCard } from "./SystemNotificationCard";
 import { ChatNotificationCard } from "./ChatNotificationCard";
@@ -14,26 +14,27 @@ export function Notifications() {
     const [notifications, setNotifications] = useState<INotifications[]>([]);
     const [activeFilter, setActiveFilter] = useState<'system' | 'chat' | 'news'>('system');
 
-    useEffect(() => {
-        const fetchNotifications = async () => {
-            try {
-                const res = await getNotificationsList();
-                if (res && res.notifications) {
-                    const formattedData = res.notifications.map((n: any) => ({
-                        ...n,
-                        isRead: n.is_read !== undefined ? n.is_read : n.isRead
-                    }));
+    const fetchNotifications = useCallback(async () => {
+        try {
+            const res = await getNotificationsList();
+            if (Array.isArray(res?.results)) {
+                const formattedData = res.results.map((n: any) => ({
+                    ...n,
+                    isRead: n.is_read !== undefined ? n.is_read : n.isRead
+                }));
 
-                    setNotifications(formattedData);
-                    
-                    if (res.latest_dates) {
-                        setLatestDates(res.latest_dates);
-                    }
+                setNotifications(formattedData);
+                
+                if (res.latest_dates) {
+                    setLatestDates(res.latest_dates);
                 }
-            } catch (error) {
-                console.error(error);
             }
-        };
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
+    useEffect(() => {
         fetchNotifications();
     }, []);
 
