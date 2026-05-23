@@ -4,6 +4,10 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from pytils.translit import slugify
 from forms.models import * 
 
+def news_image_path(instance, filename):
+    ext = filename.split('.')[-1].lower()
+    return f'news/news_{instance.title}.{ext}'
+
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=50, unique=True, blank=True)
@@ -20,7 +24,7 @@ class News(models.Model):
     title = models.CharField(max_length=200, unique=True)
     content = models.TextField()
     categories = models.ManyToManyField(Category)
-    image = models.ImageField(upload_to='news/', blank=True, null=True)
+    image = models.ImageField(upload_to=news_image_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='news', null=True, blank=True)
     form_slug = models.CharField(max_length=100, blank=True)
