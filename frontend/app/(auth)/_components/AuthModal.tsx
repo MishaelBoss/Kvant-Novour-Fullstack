@@ -24,9 +24,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
     });
 
     const onSubmit = async (data: IUserLogin | IUserRegister) => {
-        //reset();
         clearErrors(); 
-        //setStep(1);
         setShowPass(false);
         setError('');
         setIsLoading(true);

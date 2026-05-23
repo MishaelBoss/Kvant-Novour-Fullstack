@@ -68,7 +68,7 @@ export const register = async (data: IUserRegister) => {
     }
 };
 
-export const editProfile = async (data: IEditProfile): Promise<boolean> => {
+export const editProfile = async (data: IEditProfile) => {
     try{
         const formData = new FormData();
 
@@ -87,15 +87,13 @@ export const editProfile = async (data: IEditProfile): Promise<boolean> => {
 
         if (res.status === 200 || res.status === 201) {
             window.dispatchEvent(new Event("fetchUser"));
-            return true;
         }
-
-        return false;
     } catch (error) {
         if (axios.isAxiosError(error)) {
             console.error('Ошибка при редактирования:', error.response?.data || error.message);
+            throw error;
         }
-        return false;
+        throw error;
     }
 }
 

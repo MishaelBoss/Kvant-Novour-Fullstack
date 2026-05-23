@@ -79,13 +79,25 @@ class UpdateProfile(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'avatar']
-        
+
+    def validate_username(self, value):
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким именем уже существует")
+        return value
+
+    def validate_email(self, value):
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким email уже существует")
+        return value
+
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('userprofile', {})
 
         instance = super().update(instance, validated_data)
 
-        if profile_data is not None:
+        if profile_data:
             profile = instance.userprofile
             if 'middle_name' in profile_data:
                 profile.middle_name = profile_data['middle_name']

@@ -3,7 +3,7 @@
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { editProfile } from "@/app/lib/api";
 import { IEditProfile, IUser } from "@/app/types/user.interface";
-import { Dialog, Button, Flex } from "@radix-ui/themes";
+import { Dialog, Button, Flex, Callout } from "@radix-ui/themes";
 import { Mail, Phone, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,6 +15,8 @@ interface EditProfileModalProps {
 
 export function EditProfileModal({children, user}: EditProfileModalProps){
     const [open, setOpen] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const methods = useForm<IEditProfile>({
         defaultValues: {
@@ -41,10 +43,26 @@ export function EditProfileModal({children, user}: EditProfileModalProps){
     }, [user, methods]);
 
     const onSubmit = async (data: IEditProfile) => {
-        const isSuccess = await editProfile(data);
+        setIsLoading(true);
 
-        if(isSuccess){
+        try {
+            await editProfile(data);
+            
             setOpen(false);
+            setError('');
+            setIsLoading(false);
+        } catch(error) {
+            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
+            const responseData = (error as any)?.response?.data;
+            
+            if (responseData) {
+                if (responseData.username?.[0]) errorMessage = responseData.username[0];
+                else if (responseData.email?.[0]) errorMessage = responseData.email[0];
+                else if (responseData.non_field_errors?.[0]) errorMessage = responseData.non_field_errors[0];
+            }
+            
+            setError(errorMessage);
+            setIsLoading(false);
         }
     };
 
@@ -55,6 +73,12 @@ export function EditProfileModal({children, user}: EditProfileModalProps){
             <Dialog.Content maxWidth="380px" style={{ borderRadius: '24px', padding: '28px' }}>
                 <Dialog.Title size="6" mb="1">Личные данные</Dialog.Title>
                 <Dialog.Description size="2" mb="3" color="gray">Здесь вы можете изменить свои личные данные</Dialog.Description>
+
+                {error && (
+                    <Callout.Root color="red" size="1" mb="4" style={{ borderRadius: '8px' }}>
+                        <Callout.Text>{error}</Callout.Text>
+                    </Callout.Root>
+                )}
 
                 <FormProvider {...methods}>
                     <form onSubmit={methods.handleSubmit(onSubmit)}>
@@ -120,12 +144,13 @@ export function EditProfileModal({children, user}: EditProfileModalProps){
 
                             <Button 
                                 type="submit" 
+                                disabled={isLoading}
                                 variant="solid" 
                                 color="indigo" 
                                 size="3" 
                                 style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
                             >
-                                Сохранить
+                                {isLoading ? 'Загрузка...' : 'Сохранить'}
                             </Button>
                         </Flex>
                     </form>
