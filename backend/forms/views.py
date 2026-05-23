@@ -88,6 +88,7 @@ class CreateFormView(APIView):
                             type='news',
                             title=f"Доступен новый опрос: {form.title}",
                             description=form.description or "Пройдите наш новый опрос!",
+                            news=new_post
                         )
                         for user in users
                     ]

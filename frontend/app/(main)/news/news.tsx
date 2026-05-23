@@ -102,7 +102,13 @@ export default function News() {
                         ) : filteredNews.length > 0 ? (
                             <>
                             {filteredNews?.map((item) => (
-                                <CartNews key={item.id} image={item.image?.toString().replace('http://localhost', '')} title={item.title!} content={item.content!} categories={item.categories} slug={item.form_slug}/>
+                                <CartNews 
+                                    key={item.id} 
+                                    image={item.image?.toString().replace('http://localhost', '')} 
+                                    title={item.title!} content={item.content!} 
+                                    categories={item.categories} 
+                                    slug={item.form_slug}
+                                />
                             ))}
                             </>
                         ) : (

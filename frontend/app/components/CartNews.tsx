@@ -26,6 +26,7 @@ export function CartNews({slug, image, title, content, categories}: Props){
                         src={image.toString()} 
                         alt={title} 
                         fill
+                        loading="eager"
                         className="object-cover"/>
                 )}
 

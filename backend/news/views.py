@@ -41,33 +41,12 @@ class CategoriesListView(APIView):
 class NewsListView(APIView):
     def get(self, request):
         news = News.objects.all().prefetch_related('categories').order_by('-created_at')
-        data = []
 
-        for n in news:
-            image_url = ""
-            if n.image:
-                image_url = request.build_absolute_uri(n.image.url)
-
-            data.append({
-                'id': n.id,
-                'title': n.title,
-                'content': n.content,
-                'categories': [{
-                    'value': c.id, 
-                    'label': c.name,
-                    'slug': c.slug,
-                    } 
-                    for c in n.categories.all()
-                ],
-                'image': image_url,
-                'created_at': n.created_at,
-                'form_slug': n.form_slug,
-                'form_id': n.form_id
-            })
+        serializer = NewsSerializer(news, many=True, context={'request': request})
 
         return Response({
             'count': news.count(),
-            'results': data
+            'results': serializer.data
         })
     
 

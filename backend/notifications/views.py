@@ -11,7 +11,7 @@ class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notification = Notification.objects.filter(user=request.user)
+        notification = Notification.objects.filter(user=request.user).select_related('news')
 
         last_dates = notification.values('type').annotate(lastest=Max('created_at'))
 
@@ -20,7 +20,7 @@ class NotificationListView(APIView):
             if i['lastest']:
                 latest_dates_dict[i['type']] = i['lastest'].strftime('%d.%m.%Y')
 
-        serializer = NotificationSerializer(notification, many=True)
+        serializer = NotificationSerializer(notification, many=True, context={'request': request})
         return Response({
             'notifications': serializer.data,
             'latest_dates': {

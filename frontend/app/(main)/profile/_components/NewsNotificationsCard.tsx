@@ -1,16 +1,15 @@
+import { INews } from "@/app/types/news.interface";
 import Image from "next/image";
 import Link from "next/link";
 
 interface ISystemNotificationProps {
     notif: {
         id: number;
-        image?: string;
-        slug?: string;
-        isQuiz?: boolean;
         title: string;
         description: string;
         time: string;
         isRead: boolean;
+        news: INews;
     };
 }
 
@@ -22,11 +21,12 @@ export function NewsNotificationsCard({ notif }: ISystemNotificationProps){
     return (
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full border border-gray-100">
             <div className="h-48 relative overflow-hidden"> 
-                {notif.image && (
+                {notif.news.image && (
                     <Image 
-                        src={notif.image.toString()} 
+                        src={notif.news.image.toString().replace("http://localhost", "")} 
                         alt={notif.title} 
                         fill
+                        loading="eager"
                         className="object-cover"/>
                 )}
                 
@@ -43,9 +43,9 @@ export function NewsNotificationsCard({ notif }: ISystemNotificationProps){
                 
                 <div className="mt-auto">
                     <Link 
-                        href={notif.isQuiz ? `/kvanto_form/${notif.slug}` : `/news/${notif.slug}`}
+                        href={`/kvanto_form/${notif.news.form_slug}`}
                         className="block w-full text-center bg-[#106fff] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm">
-                        {notif.isQuiz ? 'Принять участие' : 'Подробнее'}
+                        Принять участие
                     </Link>
                 </div>
             </div>

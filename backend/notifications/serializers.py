@@ -1,14 +1,16 @@
 from rest_framework import serializers
 from django.utils import timezone
+from news.serializers import NewsSerializer
 from .models import *
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     date = serializers.SerializerMethodField()
+    news = NewsSerializer(read_only=True) 
 
     class Meta:
         model = Notification
-        fields = ['id', 'type', 'title', 'description', 'is_read', 'date']
+        fields = ['id', 'type', 'title', 'description', 'is_read', 'date', 'news']
 
     def get_date(self, obj):
         now = timezone.now()

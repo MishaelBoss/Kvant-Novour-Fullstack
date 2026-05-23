@@ -70,12 +70,12 @@ export function NotificationSidebar({
                                     </span>
                                     
                                     {tab.date && tab.date !== "" && (
-                                        <span className="text-[11px] font-normal text-gray-400 shrink-0 select-none ml-2">
+                                        <span className="text-[11px] text-[#595959] font-normal shrink-0 select-none ml-2">
                                             {tab.date}
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-[12px] text-gray-400 truncate leading-tight">
+                                <p className="text-[12px] text-[#4b5563] truncate leading-tight">
                                     {tab.text}
                                 </p>
                             </div>

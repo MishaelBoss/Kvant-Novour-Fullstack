@@ -22,9 +22,9 @@ export function SystemNotificationCard({ notif }: ISystemNotificationProps) {
                 <span className="absolute top-3.5 right-4 w-2 h-2 bg-blue-600 rounded-full shadow-[0_0_6px_#2563eb]" />
             )}
 
-            <h3 className="text-[14px] font-bold text-gray-900 leading-tight mb-1">
+            <h1 className="text-[14px] font-bold text-gray-900 leading-tight mb-1">
                 {notif.title}
-            </h3>
+            </h1>
             
             <div className="relative pb-3">
                 <p className="text-[14px] text-gray-800 leading-relaxed font-normal whitespace-pre-line tracking-wide">

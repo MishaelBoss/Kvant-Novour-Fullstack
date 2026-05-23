@@ -1,3 +1,5 @@
+import { INews } from "./news.interface";
+
 export type NotificationsType = 'system' | 'chat' | 'news';
 
 export interface INotifications {
@@ -10,4 +12,5 @@ export interface INotifications {
     groupDate: string; 
     time: string;
     isRead: boolean;
+    news: INews;
 }
