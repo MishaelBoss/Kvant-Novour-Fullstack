@@ -6,12 +6,13 @@ import { ChatNotificationCard } from "./ChatNotificationCard";
 import { getNotificationsList, readAllNotifications, readNotification } from "@/app/lib/api";
 import { INotifications } from "@/app/types/notifications.interface";
 import { NewsNotificationsCard } from "./NewsNotificationsCard";
+import { useAuth } from "@/app/context/AuthContext";
 
 export function Notifications() {
+    const { isLoading } = useAuth();
     const [latestDates, setLatestDates] = useState({ system: '', chat: '', news: '' });
     const [notifications, setNotifications] = useState<INotifications[]>([]);
     const [activeFilter, setActiveFilter] = useState<'system' | 'chat' | 'news'>('system');
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -31,8 +32,6 @@ export function Notifications() {
                 }
             } catch (error) {
                 console.error(error);
-            } finally {
-                setIsLoading(false);
             }
         };
         fetchNotifications();
