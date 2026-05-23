@@ -75,7 +75,7 @@ export default function MyProfile() {
                         <div className="flex items-center gap-3 mb-6 px-2">
                             <div onClick={() => fileInputRef.current?.click()} className="relative w-[80px] h-[80px] aspect-square flex-shrink-0 rounded-full overflow-hidden bg-blue-500 cursor-pointer group">
                                 <Image 
-                                    src={user?.avatar?.replace('http://localhost', '') || '/default-avatar.png'}
+                                    src={user?.avatar?.replace('http://localhost', '') || '/undraw_finance-guy-avatar_vhop.svg'}
                                     loading="eager" 
                                     fill 
                                     priority
