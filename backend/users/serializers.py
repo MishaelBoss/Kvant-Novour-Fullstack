@@ -25,6 +25,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         if User.objects.filter(username__iexact=value).exists():
             raise serializers.ValidationError("Пользователь с таким именем уже существует")
         return value
+    
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Пароль должен содержать минимум 8 символов")
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -74,7 +79,7 @@ class UpdateProfile(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'avatar']
-
+        
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('userprofile', {})
 

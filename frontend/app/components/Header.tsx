@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import "./header.css";
 import Link from 'next/link';
 import { PAGES } from '@/app/config/pages.config';

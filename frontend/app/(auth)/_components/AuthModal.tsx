@@ -18,7 +18,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const { register, handleSubmit, formState: { errors }, reset, clearErrors } = useForm<IUserRegister>({
+    const { register, handleSubmit, trigger, formState: { errors }, reset, clearErrors } = useForm<IUserRegister>({
         mode: 'onBlur',
         reValidateMode: 'onBlur',
     });
@@ -26,31 +26,33 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
     const onSubmit = async (data: IUserLogin | IUserRegister) => {
         //reset();
         clearErrors(); 
-        setStep(1);
+        //setStep(1);
         setShowPass(false);
         setError('');
         setIsLoading(true);
 
         try {
             if (isLogin) {
-                try {
-                    await login(data as IUserLogin);
-                } finally {
-                    setIsLoading(false);
-                }
+                await login(data as IUserLogin);
             } else {
-                try{
-                    await registerApi(data as IUserRegister);
-                } finally {
-                    setIsLoading(false);
-                }
+                await registerApi(data as IUserRegister);
             }
 
-            setOpen(false);
+            setIsLoading(false);
             router.push(PAGES.MY_PROFILE());
         } catch(error: unknown) {
-            const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            setError(msg || 'Произошла ошибка. Попробуйте снова.');
+            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
+            const responseData = (error as any)?.response?.data;
+            
+            if (responseData) {
+                if (responseData.username?.[0]) errorMessage = responseData.username[0];
+                else if (responseData.email?.[0]) errorMessage = responseData.email[0];
+                else if (responseData.password?.[0]) errorMessage = responseData.password[0];
+                else if (responseData.non_field_errors?.[0]) errorMessage = responseData.non_field_errors[0];
+            }
+            
+            setError(errorMessage);
+            setIsLoading(false);
         }
     };
 
@@ -58,6 +60,18 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
         1: "Шаг 1: Аккаунт",
         2: "Шаг 2: ФИО",
         3: "Шаг 3: Подтверждение"
+    };
+
+    const nextStep = async () => {
+        let fieldsToValidate: (keyof IUserRegister)[] = [];
+        if (step === 1) fieldsToValidate = ['username', 'email'];
+        if (step === 2) fieldsToValidate = ['first_name', 'last_name'];
+        if (step === 3) fieldsToValidate = ['password', 'confirmPassword'];
+
+        const isValid = await trigger(fieldsToValidate);
+        if (isValid && step < 3) {
+            setStep(step + 1);
+        }
     };
 
     return (
@@ -249,7 +263,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         type={showPass ? 'text' : 'password'}
                                         placeholder="Ваш пароль" 
                                         size="3" 
-                                        {...register("password", { required: "Введите пароль",  minLength: { value: 6, message: "Минимум 6 символов" } })}
+                                        {...register("password", { required: "Введите пароль",  minLength: { value: 8, message: "Минимум 8 символов" } })}
                                     >
                                         <TextField.Slot>
                                             <Lock size={16} />
@@ -279,7 +293,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                             { 
                                                 required: "Введите повторный пароль", 
                                                 validate: (value, formValues) => value === formValues.password || "Пароли не совпадают",
-                                                minLength: { value: 6, message: "Минимум 6 символов" }
+                                                minLength: { value: 8, message: "Минимум 8 символов" }
                                             })}
                                     >
                                         <TextField.Slot>
@@ -303,7 +317,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                         color="indigo" 
                                         size="3" 
                                         style={{ cursor: 'pointer', borderRadius: '12px', width: '50%', fontWeight: '600' }} 
-                                        onClick={() => { clearErrors(); setError(''); setStep(step - 1); setShowPass(false); }}
+                                        onClick={() => { setStep(step - 1); }}
                                     >
                                         Назад
                                     </Button>
@@ -316,7 +330,7 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                     color="indigo" 
                                     size="3" 
                                     style={{ cursor: 'pointer', borderRadius: '12px', width: step > 1 ? '50%' : '100%' }} 
-                                    onClick={() => { clearErrors(); setError(''); if (step < 3) setStep(step + 1); }}
+                                    onClick={() => { if (step === 3) return; nextStep(); }}
                                     aria-label={`${step === 3 ? "Создать аккаунт" : "Далее"}`}
                                 >
                                     {isLoading ? 'Загрузка...' : step === 3 ? "Создать аккаунт" : "Далее"}

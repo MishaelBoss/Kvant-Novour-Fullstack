@@ -38,11 +38,7 @@ export const login = async (data: IUserLogin) => {
         throw new Error("Ошибка входа");
     } catch (error){
         if (axios.isAxiosError(error) && error.response?.data) {
-            throw new Error(
-                typeof error.response.data === 'string'
-                    ? error.response.data
-                    : error.response.data.message || error.response.data.detail || JSON.stringify(error.response.data)
-            );
+            throw error;
         }
         throw error;
     }
@@ -66,11 +62,7 @@ export const register = async (data: IUserRegister) => {
     } catch (error){
         if (axios.isAxiosError(error) && error.response?.data) {
             console.error('Ошибка при регистрации:', error.response.data || error.message);
-            throw new Error(
-                typeof error.response.data === 'string'
-                    ? error.response.data
-                    : error.response.data.message || error.response.data.detail || JSON.stringify(error.response.data)
-            );
+            throw error;
         }
         throw error;
     }
