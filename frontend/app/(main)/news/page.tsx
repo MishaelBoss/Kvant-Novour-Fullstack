@@ -1,17 +1,15 @@
 import { Header } from "@/app/components/Header";
-import News from "./news";
+import NewsContent from "./NewsContent";
 
 export const metadata = {
     title: 'Новости',
 };
 
-export default function Page() {
+export default function NewsPage() {
     return (
         <>
-        <div className="bg-[#f2f5f9]">
-            <Header/>
-        </div>
-        <News/>
+        <Header/>
+        <NewsContent/>
         </>
     );
 };

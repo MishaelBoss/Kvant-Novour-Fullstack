@@ -70,10 +70,10 @@ export default function MyProfile() {
     return (
         <FormProvider {...methods}>
             <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
-                <div className="max-w-[1416px] mx-auto flex flex-col md:flex-row gap-8">
+                <div className="max-w-354 mx-auto flex flex-col md:flex-row gap-8">
                     <aside className="w-64 bg-white rounded-2xl p-4 shadow-sm h-fit">
                         <div className="flex items-center gap-3 mb-6 px-2">
-                            <div onClick={() => fileInputRef.current?.click()} className="relative w-[80px] h-[80px] aspect-square flex-shrink-0 rounded-full overflow-hidden bg-blue-500 cursor-pointer group">
+                            <div onClick={() => fileInputRef.current?.click()} className="relative w-20 h-20 aspect-square shrink-0 rounded-full overflow-hidden bg-blue-500 cursor-pointer group">
                                 <Image 
                                     src={user?.avatar?.replace('http://localhost', '') || '/undraw_finance-guy-avatar_vhop.svg'}
                                     loading="eager" 

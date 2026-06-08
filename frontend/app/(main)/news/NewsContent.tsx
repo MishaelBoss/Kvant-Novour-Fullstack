@@ -7,7 +7,7 @@ import { ICategory, INews } from "@/app/types/news.interface";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
-export default function News() {
+export default function NewsContent() {
     const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedValue, setSelectedValue] = useState<string>(() => {
         if (typeof window !== 'undefined') {
@@ -66,10 +66,10 @@ export default function News() {
     return (
         <>
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8 font-sans text-[#242424]">
-            <div className="max-w-[1416px] mx-auto flex flex-col md:flex-row gap-8">
+            <div className="max-w-354 mx-auto flex flex-col md:flex-row gap-8">
                 <aside className="w-full md:w-64 bg-white rounded-2xl p-5 shadow-sm h-fit">
                     <nav className="flex flex-col gap-4">
-                        <p className="text-sm font-bold text-gray-600 uppercase text-[#717171] tracking-wider">
+                        <p className="text-sm font-bold uppercase text-[#717171] tracking-wider">
                             Фильтры
                         </p>
                         
@@ -128,6 +128,7 @@ export default function News() {
                                     height={200}
                                     alt="Ничего не найдено"
                                     className="mx-auto mb-4"
+                                    priority
                                 />
                                 <p className="text-gray-500 text-lg">Новостей не найдено</p>
                             </div>

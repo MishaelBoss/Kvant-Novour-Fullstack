@@ -10,9 +10,7 @@ export const metadata = {
 export default function Page() {
     return (
         <>
-        <div className="bg-[#f2f5f9]">
-            <Header/>
-        </div>
+        <Header/>
         <Suspense fallback={<div className="p-8"><Skeleton /></div>}>
             <MyProfile/>
         </Suspense>

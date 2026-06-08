@@ -1,17 +1,15 @@
 import { Header } from "@/app/components/Header";
-import Quants from "./quants";
+import QuantumsContent from "./QuantumsContent";
 
 export const metadata = {
     title: 'Квантумы',
 };
 
-export default function Page(){
+export default function QuantumsPage(){
     return (
         <>
-        <div className="bg-[#f2f5f9]">
-            <Header/>
-        </div>
-        <Quants/>
+        <Header/>
+        <QuantumsContent/>
         </>
     );
 }
