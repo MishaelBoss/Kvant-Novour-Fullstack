@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import * as jose from 'jose';
 
 export const config = {
-    matcher: ['/admin/:path*', '/profile/:path*', '/kvantumid/:path*', '/kvanto_form/:path*'],
+    matcher: ['/admin-panel/:path*', '/profile/:path*', '/kvantumid/:path*', '/kvanto_form/:path*'],
 };
 
 export async function proxy(request: NextRequest) {
@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
         const payload = jose.decodeJwt(accessToken);
         const isAdmin = payload.is_admin === true;
 
-        if (pathname.startsWith('/admin') && !isAdmin) {
+        if (pathname.startsWith('/admin-panel') && !isAdmin) {
             return NextResponse.redirect(homeUrl);
         }
     } catch (error) {

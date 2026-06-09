@@ -133,9 +133,11 @@ export default function MyProfile() {
                                 Моя учетная запись
                             </Link>
 
-                            {isAdmin && <Link href={PAGES.ADMINPANEL()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
-                                Админ панель
-                            </Link>}
+                            {isAdmin && 
+                                <Link href={PAGES.ADMINPANEL()} className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
+                                    Админ панель
+                                </Link>
+                            }
                         </nav>
                     </aside>
 

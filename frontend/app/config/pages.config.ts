@@ -15,7 +15,7 @@ export const PAGES = new class PageConfig{
         return `${this.MY_PROFILE()}/achievements/`
     }
     ADMINPANEL() {
-        return "/admin/"
+        return "/admin-panel/"
     }
     NEWS() {
         return "/news/"
