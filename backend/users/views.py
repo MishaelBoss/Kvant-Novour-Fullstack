@@ -194,29 +194,25 @@ class UserStatusView(APIView):
     
 
 class LogoutView(APIView):
-    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        raw_token = request.COOKIES.get('refresh_token')
+        raw_token = request.COOKIES.get('access_token')
         if raw_token:
             try:
-                refresh = RefreshToken(raw_token)
-                token_jti = RefreshToken(raw_token).get('jti')
-
-                outstanding = OutstandingToken.objects.filter(jti=token_jti).first()
-                if outstanding:
-                    BlacklistedToken.objects.get_or_create(token=outstanding)
-
-                UserSession.objects.filter(jti=token_jti).delete()
+                authenticator = JWTAuthentication()
+                validated_token = authenticator.get_validated_token(raw_token)
+                current_jti = validated_token.get('jti')
+                
+                UserSession.objects.filter(user=request.user, jti=current_jti).delete()
             except Exception:
                 pass
 
-        response = Response({"message": "Успешный выход"}, status=status.HTTP_200_OK)
-
+        response = Response({"message": "Вы успешно вышли из системы"}, status=status.HTTP_200_OK)
+        
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
-
+        
         return response
     
 
@@ -352,32 +348,43 @@ class SessionsDeleteAllView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
-        raw_token = request.COOKIES.get('refresh_token')
-        token = None
-        if raw_token:
+        current_access_jti = None
+
+        raw_access_token = request.COOKIES.get('access_token')
+        if raw_access_token:
             try:
-                token = RefreshToken(raw_token).get('jti')
+                authenticator = JWTAuthentication()
+                validated_token = authenticator.get_validated_token(raw_access_token)
+                current_access_jti = validated_token.get('jti')
             except Exception:
                 pass
 
         qs = UserSession.objects.filter(user=request.user)
-        if token:
-            qs = qs.exclude(jti=token)
-
-        other_jtis = qs.values_list('jti', flat=True)
-
-        if other_jtis:
+        if current_access_jti:
+            qs = qs.exclude(jti=current_access_jti)
+        
+        raw_refresh_token = request.COOKIES.get('refresh_token')
+        current_refresh_jti = None
+        if raw_refresh_token:
             try:
-                outstanding_tokens = OutstandingToken.objects.filter(jti__in=other_jtis)
-                
-                blacklisted_objects = [
-                    BlacklistedToken(token=token) 
-                    for token in outstanding_tokens
-                ]
+                from rest_framework_simplejwt.tokens import RefreshToken
+                current_refresh_jti = RefreshToken(raw_refresh_token).get('jti')
+            except Exception:
+                pass
 
-                BlacklistedToken.objects.bulk_create(blacklisted_objects, ignore_conflicts=True)
-            except Exception as e:
-                print(f"Ошибка блэклиста: {e}")
+        try:
+            outstanding_tokens = OutstandingToken.objects.filter(user=request.user)
+            if current_refresh_jti:
+                outstanding_tokens = outstanding_tokens.exclude(jti=current_refresh_jti)
+
+            blacklisted_objects = [
+                BlacklistedToken(token=t)
+                for t in outstanding_tokens
+            ]
+            BlacklistedToken.objects.bulk_create(blacklisted_objects, ignore_conflicts=True)
+        except Exception as e:
+            print(f"Ошибка блэклиста: {e}")
 
         qs.delete()
+
         return Response({"message": "Все сторонние сеансы завершены"}, status=status.HTTP_200_OK)
