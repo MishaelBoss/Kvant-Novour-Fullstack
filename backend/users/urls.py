@@ -11,6 +11,7 @@ urlpatterns = [
     path('users-list/', ListUsersView.as_view(), name='users-list'),
     path('user-delete/<int:id>/', UserDeleteView.as_view(), name='user-delete'),
     path('run-create-user/', CreateUserView.as_view(), name='run-create-user'),
-    path('auth/sessions/', ActiveSessionsView.as_view(), name='active_sessions'),
-    path('auth/sessions/<int:pk>/', ActiveSessionsView.as_view(), name='delete_session'),
+    path('sessions-list/', UserSessionListView.as_view(), name='sessions_list'),
+    path('sessions-delete/<int:pk>/', SessionsDeleteView.as_view(), name='delete_session'),
+    path('sessions-delete-all/', SessionsDeleteAllView.as_view(), name='delete_all_sessions'),
 ]

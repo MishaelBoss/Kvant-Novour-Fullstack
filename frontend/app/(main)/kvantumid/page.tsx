@@ -1,4 +1,4 @@
-import KvantumID from "./kvantumid";
+import KvantumIdContent from "./KvantumIdContent";
 
 export const metadata = {
     title: 'Мой квантум ID',
@@ -6,6 +6,6 @@ export const metadata = {
 
 export default function Page() {
     return (
-        <KvantumID/>
+        <KvantumIdContent/>
     );
 }

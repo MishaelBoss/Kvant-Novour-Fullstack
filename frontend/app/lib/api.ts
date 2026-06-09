@@ -582,7 +582,7 @@ export const NotificationsCount = async () => {
 
 export const getActiveSessions = async () => {
     try {
-        const res = await axios.get('/auth/sessions/', {
+        const res = await axios.get('/sessions-list/', {
             withCredentials: true,
         });
         
@@ -593,5 +593,40 @@ export const getActiveSessions = async () => {
         }
 
         return [];
+    }
+};
+
+export const deleteSession = async (sessionId: number) => {
+    try {
+        const res = await axios.delete(`/sessions-delete/${sessionId}/`, {
+            withCredentials: true,
+        });
+
+        if (res.status === 204 || res.status === 200){
+            window.dispatchEvent(new Event("fetchSessions"));
+            return;
+        };
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при удалении сеанса:', error.response?.data || error.message);
+        }
+
+        return false;
+    }
+};
+
+export const deleteAllSessions = async () => {
+    try {
+        const res = await axios.delete('/sessions-delete-all/', {
+            withCredentials: true,
+        });
+
+        return res.status === 204 || res.status === 200;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при удалении всех сеансов:', error.response?.data || error.message);
+        }
+
+        return false;
     }
 };

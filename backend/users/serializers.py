@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import *
 import os
 
@@ -173,4 +174,33 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['is_admin'] = profile.is_admin if profile else False
         token['username'] = user.username
 
+        token.access_token['is_admin'] = token['is_admin']
+        token.access_token['username'] = token['username']
+
         return token
+    
+
+class UserSessionSerializer(serializers.ModelSerializer):
+    is_current = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserSession
+        fields = ['id', 'ip_address', 'location', 'browser', 'os', 'created_at', 'is_current']
+
+    def get_is_current(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+
+        raw_token = request.COOKIES.get('access_token')
+        if not raw_token:
+            return False
+
+        try:
+            authenticator = JWTAuthentication()
+            validated_token = authenticator.get_validated_token(raw_token)
+            current_jti = validated_token.get('jti')
+            
+            return str(obj.jti) == str(current_jti)
+        except Exception:
+            return False

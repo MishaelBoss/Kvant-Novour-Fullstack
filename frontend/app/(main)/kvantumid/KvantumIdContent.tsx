@@ -12,14 +12,17 @@ import { LogoutConfirmModel } from './_components/LogoutConfirmModel';
 import { DeleteConfirmModal } from './_components/DeleteConfirmModel';
 import { useAuth } from '@/app/context/AuthContext';
 import { KvantumIDSkeleton } from './_components/KvantumIDSkeleton';
-import { Monitor, Laptop, Smartphone, MoreVertical } from 'lucide-react';
-import { getActiveSessions } from '@/app/lib/api';
+import { Monitor, Laptop, Smartphone } from 'lucide-react';
+import { deleteSession, getActiveSessions } from '@/app/lib/api';
+import { DeleteSessionModel } from './_components/DeleteSessionModel';
+import { DeleteAllSessionModel } from './_components/DeleteAllSessionModel';
 
-export default function KvantumID() {
+export default function KvantumIdContent() {
     const { user, isLoading: isAuthLoading } = useAuth();
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [isDeleteAllSessionsModalOpen, setDeleteAllSessionsModalOpen] = useState(false);
     const [sessions, setSessions] = useState<any[]>([]);
-    const [showAllSessions, setShowAllSessions] = useState(false); // Стейт для скрытия/показа всех сессий
+    const [showAllSessions, setShowAllSessions] = useState(false);
 
     const fetchSessions = useCallback(async () => {
         await getActiveSessions().then((res) => {
@@ -35,6 +38,15 @@ export default function KvantumID() {
 
     useEffect(() => {
         fetchSessions();
+
+        const handleCustomEvent = () => {
+            fetchSessions();
+        };
+
+        window.addEventListener("fetchSessions", handleCustomEvent);
+        return () => {
+            window.removeEventListener("fetchSessions", handleCustomEvent);
+        };
     }, [fetchSessions]);
 
     const getDeviceIcon = (os: string) => {
@@ -141,9 +153,23 @@ export default function KvantumID() {
                                     <h2 className="text-[20px] font-bold text-[#2B2E33]">Сеансы и устройства</h2>
                                     <p className="text-[13px] text-gray-400">Вы уже заходили в профиль на этих устройствах</p>
                                 </div>
-                                <button type="button" className="text-gray-400 hover:text-gray-600 transition-colors p-1" aria-label="Опции сеансов">
-                                    <MoreVertical size={20} strokeWidth={2} />
-                                </button>
+
+                                <DropdownMenu.Root>
+                                    <DropdownMenu.Trigger>
+                                        <button type="button" className="text-gray-300 hover:text-gray-500 cursor-pointer! pt-1 focus-visible:outline-none outline-none" aria-label="Настройки аккаунта">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                            </svg>
+                                        </button>
+                                    </DropdownMenu.Trigger>
+                                    <DropdownMenu.Content>
+                                        <DropdownMenu.Item color="red" className="cursor-pointer! focus:outline-none" onSelect={() => setDeleteAllSessionsModalOpen(true)}>
+                                            Выйти из всех сеансов
+                                        </DropdownMenu.Item>
+                                    </DropdownMenu.Content>
+                                </DropdownMenu.Root>
+
+                                <DeleteAllSessionModel open={isDeleteAllSessionsModalOpen} onOpenChange={setDeleteAllSessionsModalOpen} />
                             </div>
 
                             <div className="space-y-3">
@@ -151,7 +177,7 @@ export default function KvantumID() {
                                     visibleSessions.map((session) => (
                                         <div 
                                             key={session.id} 
-                                            className="flex items-center gap-4 bg-white border rounded-2xl p-4 shadow-sm transition-colors border-gray-100 hover:border-gray-200"
+                                            className="group relative flex items-center gap-4 bg-white border rounded-2xl p-4 shadow-sm transition-colors border-gray-100 hover:border-gray-200"
                                         >
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                                                 session.is_current ? 'bg-green-50 text-[#00B856]' : 'bg-gray-50 text-gray-500'
@@ -178,6 +204,17 @@ export default function KvantumID() {
                                                     )}
                                                 </p>
                                             </div>
+
+                                            {!session.is_current && (
+                                                <DeleteSessionModel session_id={session.id}>
+                                                    <button
+                                                        type="button"
+                                                        className="absolute right-4 opacity-0 group-hover:opacity-100 text-10 font-semibold text-[#005bff] hover:underline bg-white pl-2 transition-opacity duration-150 cursor-pointer focus:outline-none"
+                                                    >
+                                                        Выйти
+                                                    </button>
+                                                </DeleteSessionModel>
+                                            )}
                                         </div>
                                     ))
                                 ) : (

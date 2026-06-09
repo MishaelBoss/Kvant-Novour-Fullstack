@@ -3,6 +3,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
 from users.permissions import IsAdminRole
+from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 
 
@@ -22,6 +23,8 @@ class CreateNewsCommandView(APIView):
     
 
 class CategoriesListView(APIView):
+    permission_classes = [AllowAny]
+    
     def get(self, request):
         categories = Category.objects.all()
         data = []
@@ -39,6 +42,8 @@ class CategoriesListView(APIView):
     
 
 class NewsListView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         news = News.objects.all().prefetch_related('categories').order_by('-created_at')
 

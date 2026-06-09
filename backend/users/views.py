@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.conf import settings
 from .authentication import *
 from .models import *
@@ -23,11 +24,13 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
 
-            refresh = RefreshToken.for_user(user)
-            jti = refresh['jti']
+            refresh = MyTokenObtainPairSerializer.get_token(user)
 
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
+
+            token_obj = AccessToken(access_token)
+            access_jti = token_obj['jti']
 
             user_agent = get_user_agent(request)
             browser = f"{user_agent.browser.family} {user_agent.browser.version_string}".strip()
@@ -38,7 +41,7 @@ class RegisterView(APIView):
 
             UserSession.objects.create(
                 user=user,
-                jti=jti,
+                jti=access_jti,
                 ip_address=ip,
                 location="Локальная сеть" if ip in ('127.0.0.1', '::1') else "Определяется...",
                 browser=browser,
@@ -79,10 +82,11 @@ class LoginView(APIView):
         user = serializer.validated_data['user']
         refresh = MyTokenObtainPairSerializer.get_token(user)
 
-        jti = refresh['jti']
-
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
+
+        token_obj = AccessToken(access_token)
+        access_jti = token_obj['jti']
 
         response = Response({
             "message": "Вход выполнен успешно",
@@ -131,7 +135,7 @@ class LoginView(APIView):
 
         UserSession.objects.create(
             user=user,
-            jti=jti,
+            jti=access_jti,
             ip_address=ip,
             location=location,
             browser=browser,
@@ -190,14 +194,21 @@ class UserStatusView(APIView):
     
 
 class LogoutView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         raw_token = request.COOKIES.get('refresh_token')
         if raw_token:
             try:
-                token = RefreshToken(raw_token).get('jti')
-                UserSession.objects.filter(jti=token).delete()
+                refresh = RefreshToken(raw_token)
+                token_jti = RefreshToken(raw_token).get('jti')
+
+                outstanding = OutstandingToken.objects.filter(jti=token_jti).first()
+                if outstanding:
+                    BlacklistedToken.objects.get_or_create(token=outstanding)
+
+                UserSession.objects.filter(jti=token_jti).delete()
             except Exception:
                 pass
 
@@ -306,43 +317,41 @@ class CreateUserView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-class ActiveSessionsView(APIView):
-    authentication_classes = [CookieJWTAuthentication]
+class UserSessionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        current_jti = None
+        sessions = UserSession.objects.filter(user=request.user).order_by('-created_at')
+        
+        serializer = UserSessionSerializer(sessions, many=True, context={'request': request})
+        
+        return Response(serializer.data)
+    
 
-        raw_token = request.COOKIES.get('refresh_token')
-        if raw_token:
+class SessionsDeleteView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        session = get_object_or_404(UserSession, id=pk, user=request.user)
+
+        if session.jti:
             try:
-                validated_token = RefreshToken(raw_token)
-                current_jti = validated_token.get('jti')
+                outstanding = OutstandingToken.objects.filter(jti=session.jti).first()
+                if outstanding:
+                    BlacklistedToken.objects.get_or_create(token=outstanding)
             except Exception:
                 pass
 
-        sessions = UserSession.objects.filter(user=request.user)
-
-        data = []
-        for session in sessions:
-            data.append({
-                'id': session.id,
-                'ip_address': session.ip_address,
-                'location': session.location,
-                'browser': session.browser,
-                'os': session.os,
-                'created_at': session.created_at,
-                "is_current": session.jti == current_jti
-            })
-        
-        return Response(data, status=status.HTTP_200_OK)
+        session.delete()
+        return Response({"message": "Сессия завершена"}, status=status.HTTP_200_OK)
     
-    def delete(self, request, pk=None):
-        if pk:
-            session = get_object_or_404(UserSession, id=pk, user=request.user)
-            session.delete()
-            return Response({"message": "Сессия завершена"}, status=status.HTTP_200_OK)
-        
+
+class SessionsDeleteAllView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
         raw_token = request.COOKIES.get('refresh_token')
         token = None
         if raw_token:
@@ -354,6 +363,21 @@ class ActiveSessionsView(APIView):
         qs = UserSession.objects.filter(user=request.user)
         if token:
             qs = qs.exclude(jti=token)
+
+        other_jtis = qs.values_list('jti', flat=True)
+
+        if other_jtis:
+            try:
+                outstanding_tokens = OutstandingToken.objects.filter(jti__in=other_jtis)
+                
+                blacklisted_objects = [
+                    BlacklistedToken(token=token) 
+                    for token in outstanding_tokens
+                ]
+
+                BlacklistedToken.objects.bulk_create(blacklisted_objects, ignore_conflicts=True)
+            except Exception as e:
+                print(f"Ошибка блэклиста: {e}")
 
         qs.delete()
         return Response({"message": "Все сторонние сеансы завершены"}, status=status.HTTP_200_OK)
