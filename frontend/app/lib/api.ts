@@ -171,11 +171,12 @@ export const getListNews = async () => {
             withCredentials: true
         })
 
-        return await res.data;
+        return res.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
             console.error('Ошибка получения списка:', error.response?.data || error.message);
         }
+
         return { 
             results: [], 
             count: 0 
@@ -578,3 +579,19 @@ export const NotificationsCount = async () => {
         return 0;
     }
 }
+
+export const getActiveSessions = async () => {
+    try {
+        const res = await axios.get('/auth/sessions/', {
+            withCredentials: true,
+        });
+        
+        return res.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при получении активных сеансов:', error.response?.data || error.message);
+        }
+
+        return [];
+    }
+};

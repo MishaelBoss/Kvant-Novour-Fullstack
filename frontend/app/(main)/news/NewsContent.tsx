@@ -36,6 +36,7 @@ export default function NewsContent() {
         } else {
             setNews([]);
         }
+        
         if (Array.isArray(resCategories?.results)) {
             setCategories(resCategories.results);
         } else {

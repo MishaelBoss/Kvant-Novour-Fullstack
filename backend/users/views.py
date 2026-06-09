@@ -24,9 +24,27 @@ class RegisterView(APIView):
             user = serializer.save()
 
             refresh = RefreshToken.for_user(user)
+            jti = refresh['jti']
 
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
+
+            user_agent = get_user_agent(request)
+            browser = f"{user_agent.browser.family} {user_agent.browser.version_string}".strip()
+            os_platform = user_agent.os.family
+
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR', '127.0.0.1')
+
+            UserSession.objects.create(
+                user=user,
+                jti=jti,
+                ip_address=ip,
+                location="Локальная сеть" if ip in ('127.0.0.1', '::1') else "Определяется...",
+                browser=browser,
+                os=os_platform,
+                user_agent_string=str(user_agent)
+            )
 
             response = Response({"message": "Успех"}, status=status.HTTP_201_CREATED)
 
@@ -60,6 +78,8 @@ class LoginView(APIView):
 
         user = serializer.validated_data['user']
         refresh = MyTokenObtainPairSerializer.get_token(user)
+
+        jti = refresh['jti']
 
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
@@ -108,6 +128,16 @@ class LoginView(APIView):
         user_agent = get_user_agent(request)
         browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
         os_platform = user_agent.os.family
+
+        UserSession.objects.create(
+            user=user,
+            jti=jti,
+            ip_address=ip,
+            location=location,
+            browser=browser,
+            os=os_platform,
+            user_agent_string=str(user_agent)
+        )
 
         current_time = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M MSK')
 
@@ -163,6 +193,14 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        raw_token = request.COOKIES.get('refresh_token')
+        if raw_token:
+            try:
+                token = RefreshToken(raw_token).get('jti')
+                UserSession.objects.filter(jti=token).delete()
+            except Exception:
+                pass
+
         response = Response({"message": "Успешный выход"}, status=status.HTTP_200_OK)
 
         response.delete_cookie('access_token')
@@ -266,3 +304,56 @@ class CreateUserView(APIView):
             return Response({"message": "Пользователь успешно создан"}, status=status.HTTP_201_CREATED)
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ActiveSessionsView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        current_jti = None
+
+        raw_token = request.COOKIES.get('refresh_token')
+        if raw_token:
+            try:
+                validated_token = RefreshToken(raw_token)
+                current_jti = validated_token.get('jti')
+            except Exception:
+                pass
+
+        sessions = UserSession.objects.filter(user=request.user)
+
+        data = []
+        for session in sessions:
+            data.append({
+                'id': session.id,
+                'ip_address': session.ip_address,
+                'location': session.location,
+                'browser': session.browser,
+                'os': session.os,
+                'created_at': session.created_at,
+                "is_current": session.jti == current_jti
+            })
+        
+        return Response(data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, pk=None):
+        if pk:
+            session = get_object_or_404(UserSession, id=pk, user=request.user)
+            session.delete()
+            return Response({"message": "Сессия завершена"}, status=status.HTTP_200_OK)
+        
+        raw_token = request.COOKIES.get('refresh_token')
+        token = None
+        if raw_token:
+            try:
+                token = RefreshToken(raw_token).get('jti')
+            except Exception:
+                pass
+
+        qs = UserSession.objects.filter(user=request.user)
+        if token:
+            qs = qs.exclude(jti=token)
+
+        qs.delete()
+        return Response({"message": "Все сторонние сеансы завершены"}, status=status.HTTP_200_OK)

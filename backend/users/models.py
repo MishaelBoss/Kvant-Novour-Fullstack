@@ -64,3 +64,21 @@ class StudyGroup(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class UserSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')
+    jti = models.CharField(max_length=255, unique=True, db_index=True, help_text="Уникальный ID JWT токена")
+    ip_address = models.GenericIPAddressField()
+    location = models.CharField(max_length=255, default="Неизвестно")
+    browser = models.CharField(max_length=255)
+    os = models.CharField(max_length=255)
+    user_agent_string = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-last_activity']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.browser} ({self.ip_address})"
