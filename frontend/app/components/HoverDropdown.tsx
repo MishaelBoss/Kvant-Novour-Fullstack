@@ -26,17 +26,18 @@ export const HoverDropdown = ({ trigger, children, sideOffset = 5 }: HoverDropdo
         <div onMouseEnter={handleOpen} onMouseLeave={handleClose}>
         <DropdownMenu.Root open={open} onOpenChange={setOpen} modal={false}>
             <DropdownMenu.Trigger asChild>
-            {trigger}
+                {trigger}
             </DropdownMenu.Trigger>
+            
             <DropdownMenu.Portal>
-            <DropdownMenu.Content
-                className="DropdownMenuContent"
-                sideOffset={sideOffset}
-                onMouseEnter={handleOpen}
-            >
-                {children}
-                <DropdownMenu.Arrow className="DropdownMenuArrow" fill="white" />
-            </DropdownMenu.Content>
+                <DropdownMenu.Content
+                    className="DropdownMenuContent"
+                    sideOffset={sideOffset}
+                    onMouseEnter={handleOpen}
+                >
+                    {children}
+                    <DropdownMenu.Arrow className="DropdownMenuArrow" fill="white" />
+                </DropdownMenu.Content>
             </DropdownMenu.Portal>
         </DropdownMenu.Root>
         </div>
