@@ -1,9 +1,9 @@
-import QuizStart from "./start";
+import QuizStartContent from "./QuizStartContent";
 
 export default function Page() {
     return (
         <>
-        <QuizStart/>
+        <QuizStartContent/>
         </>
     );
 }

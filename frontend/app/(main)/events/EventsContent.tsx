@@ -1,4 +1,4 @@
-export default function EventsPage() {
+export default function EventsContent() {
     return (
         <div>
             <h1>События</h1>

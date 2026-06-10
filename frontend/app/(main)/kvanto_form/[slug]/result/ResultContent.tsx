@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function Result() {
+export default function ResultContent() {
     const { slug } = useParams();
     const router = useRouter();
     const [result] = useState(() => {
@@ -27,7 +27,7 @@ export default function Result() {
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
-            <div className="w-full max-w-[480px] flex flex-col gap-6 text-center">
+            <div className="w-full max-w-120 flex flex-col gap-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <path d="M6 16l7 7 13-13" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>

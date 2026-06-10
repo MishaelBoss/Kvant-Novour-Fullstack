@@ -12,7 +12,7 @@ function formatTimer(seconds: number): string {
     return `${m}:${s}`;
 }
 
-export default function Quiz() {
+export default function QuizContent() {
     const router = useRouter();
     const { slug } = useParams();
 
@@ -110,7 +110,7 @@ export default function Quiz() {
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
-            <div className="max-w-[640px] mx-auto flex flex-col gap-6">
+            <div className="max-w-160 mx-auto flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 font-medium">{form.title}</span>
                     {form.settings.timer_enabled && (
@@ -195,7 +195,7 @@ function QuestionItem({
     index?: number 
 }) {
     return (
-        <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
             {question.media && (
                 <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
                     {question.media.type === 'image' && (
@@ -262,7 +262,7 @@ function QuestionItem({
                                     name={`q_${question.id}`}
                                     checked={answer?.selected_choice_ids?.includes(choice.id)}
                                     onChange={() => onUpdate({ selected_choice_ids: [choice.id] })}
-                                    className="w-4 h-4 accent-blue-500 cursor-pointer flex-shrink-0"
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer shrink-0"
                                 />
                                 <span className="text-sm text-gray-700">{choice.text}</span>
                             </label>
@@ -284,7 +284,7 @@ function QuestionItem({
                                             : current.filter(id => id !== choice.id);
                                         onUpdate({ selected_choice_ids: next });
                                     }}
-                                    className="w-4 h-4 accent-blue-500 cursor-pointer flex-shrink-0"
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer shrink-0"
                                 />
                                 <span className="text-sm text-gray-700">{choice.text}</span>
                             </label>

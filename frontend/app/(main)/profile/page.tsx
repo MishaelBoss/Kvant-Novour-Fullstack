@@ -1,5 +1,5 @@
 import { Header } from "@/app/components/Header";
-import MyProfile from "./profile";
+import ProfileContent from "./ProfileContent";
 import { Suspense } from "react";
 import { Skeleton } from "@radix-ui/themes";
 
@@ -12,7 +12,7 @@ export default function Page() {
         <>
         <Header/>
         <Suspense fallback={<div className="p-8"><Skeleton /></div>}>
-            <MyProfile/>
+            <ProfileContent/>
         </Suspense>
         </>
     );

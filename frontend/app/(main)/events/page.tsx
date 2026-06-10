@@ -1,9 +1,9 @@
-import EventsPage from "./events";
+import EventsContent from "./EventsContent";
 
 export default function Page() {
     return (
         <>
-        <EventsPage/>
+        <EventsContent/>
         </>
     );
 }

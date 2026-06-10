@@ -15,7 +15,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { useForm, FormProvider } from "react-hook-form";
 
-export default function MyProfile() {
+export default function ProfileContent() {
     const { user, isLoading: isAuthLoading, isAdmin, isTeacher } = useAuth(); 
     const searchParams = useSearchParams();
     const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'kvantoForm';
@@ -69,7 +69,7 @@ export default function MyProfile() {
 
     return (
         <FormProvider {...methods}>
-            <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
+            <div className="w-full p-4 md:p-8">
                 <div className="max-w-354 mx-auto flex flex-col md:flex-row gap-8">
                     <aside className="w-64 bg-white rounded-2xl p-4 shadow-sm h-fit">
                         <div className="flex items-center gap-3 mb-6 px-2">

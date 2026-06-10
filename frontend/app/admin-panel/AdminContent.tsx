@@ -8,7 +8,7 @@ import { News } from "./_components/News";
 import { Forms } from "./_components/Forms";
 import { useAuth } from "../context/AuthContext";
 
-export default function Admin() {
+export default function AdminContent() {
     const { user } = useAuth();
     const searchParams = useSearchParams();
     const tabFromUrl = searchParams.get('tab') as 'users' | 'news' | 'forms';

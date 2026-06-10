@@ -1,6 +1,6 @@
 "use client";
 
-export default function PaidCourses() {
+export default function PaidCoursesContent() {
   return (
     <>
     </>

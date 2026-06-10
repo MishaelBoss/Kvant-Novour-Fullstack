@@ -1,9 +1,9 @@
-import Result from "./result";
+import ResultContent from "./ResultContent";
 
 export default function Page() {
     return (
         <>
-        <Result/>
+        <ResultContent/>
         </>
     );
 }

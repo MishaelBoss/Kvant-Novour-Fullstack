@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 const CURRENT_YEAR = new Date().getFullYear();
 const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
 
-export default function QuizStart() {
+export default function QuizStartContent() {
     const { user } = useAuth();
     const router = useRouter();
     const params = useParams();
@@ -95,7 +95,7 @@ export default function QuizStart() {
     if (error) {
         return (
             <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
-                <div className="w-full max-w-[520px] bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 text-center flex flex-col gap-4">
+                <div className="w-full max-w-130 bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200/50 text-center flex flex-col gap-4">
                     <div className="text-4xl flex justify-center"><Image src='/undraw_notify_drs8.svg' alt="Error" width={150} height={150}/></div>
                     <p className="text-gray-700 text-sm">{error}</p>
                     <Link
@@ -118,12 +118,12 @@ export default function QuizStart() {
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
-            <div className="w-full max-w-[520px] flex flex-col gap-6">
+            <div className="w-full max-w-130 flex flex-col gap-6">
                 <div className="text-center flex flex-col gap-1">
                     <h1 className="text-2xl font-bold text-gray-800">Перед началом</h1>
                 </div>
 
-                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50">
+                <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200/50">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
                         <div className="flex flex-col gap-1.5">
                             <label className="text-sm text-gray-600">

@@ -35,7 +35,7 @@ export default function InstructionContent() {
     const [activeStep, setActiveStep] = useState(1);
 
     return (
-        <div className="bg-[#f2f5f9] min-h-screen py-10 font-sans">
+        <div className="w-full py-10">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="text-center mb-10 space-y-2">
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">

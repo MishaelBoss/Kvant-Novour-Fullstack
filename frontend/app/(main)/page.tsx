@@ -55,9 +55,8 @@ const QUANTUMS = [
 export default function Home() {
   return (
     <>
-      <div className="bg-[#f2f5f9] min-h-screen pb-16 font-sans">
-        <Header />
-
+      <Header />
+      <div className="pb-16">
         <main className="max-w-350 mx-auto px-4 mt-6 space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-linear-to-r from-[#005bff] to-[#003cb3] rounded-3xl p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-80 shadow-sm">

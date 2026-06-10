@@ -66,8 +66,8 @@ export default function NewsContent() {
 
     return (
         <>
-        <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8 font-sans text-[#242424]">
-            <div className="max-w-354 mx-auto flex flex-col md:flex-row gap-8">
+        <div className="w-full p-4 md:p-8">
+            <div className="max-w-[1416px] mx-auto flex flex-col md:flex-row gap-8">
                 <aside className="w-full md:w-64 bg-white rounded-2xl p-5 shadow-sm h-fit">
                     <nav className="flex flex-col gap-4">
                         <p className="text-sm font-bold uppercase text-[#717171] tracking-wider">
