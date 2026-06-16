@@ -325,7 +325,7 @@ export const createForm = async (data: IFormCreate, settings: IFormSettings, new
         
         if (res.status === 201) {
             window.dispatchEvent(new Event("fetchFormsList"));
-            return true;
+            return res.data;
         }
         
         return false;
@@ -564,7 +564,7 @@ export const readAllNotifications = async () => {
     }
 };
 
-export const NotificationsCount = async () => {
+export const notificationsCount = async () => {
     try{
         const res = await axios.get('/notifications/count/', {
             withCredentials: true
@@ -628,5 +628,27 @@ export const deleteAllSessions = async () => {
         }
 
         return false;
+    }
+};
+
+export const uploadAvatar = async (file: File) => {
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        const res = await axios.post('/upload-avatar/', formData, {
+            withCredentials: true
+        });
+        
+        if (res.status === 200 || res.status === 201) {
+            window.dispatchEvent(new Event("fetchUser"));
+            return res.data;
+        }
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка: ', error.response?.data || error.message);
+            throw error;
+        }
+        throw error;
     }
 };
