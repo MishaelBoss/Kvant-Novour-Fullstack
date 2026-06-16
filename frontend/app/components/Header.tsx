@@ -12,7 +12,7 @@ interface Props {
     className?: string;
 }
 
-export const Header: React.FC<Props> = ({ className }) => {
+export const Header: React.FC<Props> = () => {
     const { user, isAdmin, countNotifications } = useAuth();
 
     return (

@@ -228,8 +228,25 @@ class EditProfileView(APIView):
             return Response({
                 "message": "Профиль обновлен",
                 "user": serializer.data
-            })
-        return Response(serializer.errors, status=400)
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UploadAvatarView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = UpdateProfileAvatarSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Аватар успешно обновлен", "user": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class ProfileViewView(APIView):

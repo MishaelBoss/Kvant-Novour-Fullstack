@@ -5,6 +5,7 @@ import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import AxiosConfig from "./components/AxiosConfig";
 import { AuthProvider } from "./context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
         <Theme appearance="light" hasBackground={false} suppressHydrationWarning>
           <AuthProvider>
             <AxiosConfig/>
+            <Toaster position="bottom-right" />
             {children}
           </AuthProvider>
         </Theme>

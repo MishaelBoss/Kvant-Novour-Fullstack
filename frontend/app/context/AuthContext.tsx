@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { checkAuthStatus, logout as logoutUser, NotificationsCount } from '../lib/api';
+import { checkAuthStatus, logout as logoutUser, notificationsCount } from '../lib/api';
 import { usePathname, useRouter } from 'next/navigation';
 import { IUser } from '../types/user.interface';
 
@@ -46,9 +46,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 checkAndRedirect(userData);
 
                 try {
-                    const notificationsCount = await NotificationsCount();
+                    const notifCount = await notificationsCount();
 
-                    setCountNotifications(notificationsCount?.count ?? 0);
+                    setCountNotifications(notifCount?.count ?? 0);
                 } catch {
                     setCountNotifications(0); 
                 }

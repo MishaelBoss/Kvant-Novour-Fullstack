@@ -1,7 +1,7 @@
 "use client";
 
 import { PAGES } from "@/app/config/pages.config";
-import { editProfile } from "@/app/lib/api";
+import { uploadAvatar } from "@/app/lib/api";
 import { IEditProfile } from "@/app/types/user.interface";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,6 +14,7 @@ import { KvantoForm } from "./_components/KvantoForm";
 import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { useForm, FormProvider } from "react-hook-form";
+import { toast } from "react-hot-toast";
 
 export default function ProfileContent() {
     const { user, isLoading: isAuthLoading, isAdmin, isTeacher } = useAuth(); 
@@ -54,18 +55,19 @@ export default function ProfileContent() {
 
         const validTypes = ['image/jpeg', 'image/png'];
         if (!validTypes.includes(file.type)) {
-            alert('Пожалуйста, выберите изображение в формате JPEG, PNG.');
+            toast.error('Пожалуйста, выберите изображение в формате JPEG, PNG.');
             return;
         }
 
         const maxSizeInBytes = 5 * 1024 * 1024;
         if (file.size > maxSizeInBytes) {
-            alert('Размер файла не должен превышать 5 МБ.');
+            toast.error('Размер файла не должен превышать 5 МБ.');
             return;
         }
 
         try {
-            await editProfile({ avatar: file } as IEditProfile);
+            await uploadAvatar(file);
+            toast.success('Аватар обновлён');
         } catch (error) {
             console.error('Ошибка при загрузке аватара:', error);
         }

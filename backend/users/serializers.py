@@ -76,11 +76,10 @@ class LoginSerializer(serializers.Serializer):
 class UpdateProfile(serializers.ModelSerializer):
     middle_name = serializers.CharField(source='userprofile.middle_name', required=False, allow_blank=True)
     phone = serializers.CharField(source='userprofile.phone', required=False, allow_blank=True, allow_null=True)
-    avatar = serializers.ImageField(source='userprofile.avatar', required=False, allow_null=True)
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'avatar']
+        fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email']
 
     def validate_username(self, value):
         user = self.instance
@@ -105,6 +104,35 @@ class UpdateProfile(serializers.ModelSerializer):
                 profile.middle_name = profile_data['middle_name']
             if 'phone' in profile_data:
                 profile.phone = profile_data['phone']
+            profile.save()
+
+        return instance
+    
+
+class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(source='userprofile.avatar', required=True, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = ['avatar']
+
+    def validate_avatar(self, value):
+        if value:
+            max_size = 5 * 1024 * 1024 
+            if value.size > max_size:
+                raise serializers.ValidationError("Размер файла не должен превышать 5 МБ.")
+
+            valid_mime_types = ['image/jpeg', 'image/png']
+            if value.content_type not in valid_mime_types:
+                raise serializers.ValidationError("Файл не является валидным изображением.")
+
+        return value
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('userprofile', {})
+
+        if profile_data:
+            profile = instance.userprofile
             if 'avatar' in profile_data:
                 new_avatar = profile_data['avatar']
                 
