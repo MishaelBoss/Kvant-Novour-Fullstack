@@ -3,61 +3,14 @@ import { Header } from "../components/Header";
 import { ArrowRight, Sparkles, GraduationCap, Phone, MoveUpRight } from "lucide-react";
 import Image from "next/image";
 import { PAGES } from "../config/pages.config";
-
-const QUANTUMS = [
-  {
-    id: 1,
-    title: "IT-квантум",
-    desc: "Изучение Python, веб-разработка, основы кибербезопасности и создание мобильных приложений.",
-    age: "12-17 лет",
-    type: "Бюджет",
-    icon: '/it-quantum-icon.png',
-    badgeColor: "bg-blue-100 text-blue-700",
-  },
-  {
-    id: 2,
-    title: "Промробоквантум",
-    desc: "Проектирование и программирование робототехнических систем, работа с мехатроникой.",
-    age: "10-17 лет",
-    type: "Бюджет",
-    icon: '/promrobokvantum-icon.png',
-    badgeColor: "bg-emerald-100 text-emerald-700",
-  },
-  {
-    id: 3,
-    title: "VR/AR-квантум",
-    desc: "Разработка виртуальных миров, симуляторов, дополненной реальности и 3D-моделирование.",
-    age: "12-17 лет",
-    type: "Бюджет",
-    icon: '/vr-ar-quantum-icon.png',
-    badgeColor: "bg-purple-100 text-purple-700",
-  },
-  {
-    id: 4,
-    title: "Хайтек",
-    desc: "Высокотехнологичная лаборатория: 3D-печать, лазерная резка, фрезерные работы и инженерия.",
-    age: "11-17 лет",
-    type: "Бюджет",
-    icon: '/hi-tech-icon.png',
-    badgeColor: "bg-amber-100 text-amber-700",
-  },
-  {
-    id: 5,
-    title: "Математическое моделирование",
-    desc: "Углубленная логика, анализ данных и решение прикладных инженерных задач.",
-    age: "10-15 лет",
-    type: "Платная основа",
-    icon: '/mathematics.png',
-    badgeColor: "bg-rose-100 text-rose-700",
-  }
-];
+import { QUANTUMS } from "../data/quantumsData";
 
 export default function Home() {
   return (
     <>
       <Header />
-      <div className="pb-16">
-        <main className="max-w-350 mx-auto px-4 mt-6 space-y-8">
+      <div className="w-full p-4 md:p-8 pb-16">
+        <main className="max-w-354 mx-auto space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-linear-to-r from-[#005bff] to-[#003cb3] rounded-3xl p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-80 shadow-sm">
               <div className="absolute right-0 bottom-0 w-1/3 h-full opacity-10 pointer-events-none flex items-end justify-end p-4">
