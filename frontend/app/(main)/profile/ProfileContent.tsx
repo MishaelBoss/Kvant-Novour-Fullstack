@@ -52,6 +52,18 @@ export default function ProfileContent() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        const validTypes = ['image/jpeg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+            alert('Пожалуйста, выберите изображение в формате JPEG, PNG.');
+            return;
+        }
+
+        const maxSizeInBytes = 5 * 1024 * 1024;
+        if (file.size > maxSizeInBytes) {
+            alert('Размер файла не должен превышать 5 МБ.');
+            return;
+        }
+
         try {
             await editProfile({ avatar: file } as IEditProfile);
         } catch (error) {
