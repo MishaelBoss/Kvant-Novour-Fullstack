@@ -392,35 +392,41 @@ export const updateForm = async (id: number, data: IFormCreate, settings: IFormS
     }
 };
 
-export const getMyFormsList = async (): Promise<IFormItem[]> => {
+export const getMyFormsList = async () => {
     try {
         const res = await axios.get('/my-forms-list/', { 
             withCredentials: true 
         });
 
-        return res.data.results || res.data || [];
+        return res.data;
     } catch(error) {
         if(axios.isAxiosError(error)){
             console.error('Ошибка при получение списка:', error.response?.data || error.message);
         }
 
-        return [];
+        return {
+            results: [],
+            count: 0
+        }
     }
 };
 
-export const getAllFormsList = async (): Promise<IFormItem[]> => {
+export const getAllFormsList = async () => {
     try {
         const res = await axios.get('/all-forms-list/', {
             withCredentials: true
         });
 
-        return res.data.results || res.data || [];
+        return res.data;
     } catch (error) {
         if (axios.isAxiosError(error)){
             console.error('Ошибка при получение списка:', error.response?.data || error.message);
         }
 
-        return [];
+        return {   
+            results: [],
+            count: 0
+        }
     }
 };
 

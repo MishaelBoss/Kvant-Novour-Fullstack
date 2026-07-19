@@ -9,14 +9,32 @@ import { useCallback, useEffect, useState } from "react";
 
 export function KvantoForm(){
     const [forms, setForms] = useState<IFormItem[]>([]);
+    const [count, setCountForm] = useState(0);
 
     const fetchForms = useCallback(async () => {
+        const res = await getMyFormsList();
+
+        if (Array.isArray(res?.results)) { 
+            setForms(res.results);
+            setCountForm(res.count ?? 0); 
+        } else {
+            setForms([]);
+            setCountForm(0);
+        }
+    }, []);
+
+
+    const fetchForms2 = useCallback(async () => {
         const res = await getMyFormsList();
         setForms(Array.isArray(res) ? res : []);
     }, []);
 
     useEffect(() => {
-        fetchForms();
+        const init = async() => {
+            await fetchForms();
+        }
+
+        init();
 
         const handleCustomEvent = () => {
             fetchForms();
@@ -60,10 +78,10 @@ export function KvantoForm(){
 
     return (
         <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-gray-800">Мои формы</h2>
-                <Link href={PAGES.KVANTUM_FORM_NEW()} className="px-4 py-2 text-sm text-white bg-[#1a6edb] rounded-xl hover:bg-blue-600 transition-all shadow-sm shadow-blue-200">
-                    + Новая форма
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-xl font-bold">Мои формы: {count}</h1>
+                <Link href={PAGES.KVANTUM_FORM_NEW()} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+                    Добавить
                 </Link>
             </div>
 

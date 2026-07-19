@@ -7,18 +7,26 @@ import { useCallback, useEffect, useState } from "react";
 
 export function Forms() {
     const [forms, setForms] = useState<IFormItem[]>([]);
+    const [count, setCountForm] = useState(0);
 
     const fetchForms = useCallback(async () => {
         const res = await getAllFormsList();
-        if (Array.isArray(res)) { 
-            setForms(res);
+
+        if (Array.isArray(res?.results)) { 
+            setForms(res.results);
+            setCountForm(res.count ?? 0); 
         } else {
             setForms([]);
+            setCountForm(0);
         }
     }, []);
 
     useEffect(() => {
-        fetchForms();
+        const init = async () => {
+            await fetchForms();
+        }
+
+        init();
 
         window.addEventListener("fetchFormsList", fetchForms);
 
@@ -30,6 +38,13 @@ export function Forms() {
     if (forms.length === 0) {
         return (
             <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-xl font-bold">Всего форм: {count}</h1>
+                    <Link href={PAGES.KVANTUM_FORM_NEW()} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+                        Добавить
+                    </Link>
+                </div>
+
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4 text-center">
                     <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="42" y="10" width="30" height="30" rx="6" stroke="#9CA3AF" strokeWidth="2.5"/>
@@ -58,10 +73,10 @@ export function Forms() {
 
     return (
         <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-gray-800">Мои формы</h2>
-                <Link href={PAGES.KVANTUM_FORM_NEW()} className="px-4 py-2 text-sm text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-all shadow-sm shadow-blue-200">
-                    + Новая форма
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-xl font-bold">Всего форм: {count}</h1>
+                <Link href={PAGES.KVANTUM_FORM_NEW()} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+                    Добавить
                 </Link>
             </div>
 

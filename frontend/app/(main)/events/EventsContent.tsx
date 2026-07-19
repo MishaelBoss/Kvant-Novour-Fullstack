@@ -1,8 +1,0 @@
-export default function EventsContent() {
-    return (
-        <div>
-            <h1>События</h1>
-            <p>Страница в разработке</p>
-        </div>
-    );
-}

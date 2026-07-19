@@ -13,6 +13,7 @@ from django.db.models import Sum
 from django.db.models import Count
 import openpyxl
 from django.http import HttpResponse
+from .serializers import *
 
 
 class CreateFormView(APIView):
@@ -198,20 +199,11 @@ class MyFormsListView(APIView):
     def get(self, request):
         forms = Form.objects.filter(owner=request.user).annotate(responses_count=Count('responses')).order_by('-created_at')
         
-        data = []
-        for f in forms:
-            data.append({
-                'id': f.id,
-                'title': f.title,
-                'description': f.description,
-                'status': f.status,
-                'created_at': f.created_at,
-                'responses_count': f.responses_count,
-            })
+        serializer = FormSerializer(forms, many=True, context={'request': request})
             
         return Response({
             'count': forms.count(),
-            'results': data,
+            'results': serializer.data,
         })
     
 
@@ -221,21 +213,11 @@ class AllFormsList(APIView):
     def get(self, request):
         forms = Form.objects.all().annotate(responses_count=Count('responses')).order_by('-created_at')
 
-        data = []
-
-        for f in forms:
-            data.append({
-                'id': f.id,
-                'title': f.title,
-                'description': f.description,
-                'status': f.status,
-                'created_at': f.created_at,
-                'responses_count': f.responses_count,
-            })
+        serializer = FormSerializer(forms, many=True, context={'request': request})
 
         return Response({
             'count': forms.count(),
-            'results': data
+            'results': serializer.data
         })
     
 

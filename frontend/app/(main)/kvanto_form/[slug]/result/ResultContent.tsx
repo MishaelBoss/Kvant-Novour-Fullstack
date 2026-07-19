@@ -6,6 +6,7 @@ import { useState } from "react";
 export default function ResultContent() {
     const { slug } = useParams();
     const router = useRouter();
+    
     const [result] = useState(() => {
         if (typeof window !== 'undefined') {
             const rawResult = sessionStorage.getItem(`quiz_result_${slug}`);
@@ -13,6 +14,7 @@ export default function ResultContent() {
         }
         return null;
     });
+
     const [session] = useState(() => {
         if (typeof window !== 'undefined') {
             const rawSession = sessionStorage.getItem(`quiz_profile_${slug}`);

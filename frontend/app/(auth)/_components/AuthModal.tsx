@@ -123,7 +123,8 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
                                     type={showPass ? 'text' : 'password'}
                                     placeholder="Ваш пароль" 
                                     size="3" 
-                                    {...register("password", { required: "Введите пароль", minLength: 6 })}
+                                    {...register("password", { required: "Введите пароль", minLength: { value: 8, message: "Минимум 8 символов"} })}
+                                    onChange={() => setError('')}
                                 >
                                     <TextField.Slot>
                                         <Lock size={16} />
