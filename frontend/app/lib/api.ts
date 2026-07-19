@@ -2,7 +2,7 @@ import axios from "axios";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
 import { IEditProfile, IUser, IUserLogin, IUserRegister } from "../types/user.interface";
 import { INewsCreateInput } from "../types/news.interface";
-import { IFormCreate, IFormItem, IFormSettings, IQuizSession } from "../types/form.interface";
+import { IFormCreate, IFormSettings, IQuizSession } from "../types/form.interface";
 
 export const checkAuthStatus = async () => {
     try {

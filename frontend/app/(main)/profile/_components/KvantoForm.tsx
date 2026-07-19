@@ -23,12 +23,6 @@ export function KvantoForm(){
         }
     }, []);
 
-
-    const fetchForms2 = useCallback(async () => {
-        const res = await getMyFormsList();
-        setForms(Array.isArray(res) ? res : []);
-    }, []);
-
     useEffect(() => {
         const init = async() => {
             await fetchForms();
