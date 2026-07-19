@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:15-alpine
+    ports: 
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=kvantum_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=cr2032
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/.venv/
+    environment:
+      - DATABASE_URL=postgres://postgres:cr2032@db:5432/kvantum_db
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+    depends_on:
+      - backend
+
+  gateway:
+    image: nginx:latest
+    volumes:
+        - ./gateway/nginx.conf:/etc/nginx/nginx.conf 
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
