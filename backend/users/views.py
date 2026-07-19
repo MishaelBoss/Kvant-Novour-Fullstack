@@ -33,21 +33,32 @@ class RegisterView(APIView):
             access_jti = token_obj['jti']
 
             user_agent = get_user_agent(request)
-            browser = f"{user_agent.browser.family} {user_agent.browser.version_string}".strip()
+            browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
             os_platform = user_agent.os.family
+            user_agent_string = str(user_agent)
 
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR', '127.0.0.1')
 
-            UserSession.objects.create(
+            existing_session = UserSession.objects.filter(
                 user=user,
-                jti=access_jti,
-                ip_address=ip,
-                location="Локальная сеть" if ip in ('127.0.0.1', '::1') else "Определяется...",
-                browser=browser,
-                os=os_platform,
-                user_agent_string=str(user_agent)
-            )
+                user_agent_string=user_agent_string
+            ).first()
+
+            if existing_session:
+                existing_session.jti = access_jti
+                existing_session.ip_address = ip
+                existing_session.save()
+            else:
+                UserSession.objects.create(
+                    user=user,
+                    jti=access_jti,
+                    ip_address=ip,
+                    location="Локальная сеть" if ip in ('127.0.0.1', '::1') else "Определяется...",
+                    browser=browser,
+                    os=os_platform,
+                    user_agent_string=user_agent_string
+                )
 
             response = Response({"message": "Успех"}, status=status.HTTP_201_CREATED)
 
@@ -132,16 +143,28 @@ class LoginView(APIView):
         user_agent = get_user_agent(request)
         browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
         os_platform = user_agent.os.family
+        user_agent_string = str(user_agent)
 
-        UserSession.objects.create(
+        existing_session = UserSession.objects.filter(
             user=user,
-            jti=access_jti,
-            ip_address=ip,
-            location=location,
-            browser=browser,
-            os=os_platform,
-            user_agent_string=str(user_agent)
-        )
+            user_agent_string=user_agent_string
+        ).first()
+
+        if existing_session:
+            existing_session.jti = access_jti
+            existing_session.ip_address = ip
+            existing_session.location = location
+            existing_session.save()
+        else:
+            UserSession.objects.create(
+                user=user,
+                jti=access_jti,
+                ip_address=ip,
+                location=location,
+                browser=browser,
+                os=os_platform,
+                user_agent_string=user_agent_string
+            )
 
         current_time = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M MSK')
 
@@ -365,34 +388,8 @@ class SessionsDeleteAllView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
-        current_access_jti = None
-
-        raw_access_token = request.COOKIES.get('access_token')
-        if raw_access_token:
-            try:
-                authenticator = JWTAuthentication()
-                validated_token = authenticator.get_validated_token(raw_access_token)
-                current_access_jti = validated_token.get('jti')
-            except Exception:
-                pass
-
-        qs = UserSession.objects.filter(user=request.user)
-        if current_access_jti:
-            qs = qs.exclude(jti=current_access_jti)
-        
-        raw_refresh_token = request.COOKIES.get('refresh_token')
-        current_refresh_jti = None
-        if raw_refresh_token:
-            try:
-                from rest_framework_simplejwt.tokens import RefreshToken
-                current_refresh_jti = RefreshToken(raw_refresh_token).get('jti')
-            except Exception:
-                pass
-
         try:
             outstanding_tokens = OutstandingToken.objects.filter(user=request.user)
-            if current_refresh_jti:
-                outstanding_tokens = outstanding_tokens.exclude(jti=current_refresh_jti)
 
             blacklisted_objects = [
                 BlacklistedToken(token=t)
@@ -402,6 +399,11 @@ class SessionsDeleteAllView(APIView):
         except Exception as e:
             print(f"Ошибка блэклиста: {e}")
 
-        qs.delete()
+        UserSession.objects.filter(user=request.user).delete()
 
-        return Response({"message": "Все сторонние сеансы завершены"}, status=status.HTTP_200_OK)
+        response = Response({"message": "Все сеансы завершены"}, status=status.HTTP_200_OK)
+
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+
+        return response

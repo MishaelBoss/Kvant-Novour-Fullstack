@@ -26,13 +26,18 @@ export default function KvantumIdContent() {
 
     const fetchSessions = useCallback(async () => {
         await getActiveSessions().then((res) => {
+            let data: any[] = [];
             if (Array.isArray(res?.results)) {
-                setSessions(res.results);
+                data = res.results;
             } else if (Array.isArray(res)) {
-                setSessions(res);
-            } else {
-                setSessions([]);
+                data = res;
             }
+            const seen = new Set<number>();
+            setSessions(data.filter(s => {
+                if (seen.has(s.id)) return false;
+                seen.add(s.id);
+                return true;
+            }));
         });
     }, []);
 
