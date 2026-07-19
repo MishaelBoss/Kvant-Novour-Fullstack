@@ -95,7 +95,14 @@ export const Header: React.FC<Props> = () => {
                                     </DropdownMenu.Item>
                                     <DropdownMenu.Item className="flex flex-col px-5 py-2.5 text-sm text-[#001a34] cursor-pointer outline-none transition-colors duration-200 data-highlighted:bg-[#f5f7f9]" asChild>
                                         <Link href={`${PAGES.MY_PROFILE()}?tab=notifications`}>
-                                            <span className="text-[15px] font-medium">Сообщения</span>
+                                            <span className="flex items-center gap-2 text-[15px] font-medium">
+                                                <span>Сообщения</span>
+                                                {countNotifications > 0 && (
+                                                    <span className="flex h-5 w-6 items-center justify-center rounded-full bg-[#f91155] text-[11px] font-semibold leading-none text-white shrink-0">
+                                                        {countNotifications}
+                                                    </span>
+                                                )}
+                                            </span>
                                         </Link>
                                     </DropdownMenu.Item>
                                     {isAdmin &&  

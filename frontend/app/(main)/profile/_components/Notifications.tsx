@@ -35,8 +35,12 @@ export function Notifications() {
     }, []);
 
     useEffect(() => {
-        fetchNotifications();
-    }, []);
+        const init = async () => {
+            await fetchNotifications();
+        }
+
+        init();
+    }, [fetchNotifications]);
 
     const toggleRead = (id: number) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
