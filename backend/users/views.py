@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.conf import settings
 from .authentication import *
@@ -11,9 +11,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import *
 from notifications.models import *
-import requests
 from django_user_agents.utils import get_user_agent
 from django.utils import timezone
+from users.services import GeolocationService
 
 
 class RegisterView(APIView):
@@ -37,8 +37,15 @@ class RegisterView(APIView):
             os_platform = user_agent.os.family
             user_agent_string = str(user_agent)
 
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR', '127.0.0.1')
+            ip = GeolocationService.get_client_ip(request)
+            geo_data = GeolocationService.get_geo_by_ip(ip)
+
+            if ip in ('127.0.0.1', '::1') or geo_data['country_code'] == 'LOCAL':
+                location = "Локальная сеть"
+            elif geo_data['city'] != 'Unknown':
+                location = f"{geo_data['city']}, {geo_data['country']}"
+            else:
+                location = "Не удалось определить город"
 
             existing_session = UserSession.objects.filter(
                 user=user,
@@ -48,13 +55,14 @@ class RegisterView(APIView):
             if existing_session:
                 existing_session.jti = access_jti
                 existing_session.ip_address = ip
+                existing_session.location = location
                 existing_session.save()
             else:
                 UserSession.objects.create(
                     user=user,
                     jti=access_jti,
                     ip_address=ip,
-                    location="Локальная сеть" if ip in ('127.0.0.1', '::1') else "Определяется...",
+                    location=location,
                     browser=browser,
                     os=os_platform,
                     user_agent_string=user_agent_string
@@ -122,23 +130,15 @@ class LoginView(APIView):
             max_age=3600 * 24 * 7
         )
 
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        ip = GeolocationService.get_client_ip(request)
+        geo_data = GeolocationService.get_geo_by_ip(ip)
 
-        if ip in ('127.0.0.1', '::1'):
+        if ip in ('127.0.0.1', '::1') or geo_data['country_code'] == 'LOCAL':
             location = "Локальная сеть"
+        elif geo_data['city'] != 'Unknown':
+            location = f"{geo_data['city']}, {geo_data['country']}"
         else:
-            try:
-                geo_res = requests.get(f"http://ip-api.com{ip}?lang=ru", timeout=2).json()
-                if geo_res.get('status') == 'success':
-                    location = f"{geo_res.get('city', 'Неизвестный город')}, {geo_res.get('country', 'Россия')}"
-                else:
-                    location = "Не удалось определить город"
-            except Exception:
-                location = "Не удалось определить город (ошибка сети)"
+            location = "Не удалось определить город"
 
         user_agent = get_user_agent(request)
         browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
