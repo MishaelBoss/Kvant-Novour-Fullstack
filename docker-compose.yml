@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:18-alpine
     ports: 
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:${DB_LOCAL_PORT}:${DB_CONTAINER_PORT}"
     environment:
-      - POSTGRES_DB=kvantum_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=cr2032
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
