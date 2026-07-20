@@ -23,3 +23,11 @@ __pycache__/
 
 .env
 .env.local
+.env.production
+
+docker-compose.override.yml
+
+.poetry/
+poetry.lock
+
+backend/media/avatars/
