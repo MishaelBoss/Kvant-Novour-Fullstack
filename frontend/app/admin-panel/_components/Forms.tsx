@@ -22,16 +22,14 @@ export function Forms() {
     }, []);
 
     useEffect(() => {
-        const init = async () => {
-            await fetchForms();
-        }
+        const handleFetchEvent = async() => await fetchForms();
 
-        init();
+        handleFetchEvent();
 
-        window.addEventListener("fetchFormsList", fetchForms);
+        window.addEventListener("fetchFormsList", handleFetchEvent);
 
         return () => {
-            window.removeEventListener("fetchFormsList", fetchForms);
+            window.removeEventListener("fetchFormsList", handleFetchEvent);
         };
     }, [fetchForms]);
 

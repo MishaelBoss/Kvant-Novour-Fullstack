@@ -3,6 +3,7 @@ import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]
 import { IEditProfile, IUser, IUserLogin, IUserRegister } from "../types/user.interface";
 import { INewsCreateInput } from "../types/news.interface";
 import { IFormCreate, IFormSettings, IQuizSession } from "../types/form.interface";
+import { ParamValue } from "next/dist/server/request/params";
 
 export const checkAuthStatus = async () => {
     try {
@@ -110,6 +111,22 @@ export const logout = async () => {
         if (axios.isAxiosError(error)) {
             console.error('Ошибка выхода из аккаунта:', error.response?.data || error.message);
         }
+    }
+}
+
+export const getPublicProfile = async(username: ParamValue) => {
+    try {
+        const res = await axios.get(`/profile/${username}/`, {
+            withCredentials: true
+        });
+
+        return res.data;
+    } catch (error) {
+        if(axios.isAxiosError(error)) {
+            console.error('Ошибка получение публичного профиля:', error.response?.data || error.message);
+            throw error;
+        }
+        throw error;
     }
 }
 

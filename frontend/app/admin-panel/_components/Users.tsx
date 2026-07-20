@@ -24,18 +24,16 @@ export function Users() {
     }, []);
 
     useEffect(() => {
-        fetchUsers();
+        const handleFetchEvent = async() => await fetchUsers();
 
-        const handleCustomEvent = () => {
-            fetchUsers();
-        };
+        handleFetchEvent();
 
-        window.addEventListener("fetchListUsers", handleCustomEvent);
+        window.addEventListener("fetchListUsers", handleFetchEvent);
 
         return () => {
-            window.removeEventListener("fetchListUsers", handleCustomEvent);
+            window.removeEventListener("fetchListUsers", handleFetchEvent);
         };
-    }, [])
+    }, [fetchUsers])
     
     return (
         <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
@@ -69,9 +67,9 @@ export function Users() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
-                            {item.id && (
-                                <Link 
-                                    href={PAGES.PROFILE(item.id)}
+                            {item.username && (
+                                <Link title={`Открыть профиль ${item.username}`}
+                                    href={PAGES.PROFILE(item.username)}
                                     className="flex-1 md:flex-none text-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
                                 >
                                     Открыть

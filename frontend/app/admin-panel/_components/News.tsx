@@ -22,20 +22,14 @@ export function News() {
     }, []);
 
     useEffect(() => {
-        const init = async() => {
-            await fetchNews();
-        }
+        const handleFetchEvent = async() => await fetchNews();
 
-        init();
+        handleFetchEvent();
 
-        const handleCustomEvent = () => {
-            fetchNews();
-        };
-
-        window.addEventListener("fetchListNews", handleCustomEvent);
+        window.addEventListener("fetchListNews", handleFetchEvent);
 
         return () => {
-            window.removeEventListener("fetchListNews", handleCustomEvent);
+            window.removeEventListener("fetchListNews", handleFetchEvent);
         };
     }, [fetchNews]);
 

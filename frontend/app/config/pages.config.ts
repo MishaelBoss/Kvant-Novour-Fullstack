@@ -5,8 +5,8 @@ export const PAGES = new class PageConfig{
     MY_PROFILE(){
         return "/profile/"
     }
-    PROFILE(id: number){
-        return `/profile/${id}/`
+    PROFILE(username: string){
+        return `/profile/${username}/`
     }
     KVANTUMID(){
         return "/kvantumid/"

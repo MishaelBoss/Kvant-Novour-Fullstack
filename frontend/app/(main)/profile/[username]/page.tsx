@@ -1,4 +1,4 @@
-import Profile from "./profile";
+import ProfileContent from "./ProfileContent";
 
 export const metadata = {
     title: 'Профиль',
@@ -7,7 +7,7 @@ export const metadata = {
 export default function Page(){
     return (
         <>
-        <Profile/>
+        <ProfileContent/>
         </>
     ); 
 }
