@@ -276,17 +276,19 @@ class PublickProfileViewView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, username):
-        profile = get_object_or_404(UserProfile, user=request.user)
         try:
             user = User.objects.get(username=username)
+            profile = get_object_or_404(UserProfile, user=user)
 
             avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
             
             return Response({
                 "username": user.username,
                 "first_name": user.first_name,
+                "last_name": user.last_name,
                 "date_joined": user.date_joined,
-                "avatar": avatar_url
+                "avatar": avatar_url,
+                "role": profile.role
             })
         except User.DoesNotExist:
             return Response({"error": "Пользователь не найден"}, status=404)
