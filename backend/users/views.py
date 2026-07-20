@@ -272,13 +272,13 @@ class UploadAvatarView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-class ProfileViewView(APIView):
-    permission_classes = [IsAdminRole | IsTeacherRole]
+class PublickProfileViewView(APIView):
+    permission_classes = [AllowAny]
 
-    def get(self, request, pk):
+    def get(self, request, username):
         profile = get_object_or_404(UserProfile, user=request.user)
         try:
-            user = User.objects.get(pk=pk)
+            user = User.objects.get(username=username)
 
             avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
             
