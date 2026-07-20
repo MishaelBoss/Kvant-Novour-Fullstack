@@ -15,6 +15,7 @@ interface CreateUserModalProps {
 export function CreateUserModal({children, user}: CreateUserModalProps){
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
+    const [saving, setSaving] = useState(false);
 
     const methods = useForm<IUser>({
         defaultValues: {
@@ -28,18 +29,21 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
         }
     }); 
 
-    const onSubmit = async (data: IUser) => {
-        if (step === 1) {
-            setStep(2);
-            return;
-        }
+    const handleNext = async () => {
+        const fields = step === 1 ? ['username', 'password'] : ['first_name', 'last_name'];
+        const isValid = await methods.trigger(fields as any);
+        if (!isValid) return;
+        setStep(step + 1);
+    };
 
-        if (step === 2) {
-            setStep(3);
-            return;
-        }
+    const handleSave = async () => {
+        const isValid = await methods.trigger();
+        if (!isValid) return;
 
-        const success = await createUser(data);
+        setSaving(true);
+        const success = await createUser(methods.getValues());
+        setSaving(false);
+
         if (success) {
             setOpen(false);
             setStep(1);
@@ -61,8 +65,8 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
                 <Dialog.Description size="2" mb="5" color="gray">Создание нового аккаунта</Dialog.Description>
 
                 <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit(onSubmit)}>
-                        <Flex direction="column" gap="4">
+                    <Flex direction="column" gap="4" asChild>
+                        <form onSubmit={(e) => { e.preventDefault(); step === 3 ? handleSave() : handleNext(); }}>
                             {step === 1 && (
                                 <>
                                     <InputWithClear label="Логин" name="username" rules={{ required: "Обязательно" }} />
@@ -104,18 +108,24 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
                                     <InputWithClear label="Email" name="email" />
                                 </>
                             )}
-                        </Flex>
 
-                        <Flex direction="row" gap="3" mt="6">
-                            <Button type="button" variant="soft" onClick={() => step > 1 ? setStep(step - 1) : setOpen(false)}>
-                                {step > 1 ? "Назад" : "Отмена"}
-                            </Button>
+                            <Flex direction="row" gap="3" mt="6">
+                                <Button type="button" variant="soft" onClick={() => step > 1 ? setStep(step - 1) : setOpen(false)}>
+                                    {step > 1 ? "Назад" : "Отмена"}
+                                </Button>
 
-                            <Button type={step === 3 ? "submit" : "button"} variant="solid" onClick={() => step < 3 && setStep(step + 1)}>
-                                {step === 3 ? "Сохранить" : "Далее"}
-                            </Button>
-                        </Flex>
-                    </form>
+                                {step === 3 ? (
+                                    <Button type="submit" variant="solid" disabled={saving}>
+                                        {saving ? "Сохранение..." : "Сохранить"}
+                                    </Button>
+                                ) : (
+                                    <Button type="submit" variant="solid">
+                                        Далее
+                                    </Button>
+                                )}
+                            </Flex>
+                        </form>
+                    </Flex>
                 </FormProvider>
             </Dialog.Content>
         </Dialog.Root>
