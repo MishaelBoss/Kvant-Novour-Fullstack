@@ -1,14 +1,14 @@
 services:
   db:
     image: postgres:18-alpine
-    ports: 
+    ports:
       - "127.0.0.1:${DB_LOCAL_PORT}:${DB_CONTAINER_PORT}"
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   backend:
     build: ./backend

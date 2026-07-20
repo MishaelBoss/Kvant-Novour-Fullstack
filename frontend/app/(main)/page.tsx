@@ -17,7 +17,7 @@ export default function Home() {
                 <GraduationCap className="w-32 h-32" />
               </div>
               <div className="max-w-md space-y-4 z-10">
-                <span className="inline-block bg-[#f91155] text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                <span className="inline-block bg-[#D60042] text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
                   Идет набор 2026
                 </span>
                 <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
@@ -45,9 +45,9 @@ export default function Home() {
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className="font-bold text-gray-900 text-lg leading-snug">
+                  <h2 className="font-bold text-gray-900 text-lg leading-snug">
                     Как записаться на обучение?
-                  </h3>
+                  </h2>
                   <p className="text-gray-500 text-xs">
                     Выбирайте любой удобный для вас способ оформления:
                   </p>
@@ -98,7 +98,7 @@ export default function Home() {
                   href="https://xn--66-kmc.xn--80aafey1amqq.xn--d1acj3b/" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="text-center bg-[#f91155] hover:bg-[#d60e47] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1"
+                  className="text-center bg-[#D60042] hover:bg-[#B50035] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1"
                 >
                   В Навигатор <MoveUpRight size={12} strokeWidth={3} />
                 </Link>
@@ -109,7 +109,7 @@ export default function Home() {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-950 tracking-tight">
-                Направления подготовки <span className="text-gray-400 text-lg font-normal ml-2">{QUANTUMS.length} квантумов</span>
+                Направления подготовки <span className="text-gray-600 text-lg font-normal ml-2">{QUANTUMS.length} квантумов</span>
               </h2>
             </div>
 
@@ -123,13 +123,13 @@ export default function Home() {
                     <div>
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${quant.badgeColor} bg-opacity-60 group-hover:scale-105 transition-transform`}>
-                          <Image src={quant.icon} alt={`${quant.title} icon`} width={24} height={24} className="w-6 h-6" />
+                          <Image src={quant.icon} alt={`${quant.title} icon`} width={24} height={24} className="w-6 h-6"  loading="lazy" />
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${quant.badgeColor}`}>
                             {quant.type}
                           </span>
-                          <span className="text-[11px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md">
+                          <span className="text-[11px] font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded-md">
                             {quant.age}
                           </span>
                         </div>

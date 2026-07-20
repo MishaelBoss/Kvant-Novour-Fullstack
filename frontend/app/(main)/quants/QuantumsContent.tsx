@@ -38,7 +38,7 @@ export default function QuantumsContent() {
                                             {quant.type}
                                         </span>
 
-                                        <span className="text-[11px] font-semibold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
+                                        <span className="text-[11px] font-semibold text-gray-600 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
                                             {quant.age}
                                         </span>
                                     </div>
@@ -52,7 +52,7 @@ export default function QuantumsContent() {
                                 </p>
 
                                 <div className="space-y-2 pt-4 border-t border-gray-50 mb-8">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">
                                         Чему научится ребенок:
                                     </span>
                                     <div className="flex flex-col gap-1.5">
