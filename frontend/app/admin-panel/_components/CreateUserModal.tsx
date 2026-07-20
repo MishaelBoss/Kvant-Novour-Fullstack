@@ -72,8 +72,6 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
                                         <RadioGroup.Root value={field.value} onValueChange={field.onChange} className="grid grid-cols-2 gap-4">
                                             {[
                                                 { value: 'user', label: 'Пользователь' },
-                                                { value: 'student', label: 'Ученик' },
-                                                { value: 'parent', label: 'Родитель' },
                                                 { value: 'teacher', label: 'Преподаватель' },
                                             ].map((role) => (
                                                 <Flex align="center" gap="2" key={role.value}>

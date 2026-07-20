@@ -11,8 +11,6 @@ def user_avatar_path(instance, filename):
 
 class UserProfile(models.Model):
     USER_ROLES = (
-        ('student', 'Ученик'),
-        ('parent', 'Родитель'),
         ('user', 'Пользователь'),
         ('teacher', 'Преподаватель'),
         ('admin', 'Администратор'),
@@ -45,14 +43,6 @@ class UserProfile(models.Model):
     @property
     def is_user(self):
         return self.role == 'user'
-    
-    @property
-    def is_student(self):
-        return self.role == 'student'
-
-    @property
-    def is_parent(self):
-        return self.role == 'parent'
     
     def __str__(self):
         return self.user.username
