@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createNews, getCategories } from "@/app/lib/api";
 import { ICategory, INews, INewsCreateInput } from "@/app/types/news.interface";
