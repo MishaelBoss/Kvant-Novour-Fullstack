@@ -5,6 +5,41 @@ import { PAGES } from "@/app/config/pages.config";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { QUANTUMS } from "@/app/data/quantumsData";
+import { motion } from "framer-motion"
+
+const containerVariants = {
+    initial: { opacity: 0},
+    enter: { 
+        opacity: 1, 
+        x: 0, 
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+        } 
+    },
+    exit: {
+        opacity: 0,
+        transition: { 
+            staggerChildren: 0.05,
+            delayChildren: -1,
+        },
+        x: 10
+    },
+};
+
+const cardVariants = {
+    initial: { opacity: 0, y: 20},
+    enter: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { duration: 0.4, ease: 'easeOut' as const },
+    },
+    exit: {
+        opacity: 0,
+        y: 20,
+        transition: { duration: 0.2 },
+    },
+};
 
 export default function QuantumsContent() {
     return (
@@ -21,11 +56,12 @@ export default function QuantumsContent() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" variants={containerVariants} initial="initial" animate="enter" exit="exit">
                     {QUANTUMS.map((quant) => {
                         return (
-                        <div 
+                        <motion.div 
                             key={quant.id} 
+                            variants={cardVariants}
                             className="bg-white rounded-3xl border border-gray-100 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all group"
                         >
                             <div>
@@ -72,10 +108,10 @@ export default function QuantumsContent() {
                             >
                                 Записаться на курс <ArrowRight size={14} strokeWidth={2.5} />
                             </Link>
-                        </div>
+                        </motion.div>
                         );
                     })}
-                </div>
+                </motion.div>
             </main>
         </div>
         </>

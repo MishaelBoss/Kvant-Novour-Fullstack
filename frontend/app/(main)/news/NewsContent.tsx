@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { CartNews } from "@/app/components/CartNews";
 import { CartNewsSkeleton } from "@/app/components/CartNewsSkeleton";
@@ -6,6 +6,17 @@ import { getCategories, getListNews } from "@/app/lib/api";
 import { ICategory, INews } from "@/app/types/news.interface";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { motion } from "framer-motion"
+
+const variants = {
+    initial: { opacity: 0},
+    enter: { opacity: 1, x: 0, transition:{ delay: .25 } },
+    exit: {
+        opacity: 0,
+        transition: { duration: .25 },
+        x: 10
+    },
+};
 
 export default function NewsContent() {
     const [categories, setCategories] = useState<ICategory[]>([]); 
@@ -103,7 +114,7 @@ export default function NewsContent() {
                 </aside>
                 
                 <main className="flex-1">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" variants={{...variants,enter: { opacity: 1, x: 0, transition:{ delay: .40 } }}} initial="initial" animate="enter" exit="exit">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, index) => (
                                 <CartNewsSkeleton key={index} />
@@ -135,7 +146,7 @@ export default function NewsContent() {
                             </div>
                             </>
                         )}
-                    </div>
+                    </motion.div>
                 </main>
             </div>
         </div>
