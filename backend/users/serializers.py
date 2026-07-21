@@ -227,6 +227,53 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
     
 
+class UserUpdateByAdminSerializer(serializers.ModelSerializer):
+    middle_name = serializers.CharField(source='userprofile.middle_name', required=False, allow_blank=True, allow_null=True)
+    phone = serializers.CharField(source='userprofile.phone', required=False, allow_blank=True, allow_null=True)
+    role = serializers.CharField(source='userprofile.role', required=False)
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'role']
+
+    def validate_username(self, value):
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким именем уже существует")
+        return value
+
+    def validate_email(self, value):
+        if not value:
+            return value
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким email уже существует")
+        return value
+
+    def validate_role(self, value):
+        valid_roles = ['user', 'teacher', 'admin']
+        if value not in valid_roles:
+            raise serializers.ValidationError(f"Роль должна быть одной из: {', '.join(valid_roles)}")
+        return value
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('userprofile', {})
+
+        instance = super().update(instance, validated_data)
+
+        if profile_data:
+            profile = instance.userprofile
+            if 'middle_name' in profile_data:
+                profile.middle_name = profile_data['middle_name']
+            if 'phone' in profile_data:
+                profile.phone = profile_data['phone']
+            if 'role' in profile_data:
+                profile.role = profile_data['role']
+            profile.save()
+
+        return instance
+
+
 class UserSessionSerializer(serializers.ModelSerializer):
     is_current = serializers.SerializerMethodField()
 

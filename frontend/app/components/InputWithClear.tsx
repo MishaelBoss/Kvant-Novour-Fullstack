@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { ComponentPropsWithoutRef, useState } from "react";
 import { TextField, Box, Text } from "@radix-ui/themes";
-import { useFormContext } from "react-hook-form";
+import { RegisterOptions, useFormContext } from "react-hook-form";
 
 interface Props {
     label: string;
     name: string;
     placeholder?: string;
     icon?: React.ReactNode;
-    rules?: object;
+    rules?: RegisterOptions;
+    type?: ComponentPropsWithoutRef<typeof TextField.Root>['type'];
 }
 
-export const InputWithClear = ({ label, name, placeholder, icon, rules }: Props) => {
+export const InputWithClear = ({ label, name, placeholder, icon, rules, type = 'text' }: Props) => {
     const { register, setValue, watch, formState: { errors } } = useFormContext();
     const [isFocused, setIsFocused] = useState(false);
 
@@ -24,6 +25,7 @@ export const InputWithClear = ({ label, name, placeholder, icon, rules }: Props)
             <Text as="div" size="2" mb="2" weight="bold">{label}</Text>
             <TextField.Root
                 placeholder={placeholder}
+                type={type}
                 size="3"
                 color={error ? "red" : undefined}
                 {...register(name, rules)}

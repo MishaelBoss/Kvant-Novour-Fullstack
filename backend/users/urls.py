@@ -10,6 +10,7 @@ urlpatterns = [
     path('profile/<str:username>/', PublickProfileViewView.as_view(), name='public-profile'),
     path('users-list/', ListUsersView.as_view(), name='users-list'),
     path('user-delete/<int:id>/', UserDeleteView.as_view(), name='user-delete'),
+    path('user-update/<int:id>/', UserUpdateByAdminView.as_view(), name='user-update'),
     path('run-create-user/', CreateUserView.as_view(), name='run-create-user'),
     path('sessions-list/', UserSessionListView.as_view(), name='sessions_list'),
     path('sessions-delete/<int:pk>/', SessionsDeleteView.as_view(), name='delete_session'),

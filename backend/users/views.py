@@ -318,6 +318,7 @@ class ListUsersView(APIView):
                 'middle_name': p.middle_name,
                 'avatar': avatar_url,
                 'date_joined': u.date_joined,
+                'role': p.role
             })
         return Response({
             'count': users.count(),
@@ -342,6 +343,24 @@ class UserDeleteView(APIView):
             {'message': 'Пользователь успешно удален'}, 
             status=status.HTTP_200_OK
         )
+
+
+class UserUpdateByAdminView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def patch(self, request, id):
+        user = get_object_or_404(User, id=id)
+
+        serializer = UserUpdateByAdminSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Пользователь обновлен",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateUserView(APIView):

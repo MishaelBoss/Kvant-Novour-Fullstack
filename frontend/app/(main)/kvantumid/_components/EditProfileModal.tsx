@@ -51,9 +51,11 @@ export function EditProfileModal({children, user}: Props){
             setOpen(false);
             setError('');
             setIsLoading(false);
-        } catch(error) {
+        } catch(error: unknown) {
             let errorMessage = 'Произошла ошибка. Попробуйте снова.';
-            const responseData = (error as as)?.response?.data;
+
+            const axiosError = error as { response?: { data?: Record<string, string> } };
+            const responseData = axiosError?.response?.data;
             
             if (responseData) {
                 if (responseData.username?.[0]) errorMessage = responseData.username[0];

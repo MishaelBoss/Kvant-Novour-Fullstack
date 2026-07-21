@@ -40,7 +40,9 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
             router.push(PAGES.MY_PROFILE());
         } catch(error: unknown) {
             let errorMessage = 'Произошла ошибка. Попробуйте снова.';
-            const responseData = (error as any)?.response?.data;
+
+            const axiosError = error as { response?: { data?: Record<string, string> } };
+            const responseData = axiosError?.response?.data;
             
             if (responseData) {
                 if (responseData.username?.[0]) errorMessage = responseData.username[0];

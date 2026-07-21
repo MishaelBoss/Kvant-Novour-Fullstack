@@ -1,17 +1,23 @@
 "use client";
-
 import { InputWithClear } from "@/app/components/InputWithClear";
-import { editProfile } from "@/app/lib/api";
-import { IEditProfile, IUser } from "@/app/types/user.interface";
+import { updateUserByAdmin } from "@/app/lib/api";
+import { IUser } from "@/app/types/user.interface";
 import { Button, Callout, Dialog, Flex } from "@radix-ui/themes";
-import { Mail, Phone, User } from "lucide-react";
+import { Mail, Phone, User, ShieldCheck } from "lucide-react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { RadioGroup } from "radix-ui";
 import { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
 
 interface Props {
     children: React.ReactNode;
     user: IUser | null;
 }
+
+const ROLES = [
+    { value: 'user', label: 'Пользователь' },
+    { value: 'teacher', label: 'Преподаватель' },
+    { value: 'admin', label: 'Администратор' },
+];
 
 export function EditUserModel({ children, user }: Props) {
     const [open, setOpen] = useState(false);
@@ -25,6 +31,7 @@ export function EditUserModel({ children, user }: Props) {
             last_name: user?.last_name || '',
             middle_name: user?.middle_name || '',
             phone: user?.phone || '',
+            email: user?.email || '',
             role: user?.role || 'user'
         }
     });
@@ -37,31 +44,46 @@ export function EditUserModel({ children, user }: Props) {
                 last_name: user?.last_name || '',
                 middle_name: user?.middle_name || '',
                 phone: user?.phone || '',
+                email: user?.email || '',
                 role: user?.role || 'user'
             });
         }
     }, [user, methods]);
     
     const onSubmit = async (data: IUser) => {
+        if (!user?.id) return;
+
         setIsLoading(true);
+        setError('');
 
         try {
-            // await editProfile(data);
-            
-            setOpen(false);
-            setError('');
-            setIsLoading(false);
-        } catch(error) {
-            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
-            const responseData = (error as as)?.response?.data;
-            
-            if (responseData) {
-                if (responseData.username?.[0]) errorMessage = responseData.username[0];
-                else if (responseData.email?.[0]) errorMessage = responseData.email[0];
-                else if (responseData.non_field_errors?.[0]) errorMessage = responseData.non_field_errors[0];
+            const success = await updateUserByAdmin(user.id, {
+                username: data.username,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                middle_name: data.middle_name || '',
+                phone: data.phone || '',
+                email: data.email || '',
+                role: data.role,
+            });
+
+            if (success) {
+                setOpen(false);
+                setError('');
             }
-            
+        } catch (error: unknown) {
+            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
+
+            const axiosError = error as { response?: { data?: Record<string, unknown> } };
+            const responseData = axiosError?.response?.data;
+
+            if (responseData) {
+                const errorValues = Object.values(responseData).flat() as string[];
+                if (errorValues.length > 0 && typeof errorValues[0] === 'string') errorMessage = errorValues[0];
+            }
+
             setError(errorMessage);
+        } finally {
             setIsLoading(false);
         }
     };
@@ -69,9 +91,13 @@ export function EditUserModel({ children, user }: Props) {
     return (
         <Dialog.Root open={open} onOpenChange={setOpen}>
             <Dialog.Trigger>{children}</Dialog.Trigger>
-            <Dialog.Content maxWidth="400px" style={{ borderRadius: '24px', padding: '28px' }}>
-                <Dialog.Title size="6" mb="1">Личные данные пользователя {user?.username}</Dialog.Title>
-                <Dialog.Description size="2" mb="3" color="gray">Здесь вы можете изменить личные данные пользователя</Dialog.Description>
+            <Dialog.Content maxWidth="420px" style={{ borderRadius: '24px', padding: '28px' }}>
+                <Dialog.Title size="6" mb="1">Редактировать пользователя</Dialog.Title>
+                <Dialog.Description size="2" mb="3" color="gray">
+                    {user?.last_name || user?.first_name
+                        ? `${user.last_name || ''} ${user.first_name || ''}`
+                        : user?.username}
+                </Dialog.Description>
 
                 {error && (
                     <Callout.Root color="red" size="1" mb="4" style={{ borderRadius: '8px' }}>
@@ -82,74 +108,96 @@ export function EditUserModel({ children, user }: Props) {
                 <FormProvider {...methods}>
                     <form onSubmit={methods.handleSubmit(onSubmit)}>
                         <Flex direction="column" gap="4">
-                            <InputWithClear 
-                                label="Логин" 
-                                name="username" 
+                            <InputWithClear
+                                label="Логин"
+                                name="username"
                                 placeholder="Введите логин"
                                 rules={{ required: "Обязательно" }}
                                 icon={<User size={16} />}
+                                type="text"
                             />
-
-                            <InputWithClear 
-                                label="Имя пользователя" 
-                                name="first_name" 
+                            <InputWithClear
+                                label="Имя"
+                                name="first_name"
                                 placeholder="Введите имя"
                                 rules={{ required: "Обязательно" }}
-                                icon={<User size={16} />} 
+                                icon={<User size={16} />}
+                                type="text"
                             />
-
-                            <InputWithClear 
-                                label="Фамилия пользователя" 
-                                name="last_name" 
+                            <InputWithClear
+                                label="Фамилия"
+                                name="last_name"
                                 placeholder="Введите фамилию"
                                 rules={{ required: "Обязательно" }}
-                                icon={<User size={16} />} 
+                                icon={<User size={16} />}
+                                type="text"
                             />
-
-                            <InputWithClear 
-                                label="Отчество пользователя" 
-                                name="middle_name" 
+                            <InputWithClear
+                                label="Отчество"
+                                name="middle_name"
                                 placeholder="Введите отчество (если есть)"
-                                icon={<User size={16} />} 
+                                icon={<User size={16} />}
+                                type="text"
                             />
-
-                            <InputWithClear 
-                                label="Телефон" 
-                                name="phone" 
+                            <InputWithClear
+                                label="Телефон"
+                                name="phone"
                                 placeholder="Введите телефон"
-                                rules={{ required: "Обязательно" }}
-                                icon={<Phone size={16} />} 
+                                icon={<Phone size={16} />}
+                                type="tel"
+                            />
+                            <InputWithClear
+                                label="Почта"
+                                name="email"
+                                placeholder="Введите почту"
+                                icon={<Mail size={16} />}
+                                type="email"
                             />
 
-                            <InputWithClear 
-                                label="Почта" 
-                                name="email" 
-                                placeholder="Введите почту"
-                                icon={<Mail size={16} />} 
-                            />
+                            <div>
+                                <p className="text-[13px] font-medium mb-2 flex items-center gap-1.5">
+                                    <ShieldCheck size={14} />
+                                    Роль
+                                </p>
+                                <Controller name="role" control={methods.control} render={({ field }) => (
+                                    <RadioGroup.Root value={field.value} onValueChange={field.onChange} className="grid grid-cols-2 gap-4">
+                                        {ROLES.map((role) => (
+                                            <Flex align="center" gap="2" key={role.value}>
+                                            <RadioGroup.Item
+                                                value={role.value}
+                                                className="w-4 h-4 rounded-full border border-gray-400 bg-white"
+                                                style={{ flexShrink: 0 }} 
+                                            >
+                                                <RadioGroup.Indicator className="flex items-center justify-center w-full h-full after:content-[''] after:w-2 after:h-2 after:rounded-full after:bg-blue-500" />
+                                            </RadioGroup.Item>
+                                            <label className="text-sm">{role.label}</label>
+                                            </Flex>
+                                        ))}
+                                    </RadioGroup.Root>
+                                )} />
+                            </div>
                         </Flex>
 
                         <Flex direction="row" gap="3" mt="6" width="100%">
-                            <Button 
+                            <Button
                                 type="button"
-                                variant="soft" 
-                                color="indigo" 
-                                size="3" 
+                                variant="soft"
+                                color="indigo"
+                                size="3"
                                 style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
                                 onClick={() => setOpen(false)}
                             >
                                 Отмена
                             </Button>
-
-                            <Button 
-                                type="submit" 
+                            <Button
+                                type="submit"
                                 disabled={isLoading}
-                                variant="solid" 
-                                color="indigo" 
-                                size="3" 
+                                variant="solid"
+                                color="indigo"
+                                size="3"
                                 style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
                             >
-                                {isLoading ? 'Загрузка...' : 'Сохранить'}
+                                {isLoading ? 'Сохранение...' : 'Сохранить'}
                             </Button>
                         </Flex>
                     </form>

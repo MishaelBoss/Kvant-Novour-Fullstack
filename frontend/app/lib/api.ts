@@ -261,6 +261,35 @@ export const deleteUser = async (id: number | undefined) => {
     }
 }
 
+export const updateUserByAdmin = async (id: number, data: Partial<IUser>): Promise<boolean> => {
+    try {
+        const payload: Record<string, string> = {};
+        if (data.username !== undefined) payload.username = data.username;
+        if (data.first_name !== undefined) payload.first_name = data.first_name;
+        if (data.last_name !== undefined) payload.last_name = data.last_name;
+        if (data.middle_name !== undefined) payload.middle_name = data.middle_name;
+        if (data.phone !== undefined) payload.phone = data.phone;
+        if (data.email !== undefined) payload.email = data.email;
+        if (data.role !== undefined) payload.role = data.role;
+
+        const res = await axios.patch(`/user-update/${id}/`, payload, {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+        });
+
+        if (res.status === 200) {
+            window.dispatchEvent(new Event("fetchListUsers"));
+            return true;
+        }
+        return false;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw error;
+        }
+        return false;
+    }
+}
+
 export const createUser = async (data: IUser): Promise<boolean> => {
     try{
         const formData = new FormData();

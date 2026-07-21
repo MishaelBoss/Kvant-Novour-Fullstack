@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createUser } from "@/app/lib/api";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
@@ -11,6 +11,12 @@ interface Props {
     children: React.ReactNode;
     user: IUser | null;
 }
+
+const ROLES = [
+    { value: 'user', label: 'Пользователь' },
+    { value: 'teacher', label: 'Преподаватель' },
+    { value: 'admin', label: 'Администратор' },
+];
 
 export function CreateUserModal({children, user}: Props){
     const [open, setOpen] = useState(false);
@@ -73,15 +79,24 @@ export function CreateUserModal({children, user}: Props){
                         }}>
                             {step === 1 && (
                                 <>
-                                    <InputWithClear label="Логин" name="username" rules={{ required: "Обязательно" }} />
-                                    <InputWithClear label="Пароль" name="password" rules={{ required: "Обязательно" }} />
+                                    <InputWithClear 
+                                        label="Логин" 
+                                        name="username" 
+                                        placeholder="Введите логин" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="text"
+                                    />
+                                    <InputWithClear 
+                                        label="Пароль"
+                                        name="password" 
+                                        placeholder="Введите пароль" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="password"
+                                    />
                                     
                                     <Controller name="role" control={methods.control} render={({ field }) => (
                                         <RadioGroup.Root value={field.value} onValueChange={field.onChange} className="grid grid-cols-2 gap-4">
-                                            {[
-                                                { value: 'user', label: 'Пользователь' },
-                                                { value: 'teacher', label: 'Преподаватель' },
-                                            ].map((role) => (
+                                            {ROLES.map((role) => (
                                                 <Flex align="center" gap="2" key={role.value}>
                                                 <RadioGroup.Item
                                                     value={role.value}
@@ -100,16 +115,43 @@ export function CreateUserModal({children, user}: Props){
 
                             {step === 2 && (
                                 <>
-                                    <InputWithClear label="Имя" name="first_name" rules={{ required: "Обязательно" }} />
-                                    <InputWithClear label="Фамилия" name="last_name" rules={{ required: "Обязательно" }} />
-                                    <InputWithClear label="Отчество" name="middle_name" />
+                                    <InputWithClear 
+                                        label="Имя" 
+                                        placeholder="Введите имя" 
+                                        name="first_name" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="text"
+                                    />
+                                    <InputWithClear 
+                                        label="Фамилия" 
+                                        placeholder="Введите фамилию" 
+                                        name="last_name" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="text"
+                                    />
+                                    <InputWithClear 
+                                        label="Отчество" 
+                                        placeholder="Введите отчество (если есть)" 
+                                        name="middle_name" 
+                                        type="text"
+                                    />
                                 </>
                             )}
 
                             {step === 3 && (
                                 <>
-                                    <InputWithClear label="Телефон" name="phone" />
-                                    <InputWithClear label="Email" name="email" />
+                                    <InputWithClear 
+                                        label="Телефон"
+                                        placeholder="Введите телефон"
+                                        name="phone" 
+                                        type="tel"
+                                    />
+                                    <InputWithClear 
+                                        label="Email" 
+                                        placeholder="Введите почте" 
+                                        name="email" 
+                                        type="email"
+                                    />
                                 </>
                             )}
 
