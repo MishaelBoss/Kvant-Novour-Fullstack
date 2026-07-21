@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import Select from "react-select";
+import { motion, AnimatePresence } from "framer-motion"
 
 interface CreateNewsModalProps {
     children: React.ReactNode;
@@ -52,17 +53,7 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
         multiple: false,
         maxSize: 5242880, 
         disabled: !!preview
-
     });
-
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            methods.setValue('image', file);
-            const url = URL.createObjectURL(file);
-            setPreview(url);
-        }
-    };
 
     useEffect(() => {
         if (news) {
@@ -138,56 +129,84 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
 
                             <Box>
                                 <Text as="div" size="2" mb="2" weight="bold">Обложка</Text>
-                                <Box 
-                                    {...getRootProps()}
-                                    style={{ 
-                                        position: 'relative',
-                                        height: '180px',
-                                        borderRadius: '16px',
-                                        backgroundColor: 'var(--gray-3)',
-                                        border: isDragActive ? '2px solid var(--blue-9)' : '2px dashed var(--gray-6)',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <input {...getInputProps()} aria-label="Выберите изображение для загрузки" />
+                                <div {...getRootProps()} style={{ position: 'relative' }}>
+                                    <motion.div 
+                                        animate={{ 
+                                            scale: isDragActive ? 1.02 : 1,
+                                            backgroundColor: isDragActive ? 'var(--blue-2)' : 'var(--gray-3)',
+                                            borderColor: isDragActive ? 'var(--blue-9)' : 'var(--gray-6)',
+                                            borderStyle: isDragActive ? 'solid' : 'dashed'
+                                        }}
+                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                        style={{ 
+                                            position: 'relative',
+                                            height: '180px',
+                                            borderRadius: '16px',
+                                            borderWidth: '2px',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: preview ? 'default' : 'pointer',
+                                        }}
+                                    >
+                                        <input {...getInputProps()} aria-label="Выберите изображение для загрузки" />
 
-                                    {preview ? (
-                                        <>
-                                            <Image objectFit="cover" fill src={preview} alt="Preview" className="object-cover" />
-                                            
-                                            <Flex 
-                                                className="image-overlay"
-                                                align="center" 
-                                                justify="center"
-                                                style={{
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                    backgroundColor: 'rgba(0,0,0,0.4)',
-                                                    opacity: 0,
-                                                    transition: 'opacity 0.2s',
-                                                    display: 'flex',
-                                                }}
-                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
-                                            >
-                                                <Button color="red" variant="solid" onClick={removeImage} size="2">
-                                                    Удалить фото
-                                                </Button>
-                                            </Flex>
-                                        </>
-                                    ) : (
-                                        <Flex direction="column" align="center" gap="1">
-                                            <Text size="2" color={isDragActive ? "blue" : "gray"} weight={isDragActive ? "bold" : "regular"}>
-                                                {isDragActive ? 'Бросайте картинку сюда!' : 'Нажмите или перетащите для загрузки'}
-                                            </Text>
-                                            <Text size="1" color="gray">JPG, PNG, WEBP до 5MB</Text>
-                                        </Flex>
-                                    )}
-                                </Box>
+                                        <AnimatePresence mode="wait">
+                                            {preview ? (
+                                                <motion.div
+                                                    key="image-preview"
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                                                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+                                                >
+                                                    <Image 
+                                                        fill 
+                                                        src={preview} 
+                                                        alt="Preview" 
+                                                        style={{ objectFit: 'cover' }}
+                                                    />                                                    
+                                                    <motion.div 
+                                                        initial={{ opacity: 0 }}
+                                                        whileHover={{ opacity: 1 }}
+                                                        transition={{ duration: 0.15 }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            inset: 0,
+                                                            backgroundColor: 'rgba(0,0,0,0.4)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}
+                                                    >
+                                                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                                            <Button color="red" variant="solid" onClick={removeImage} size="2">
+                                                                Удалить фото
+                                                            </Button>
+                                                        </motion.div>
+                                                    </motion.div>
+                                                </motion.div>
+                                            ) : (
+                                                <motion.div
+                                                    key="dropzone-placeholder"
+                                                    initial={{ opacity: 0, y: 5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -5 }}
+                                                    transition={{ duration: 0.15 }}
+                                                >
+                                                    <Flex direction="column" align="center" gap="1">
+                                                        <Text size="2" color={isDragActive ? "blue" : "gray"} weight={isDragActive ? "bold" : "regular"}>
+                                                            {isDragActive ? 'Бросайте картинку сюда!' : 'Нажмите или перетащите для загрузки'}
+                                                        </Text>
+                                                        <Text size="1" color="gray">JPG, PNG, WEBP до 5MB</Text>
+                                                    </Flex>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div >
+                                </div>
                             </Box>
 
                             <Box>
