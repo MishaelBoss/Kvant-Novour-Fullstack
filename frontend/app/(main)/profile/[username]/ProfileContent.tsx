@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { getPublicProfile } from "@/app/lib/api";
 import { IPublicProfileData } from "@/app/types/profile.interface";
 import { useParams } from "next/navigation";
@@ -93,7 +93,7 @@ export default function ProfileContent(){
             </header>
 
             <main className="max-w-300 mx-auto mt-6 px-4 pb-16">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-10">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-10">
                     <div className="flex items-start gap-6">
                         <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0 bg-gray-100">
                             {profile.avatar ? (
@@ -115,11 +115,23 @@ export default function ProfileContent(){
                         </div>
 
                         <div className="flex-1 pt-1">
-                            <div className="flex items-center gap-3 mb-3">
-                                <h1 className="text-[24px] font-bold">
-                                    {profile.first_name || profile.username}
-                                </h1>
-                                <span className={`text-[12px] font-medium px-3 py-1 rounded-full ${roleBadgeColor[profile.role] || 'bg-gray-50 text-gray-500'}`}>
+                            <div className="flex items-start gap-4 mb-3">
+                                <div className="flex-1">
+                                    <h1 className="text-[28px] font-bold leading-tight">
+                                        {profile.last_name || profile.first_name ? (
+                                            <>
+                                                {profile.last_name && <span>{profile.last_name}</span>}
+                                                {profile.last_name && profile.first_name && <span> </span>}
+                                                {profile.first_name && <span>{profile.first_name}</span>}
+                                                {profile.middle_name && <span className="text-gray-400 font-normal"> {profile.middle_name}</span>}
+                                            </>
+                                        ) : (
+                                            <span>{profile.username}</span>
+                                        )}
+                                    </h1>
+                                    <p className="text-[14px] text-gray-600 mt-1">@{profile.username}</p>
+                                </div>
+                                <span className={`shrink-0 text-[12px] font-medium px-3 py-1 rounded-full mt-1 ${roleBadgeColor[profile.role] || 'bg-gray-50 text-gray-500'}`}>
                                     {roleLabel}
                                 </span>
                             </div>
@@ -142,7 +154,7 @@ export default function ProfileContent(){
                             alt="Достижения" 
                             width={240} 
                             height={240}
-                            loading="eager"
+                            priority
                             className="opacity-90"
                         />
                         <div className="flex flex-col gap-1">

@@ -286,6 +286,7 @@ class PublickProfileViewView(APIView):
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "middle_name": profile.middle_name,
                 "date_joined": user.date_joined,
                 "avatar": avatar_url,
                 "role": profile.role

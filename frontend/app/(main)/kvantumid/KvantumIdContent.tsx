@@ -13,7 +13,7 @@ import { DeleteConfirmModal } from './_components/DeleteConfirmModel';
 import { useAuth } from '@/app/context/AuthContext';
 import { KvantumIDSkeleton } from './_components/KvantumIDSkeleton';
 import { Monitor, Laptop, Smartphone } from 'lucide-react';
-import { deleteSession, getActiveSessions } from '@/app/lib/api';
+import { getActiveSessions } from '@/app/lib/api';
 import { DeleteSessionModel } from './_components/DeleteSessionModel';
 import { DeleteAllSessionModel } from './_components/DeleteAllSessionModel';
 
@@ -93,7 +93,7 @@ export default function KvantumIdContent() {
                             
                             <div className="flex gap-16">
                                 <div>
-                                    <p className="text-[12px] text-gray-600 mb-1">Telephone</p>
+                                    <p className="text-[12px] text-gray-600 mb-1">Телефон</p>
                                     <p className="text-[14px]">{FormatPhoneNumber(user?.phone)}</p>
                                     <EditProfileModal user={user}>
                                         <Link href="#" className="text-[13px] text-[#005BFF] mt-2 hover:underline" style={{ cursor: "pointer" }}>Изменить</Link>
