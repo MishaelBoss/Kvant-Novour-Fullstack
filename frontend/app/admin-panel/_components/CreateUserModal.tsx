@@ -30,8 +30,8 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
     }); 
 
     const handleNext = async () => {
-        const fields = step === 1 ? ['username', 'password'] : ['first_name', 'last_name'];
-        const isValid = await methods.trigger(fields as any);
+        const fields = step === 1 ? (['username', 'password'] as const) : (['first_name', 'last_name'] as const);
+        const isValid = await methods.trigger(fields);
         if (!isValid) return;
         setStep(step + 1);
     };
@@ -66,7 +66,11 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
 
                 <FormProvider {...methods}>
                     <Flex direction="column" gap="4" asChild>
-                        <form onSubmit={(e) => { e.preventDefault(); step === 3 ? handleSave() : handleNext(); }}>
+                        <form onSubmit={(e) => { 
+                            e.preventDefault(); 
+                            if (step === 3) handleSave();
+                            else handleNext(); 
+                        }}>
                             {step === 1 && (
                                 <>
                                     <InputWithClear label="Логин" name="username" rules={{ required: "Обязательно" }} />
