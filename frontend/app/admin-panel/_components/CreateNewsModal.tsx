@@ -5,7 +5,8 @@ import { ICategory, INews, INewsCreateInput } from "@/app/types/news.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import { PenLine } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import Select from "react-select";
 
@@ -22,7 +23,6 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
     const [categories, setCategories] = useState<ICategory[]>([]); 
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(typeof news?.image === 'string' ? news.image : null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const methods = useForm<NewsFormValues>({
         defaultValues: {
@@ -32,6 +32,28 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
             categories: news?.categories || []
         }
     }); 
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        const file = acceptedFiles[0];
+        if (file) {
+            methods.setValue('image', file);
+            const url = URL.createObjectURL(file);
+
+            if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
+            setPreview(url);
+        }
+    }, [methods, preview]);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: {
+            'image/*': ['.jpeg', '.jpg', '.png', '.webp']
+        },
+        multiple: false,
+        maxSize: 5242880, 
+        disabled: !!preview
+
+    });
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -62,18 +84,20 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
             setCategories(data.results);
         };
         loadCats();
-    }, []);
+
+        return () => {
+            if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
+        }
+    }, [preview]);
 
     const removeImage = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
         
         setPreview(null);
         methods.setValue('image', null);
-        
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
     };
 
     const onSubmit = async (data: NewsFormValues) => {
@@ -83,7 +107,6 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
         };
         
         const isSuccess = await createNews(payload); 
-        
         if(isSuccess) setOpen(false);
     };
 
@@ -116,12 +139,13 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                             <Box>
                                 <Text as="div" size="2" mb="2" weight="bold">Обложка</Text>
                                 <Box 
+                                    {...getRootProps()}
                                     style={{ 
                                         position: 'relative',
                                         height: '180px',
                                         borderRadius: '16px',
                                         backgroundColor: 'var(--gray-3)',
-                                        border: '2px dashed var(--gray-6)',
+                                        border: isDragActive ? '2px solid var(--blue-9)' : '2px dashed var(--gray-6)',
                                         overflow: 'hidden',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -129,6 +153,8 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                                         cursor: 'pointer'
                                     }}
                                 >
+                                    <input {...getInputProps()} aria-label="Выберите изображение для загрузки" />
+
                                     {preview ? (
                                         <>
                                             <Image objectFit="cover" fill src={preview} alt="Preview" className="object-cover" />
@@ -155,20 +181,11 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                                         </>
                                     ) : (
                                         <Flex direction="column" align="center" gap="1">
-                                            <Text size="2" color="gray">Нажмите для загрузки</Text>
-                                            <Text size="1" color="gray">JPG, PNG до 5MB</Text>
+                                            <Text size="2" color={isDragActive ? "blue" : "gray"} weight={isDragActive ? "bold" : "regular"}>
+                                                {isDragActive ? 'Бросайте картинку сюда!' : 'Нажмите или перетащите для загрузки'}
+                                            </Text>
+                                            <Text size="1" color="gray">JPG, PNG, WEBP до 5MB</Text>
                                         </Flex>
-                                    )}
-
-                                    {!preview && (
-                                        <input 
-                                            ref={fileInputRef}
-                                            type="file" 
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            aria-label="Выберите изображение для загрузки" 
-                                        />
                                     )}
                                 </Box>
                             </Box>
