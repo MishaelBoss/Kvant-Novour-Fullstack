@@ -1,13 +1,13 @@
+import uuid
 from django.db import models
 from django.db.models.signals import post_save
+from django.core.files.base import ContentFile
 from django.dispatch import receiver
 from django.conf import settings
-import uuid
 
 def user_avatar_path(instance, filename):
-    ext = filename.split('.')[-1].lower()
     hash = uuid.uuid4().hex[:8]
-    return f'user/user_avatar_{instance.user.id}_{hash}.{ext}'
+    return f'user/user_avatar_{instance.user.id}_{hash}.webp'
 
 class UserProfile(models.Model):
     USER_ROLES = (
@@ -30,7 +30,8 @@ class UserProfile(models.Model):
 
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def save_user_profile(sender, instance, **kwargs):
-        instance.userprofile.save()
+        if hasattr(instance, 'userprofile'):
+            instance.userprofile.save()
 
     @property
     def is_admin(self):

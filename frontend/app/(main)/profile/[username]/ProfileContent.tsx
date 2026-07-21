@@ -81,7 +81,7 @@ export default function ProfileContent(){
     };
 
     return (
-        <div className="min-h-screen bg-white font-sans text-[#2B2E33]">
+        <div className="min-h-screen font-sans text-[#2B2E33]">
             <header className="max-w-300 mx-auto pt-8 px-4">
                 <Link 
                     href={PAGES.HOME()} 
@@ -100,7 +100,7 @@ export default function ProfileContent(){
                                 <Image 
                                     src={profile.avatar.replace('http://localhost', '')}
                                     fill
-                                    loading="eager"
+                                    priority
                                     alt={profile.username}
                                     className="object-cover"
                                 />
@@ -123,7 +123,7 @@ export default function ProfileContent(){
                                     {roleLabel}
                                 </span>
                             </div>
-                            <p className="text-[15px] text-gray-400">
+                            <p className="text-[15px] text-gray-600">
                                 На сайте с {new Date(profile.date_joined).toLocaleDateString('ru-RU', {
                                     day: 'numeric',
                                     month: 'long',
@@ -147,7 +147,7 @@ export default function ProfileContent(){
                         />
                         <div className="flex flex-col gap-1">
                             <p className="text-[16px] font-semibold text-gray-800">Пока достижений нет</p>
-                            <p className="text-[14px] text-gray-400 max-w-sm">
+                            <p className="text-[14px] text-gray-600 max-w-sm">
                                 Достижения появятся автоматически, когда вы будете их зарабатывать. 
                                 Просто продолжайте использовать сайт и достигать новых высот!
                             </p>

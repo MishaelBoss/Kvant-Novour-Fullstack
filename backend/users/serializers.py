@@ -4,8 +4,9 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import *
+from io import BytesIO
+from PIL import Image, ImageOps
 import os
-
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -122,7 +123,7 @@ class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
             if value.size > max_size:
                 raise serializers.ValidationError("Размер файла не должен превышать 5 МБ.")
 
-            valid_mime_types = ['image/jpeg', 'image/png']
+            valid_mime_types = ['image/jpeg', 'image/png', 'image/webp']
             if value.content_type not in valid_mime_types:
                 raise serializers.ValidationError("Файл не является валидным изображением.")
 
@@ -136,6 +137,24 @@ class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
             if 'avatar' in profile_data:
                 new_avatar = profile_data['avatar']
                 
+                if new_avatar:
+                    img = Image.open(new_avatar)
+                    
+                    if img.mode in ('RGBA', 'LA'):
+                        background = Image.new('RGB', img.size, (255, 255, 255))
+                        background.paste(img, mask=img.split()[-1])
+                        img = background
+                    elif img.mode != 'RGB':
+                        img = img.convert('RGB')
+
+                    img = ImageOps.fit(img, (384, 384), Image.Resampling.LANCZOS)
+
+                    output_buffer = BytesIO()
+                    img.save(output_buffer, format='WEBP', quality=80)
+                    output_buffer.seek(0)
+
+                    new_avatar = ContentFile(output_buffer.read(), name=new_avatar.name)
+
                 if profile.avatar and os.path.isfile(profile.avatar.path):
                     try:
                         os.remove(profile.avatar.path)
