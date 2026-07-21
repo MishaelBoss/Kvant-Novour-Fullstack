@@ -36,6 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [pathname, router]);
 
+    const handleLogout = useCallback(async () => {
+        setUser(null);
+        setCountNotifications(0);
+        checkAndRedirect(null);
+    }, [checkAndRedirect]);
+
     const refreshAuth = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -60,13 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [checkAndRedirect]);
-
-    function handleLogout() {
-        setUser(null);
-        setCountNotifications(0);
-        checkAndRedirect(null);
-    }
+    }, [handleLogout, checkAndRedirect]);
 
     const updateUser = useCallback((data: Partial<IUser>) => {
         setUser(prev => prev ? { ...prev, ...data } : null);
