@@ -10,10 +10,14 @@ import { motion } from "framer-motion"
 
 const variants = {
     initial: { opacity: 0},
-    enter: { opacity: 1, x: 0, transition:{ delay: .25 } },
+    enter: { 
+        opacity: 1,
+        x: 0, 
+        transition:{ delay: 0.4 } 
+    },
     exit: {
         opacity: 0,
-        transition: { duration: .25 },
+        transition: { duration:  0.2 },
         x: 10
     },
 };
