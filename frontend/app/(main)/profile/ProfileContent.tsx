@@ -1,5 +1,4 @@
 "use client";
-
 import { PAGES } from "@/app/config/pages.config";
 import { uploadAvatar } from "@/app/lib/api";
 import Link from "next/link";
@@ -14,6 +13,14 @@ import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { toast } from "react-hot-toast";
 
+const VALID_MIME_TYPES = {
+    'image/jpeg': ['.jpeg', '.jpg'],
+    'image/png': ['.png'],
+    'image/webp': ['.webp']
+};
+
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+
 export default function ProfileContent() {
     const { user, isLoading: isAuthLoading, isAdmin, isTeacher } = useAuth(); 
     const searchParams = useSearchParams();
@@ -24,16 +31,17 @@ export default function ProfileContent() {
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
-
-        const validTypes = ['image/jpeg', 'image/png'];
-        if (!validTypes.includes(file.type)) {
-            toast.error('Пожалуйста, выберите изображение в формате JPEG, PNG.');
+        if (!file) {
+            toast.error('Файл не поддерживается или не выбран.');
             return;
         }
 
-        const maxSizeInBytes = 5 * 1024 * 1024;
-        if (file.size > maxSizeInBytes) {
+        if (!Object.keys(VALID_MIME_TYPES).includes(file.type)) {
+            toast.error('Пожалуйста, выберите изображение в формате JPEG, PNG или WEBP.');
+            return;
+        }
+
+        if (file.size > MAX_SIZE_BYTES) {
             toast.error('Размер файла не должен превышать 5 МБ.');
             return;
         }

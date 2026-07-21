@@ -2,8 +2,9 @@
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import Image from "next/image";
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { FileRejection, useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion"
+import { toast } from "react-hot-toast";
 
 interface Props {
     children: React.ReactNode;
@@ -11,29 +12,49 @@ interface Props {
     isActive: boolean;
 }
 
+const VALID_MIME_TYPES = {
+    'image/jpeg': ['.jpeg', '.jpg'],
+    'image/png': ['.png'],
+    'image/webp': ['.webp']
+};
+
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+
 export function ModelConfirmAddForm({ children, onPublish, isActive }: Props) {
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        const file = acceptedFiles[0];
-        if (file) {
-            setImageFile(file);
-            const url = URL.createObjectURL(file);
+    const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
+        if (fileRejections.length > 0) {
+            const error = fileRejections[0].errors[0];
 
-            if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
-            setPreview(url);
+            if (error.code === 'file-invalid-type') toast.error('Пожалуйста, выберите изображение в формате JPEG, PNG или WEBP.');
+            else if (error.code === 'file-too-large') toast.error('Размер файла не должен превышать 5 МБ.');
+            else toast.error('Ошибка при загрузке файла.');
+            return;
         }
-    }, [preview]);
+
+        const file = acceptedFiles[0];
+        if (!file) {
+            toast.error('Файл не поддерживается или не выбран.');
+            return;
+        }
+
+        setImageFile(file);
+        const url = URL.createObjectURL(file);
+
+        setPreview((prevPreview) => {
+            if (prevPreview?.startsWith('blob:')) URL.revokeObjectURL(prevPreview);
+            return url;
+        });
+    }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: {
-            'image/*': ['.jpeg', '.jpg', '.png', '.webp']
-        },
+        accept: VALID_MIME_TYPES,
         multiple: false,
-        maxSize: 5242880, 
+        maxSize: MAX_SIZE_BYTES, 
         disabled: !!preview
     });
 
