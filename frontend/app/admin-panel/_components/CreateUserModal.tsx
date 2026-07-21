@@ -7,12 +7,12 @@ import { RadioGroup } from "radix-ui";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { IUser } from "@/app/types/user.interface";
 
-interface CreateUserModalProps {
+interface Props {
     children: React.ReactNode;
     user: IUser | null;
 }
 
-export function CreateUserModal({children, user}: CreateUserModalProps){
+export function CreateUserModal({children, user}: Props){
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
     const [saving, setSaving] = useState(false);

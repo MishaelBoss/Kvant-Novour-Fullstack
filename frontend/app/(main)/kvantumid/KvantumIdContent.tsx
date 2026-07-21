@@ -3,7 +3,7 @@
 import { PAGES } from '@/app/config/pages.config';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
-import { EditProfileModal } from './_components/EditModal';
+import { EditProfileModal } from './_components/EditProfileModal';
 import Link from 'next/link';
 import { FormatPhoneNumber } from '@/app/utils/FormatPhoneNumber';
 import { Separator } from "radix-ui";
