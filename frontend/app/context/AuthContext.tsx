@@ -110,7 +110,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     ]);
 
     useEffect(() => {
-        refreshAuth();
+        const init = async() => refreshAuth();
+        init();
     }, [refreshAuth]);
 
     useEffect(() => {

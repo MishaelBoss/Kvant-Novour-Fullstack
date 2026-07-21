@@ -25,6 +25,26 @@ export const checkAuthStatus = async () => {
     }
 };
 
+export const tokenRefresh = async() => {
+    try {
+        const res = await axios.get(`/token/refresh/`, {
+            withCredentials: true, 
+        });
+
+        return res.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {            
+            if (error.response?.status === 401) {
+                console.log("Рефреш токен протух или отсутствует");
+                return null;
+            }
+        } else {
+            console.error("Неизвестная ошибка:", error);
+        }
+        return null;
+    }
+};
+
 export const login = async (data: IUserLogin) => {
     try{
         const res = await axios.post(`/login/`, data, {

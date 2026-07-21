@@ -16,4 +16,5 @@ urlpatterns = [
     path('sessions-delete/<int:pk>/', SessionsDeleteView.as_view(), name='delete_session'),
     path('sessions-delete-all/', SessionsDeleteAllView.as_view(), name='delete_all_sessions'),
     path('upload-avatar/', UploadAvatarView.as_view(), name='upload-avatar'),
+    path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh')
 ]

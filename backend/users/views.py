@@ -1,4 +1,4 @@
-from rest_framework.views import APIView
+from rest_framework.views import APIView, TokenRefreshView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
@@ -429,3 +429,49 @@ class SessionsDeleteAllView(APIView):
         response.delete_cookie('refresh_token')
 
         return response
+    
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token missing in cookies"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception:
+            return Response({"detail": "Token is invalid or expired"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        res_data = serializer.validated_data
+
+        response = Response({
+            "access": res_data.get("access")
+        }, status=status.HTTP_200_OK)
+
+        response.set_cookie(
+            key='access_token',
+            value=res_data["access"],
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=3600
+        )
+
+        if "refresh" in res_data:
+            response.set_cookie(
+                key='refresh_token',
+                value=res_data["refresh"],
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax',
+                max_age=7 * 24 * 60 * 60
+            )
+
+        return response
+    
