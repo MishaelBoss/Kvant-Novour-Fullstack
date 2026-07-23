@@ -30,6 +30,8 @@ const VALID_MIME_TYPES = {
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
+const GENERATE_UNIQUE_ID = (): number => Date.now();
+
 export function CreateNewsModal({children, news}: CreateNewsModalProps){
     const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedOption, setSelectedOption] = useState<MultiValue<ICategory>>([]);
@@ -124,13 +126,27 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
         const newCats = data.categories.filter(c => !existingIds.has(c.value));
 
         const createdIds: number[] = [];
-        for (const cat of newCats) {
+        if (data.categories.length == 0) {
             try {
-                const result = await createCategory(cat);
-                createdIds.push(result.data.value);
+                const res = await createCategory({ 
+                    label: 'Новости',
+                    value: GENERATE_UNIQUE_ID()
+                })
+                const catId = res?.data?.value || res?.value;
+                if (catId) createdIds.push(catId);
             } catch {
-                toast.error(`Ошибка при создании категории "${cat.label}"`);
+                toast.error('Ошибка при создании дефолтной категории "Новости"');
                 return;
+            }
+        } else {
+            for (const cat of newCats) {
+                try {
+                    const result = await createCategory(cat);
+                    createdIds.push(result.data.value);
+                } catch {
+                    toast.error(`Ошибка при создании категории "${cat.label}"`);
+                    return;
+                }
             }
         }
 

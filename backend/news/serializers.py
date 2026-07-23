@@ -10,6 +10,12 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ['value', 'label', 'slug']
 
+    def create(self, validated_data):
+        name = validated_data.get('name')
+        category, created = Category.objects.get_or_create(name=name)
+
+        return category
+
 
 class NewsSerializer(serializers.ModelSerializer):
     form_slug = serializers.CharField(read_only=True)
