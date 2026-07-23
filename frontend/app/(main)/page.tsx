@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <div className="w-full p-4 md:p-8 pb-16">
+      <div className="w-full p-4 pb-16">
         <main className="max-w-354 mx-auto space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-linear-to-r from-[#005bff] to-[#003cb3] rounded-3xl p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-80 shadow-sm">
