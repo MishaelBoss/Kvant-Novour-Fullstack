@@ -1,9 +1,10 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
 import { IEditProfile, IUser, IUserLogin, IUserRegister } from "../types/user.interface";
-import { INewsCreateInput } from "../types/news.interface";
+import { ICategory, INewsCreateInput } from "../types/news.interface";
 import { IFormCreate, IFormSettings, IQuizSession } from "../types/form.interface";
 import { ParamValue } from "next/dist/server/request/params";
+import { form } from "framer-motion/client";
 
 export const checkAuthStatus = async () => {
     try {
@@ -150,6 +151,26 @@ export const getPublicProfile = async(username: ParamValue) => {
     }
 }
 
+export const createCategory = async (data: ICategory) => {
+    try {
+        const formData = new FormData();
+
+        if (data.label) formData.append('label', data.label);
+        // if (data.slug) formData.append('slug', data.slug);
+
+        const response = await axios.post('create-category/', formData, {
+            withCredentials: true,
+        });
+
+        return response.data;
+    } catch(error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при создание:', error.response?.data || error.message);
+        }
+        throw error;
+    }
+}
+
 export const createNews = async (data: INewsCreateInput): Promise<boolean> => {
     try {
         const formData = new FormData();
@@ -163,7 +184,7 @@ export const createNews = async (data: INewsCreateInput): Promise<boolean> => {
 
         if (Array.isArray(data.category_ids)) {
             data.category_ids.forEach((id) => {
-                formData.append('categories', id.toString());
+                formData.append('category_ids', id.toString());
             });
         }
 

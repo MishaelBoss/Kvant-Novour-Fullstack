@@ -1,6 +1,6 @@
 "use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
-import { createNews, getCategories } from "@/app/lib/api";
+import { createCategory, createNews, getCategories } from "@/app/lib/api";
 import { ICategory, INews, INewsCreateInput } from "@/app/types/news.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import { PenLine } from "lucide-react";
@@ -8,9 +8,10 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import Select from "react-select";
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "react-hot-toast";
+import CreatableSelect from 'react-select/creatable';
+import { MultiValue } from "react-select";
 
 interface CreateNewsModalProps {
     children: React.ReactNode;
@@ -31,6 +32,7 @@ const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 export function CreateNewsModal({children, news}: CreateNewsModalProps){
     const [categories, setCategories] = useState<ICategory[]>([]); 
+    const [selectedOption, setSelectedOption] = useState<MultiValue<ICategory>>([]);
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(typeof news?.image === 'string' ? news.image : null);
 
@@ -113,13 +115,48 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
     };
 
     const onSubmit = async (data: NewsFormValues) => {
+        const existingIds = new Set(categories.map(c => c.value));
+
+        const knownIds = data.categories
+            .filter(c => existingIds.has(c.value))
+            .map(c => c.value);
+
+        const newCats = data.categories.filter(c => !existingIds.has(c.value));
+
+        const createdIds: number[] = [];
+        for (const cat of newCats) {
+            try {
+                const result = await createCategory(cat);
+                createdIds.push(result.data.value);
+            } catch {
+                toast.error(`Ошибка при создании категории "${cat.label}"`);
+                return;
+            }
+        }
+
         const payload: INewsCreateInput = {
-            ...data,
-            category_ids: data.categories.map(c => c.value),
+            title: data.title,
+            content: data.content,
+            image: data.image,
+            category_ids: [...knownIds, ...createdIds],
         };
-        
-        const isSuccess = await createNews(payload); 
-        if(isSuccess) setOpen(false);
+
+        const isSuccess = await createNews(payload);
+        if (isSuccess) setOpen(false);
+    };
+
+    const handleCreate = (inputValue: string) => {
+        const generatedSlug = inputValue.toLowerCase().replace(/\s+/g, '-');
+
+        const newOption: ICategory = {
+            label: inputValue,
+            value: Date.now(), 
+            slug: generatedSlug,
+        };
+
+        const newSelected = [...selectedOption, newOption];
+        setSelectedOption(newSelected);
+        methods.setValue('categories', newSelected);
     };
 
     return (
@@ -236,10 +273,15 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                                     name="categories"
                                     control={methods.control}
                                     render={({ field }) => (
-                                        <Select
-                                            {...field}
+                                        <CreatableSelect
                                             isMulti
                                             options={categories || []}
+                                            value={selectedOption}
+                                            onChange={(newValue) => {
+                                                setSelectedOption(newValue);
+                                                field.onChange(newValue);
+                                            }}
+                                            onCreateOption={handleCreate} 
                                             placeholder="Выберите категории..."
                                             styles={{
                                                 control: (base) => ({

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from pytils.translit import slugify
 from forms.models import * 
+from transliterate import translit
 
 def news_image_path(instance, filename):
     ext = filename.split('.')[-1].lower()
@@ -14,10 +15,11 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            latin_name = translit(self.name, 'ru', reversed=True)
+            self.slug = slugify(latin_name)
         super().save(*args, **kwargs)
 
 class News(models.Model):
