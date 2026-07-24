@@ -5,7 +5,7 @@ export const metadata = {
     title: 'Квантумы',
 };
 
-export default function QuantumsPage(){
+export default function Page(){
     return (
         <>
         <Header/>

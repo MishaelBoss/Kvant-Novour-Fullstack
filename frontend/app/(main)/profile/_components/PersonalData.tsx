@@ -39,10 +39,29 @@ export function PersonalData({user} : PersonalDataProps) {
                 <div className="flex items-center gap-2 mb-2">
                     <h2 className="text-xl font-bold text-gray-900">Публичные данные</h2>
                 </div>
-                <p className="text-sm text-gray-500 mb-6">
-                    Информация, которую вы укажете здесь, будет видна другим пользователям.
-                </p>
-                <DataBlock label="Имя" value={`${user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name[0]}.` : user?.first_name || user?.last_name || 'не указано'}`} />
+                <div className="mb-6">
+                    <p className="text-sm text-gray-500">
+                        Информация, которую вы укажете здесь, будет видна другим пользователям.{" "}
+                        {user?.username && (
+                            <Link 
+                                href={PAGES.PROFILE(user.username)} 
+                                className="text-blue-600 font-medium hover:underline inline"
+                            >
+                                Ваша публичная страница
+                            </Link>
+                        )}
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                    <DataBlock 
+                        label="Имя" 
+                        value={`${user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name[0]}.` : user?.first_name || user?.last_name || 'не указано'}`}
+                    />
+                    <DataBlock 
+                        label="Логин" 
+                        value={`${user?.username || 'не указано'}`}
+                    />
+                </div>
             </section>
         </main>
     );

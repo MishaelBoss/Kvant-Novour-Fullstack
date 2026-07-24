@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createUser } from "@/app/lib/api";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
@@ -7,14 +7,21 @@ import { RadioGroup } from "radix-ui";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { IUser } from "@/app/types/user.interface";
 
-interface CreateUserModalProps {
+interface Props {
     children: React.ReactNode;
     user: IUser | null;
 }
 
-export function CreateUserModal({children, user}: CreateUserModalProps){
+const ROLES = [
+    { value: 'user', label: 'Пользователь' },
+    { value: 'teacher', label: 'Преподаватель' },
+    { value: 'admin', label: 'Администратор' },
+];
+
+export function CreateUserModal({children, user}: Props){
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
+    const [saving, setSaving] = useState(false);
 
     const methods = useForm<IUser>({
         defaultValues: {
@@ -28,18 +35,21 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
         }
     }); 
 
-    const onSubmit = async (data: IUser) => {
-        if (step === 1) {
-            setStep(2);
-            return;
-        }
+    const handleNext = async () => {
+        const fields = step === 1 ? (['username', 'password'] as const) : (['first_name', 'last_name'] as const);
+        const isValid = await methods.trigger(fields);
+        if (!isValid) return;
+        setStep(step + 1);
+    };
 
-        if (step === 2) {
-            setStep(3);
-            return;
-        }
+    const handleSave = async () => {
+        const isValid = await methods.trigger();
+        if (!isValid) return;
 
-        const success = await createUser(data);
+        setSaving(true);
+        const success = await createUser(methods.getValues());
+        setSaving(false);
+
         if (success) {
             setOpen(false);
             setStep(1);
@@ -61,21 +71,32 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
                 <Dialog.Description size="2" mb="5" color="gray">Создание нового аккаунта</Dialog.Description>
 
                 <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit(onSubmit)}>
-                        <Flex direction="column" gap="4">
+                    <Flex direction="column" gap="4" asChild>
+                        <form onSubmit={(e) => { 
+                            e.preventDefault(); 
+                            if (step === 3) handleSave();
+                            else handleNext(); 
+                        }}>
                             {step === 1 && (
                                 <>
-                                    <InputWithClear label="Логин" name="username" rules={{ required: "Обязательно" }} />
-                                    <InputWithClear label="Пароль" name="password" rules={{ required: "Обязательно" }} />
+                                    <InputWithClear 
+                                        label="Логин" 
+                                        name="username" 
+                                        placeholder="Введите логин" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="text"
+                                    />
+                                    <InputWithClear 
+                                        label="Пароль"
+                                        name="password" 
+                                        placeholder="Введите пароль" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="password"
+                                    />
                                     
                                     <Controller name="role" control={methods.control} render={({ field }) => (
                                         <RadioGroup.Root value={field.value} onValueChange={field.onChange} className="grid grid-cols-2 gap-4">
-                                            {[
-                                                { value: 'user', label: 'Пользователь' },
-                                                { value: 'student', label: 'Ученик' },
-                                                { value: 'parent', label: 'Родитель' },
-                                                { value: 'teacher', label: 'Преподаватель' },
-                                            ].map((role) => (
+                                            {ROLES.map((role) => (
                                                 <Flex align="center" gap="2" key={role.value}>
                                                 <RadioGroup.Item
                                                     value={role.value}
@@ -94,30 +115,63 @@ export function CreateUserModal({children, user}: CreateUserModalProps){
 
                             {step === 2 && (
                                 <>
-                                    <InputWithClear label="Имя" name="first_name" rules={{ required: "Обязательно" }} />
-                                    <InputWithClear label="Фамилия" name="last_name" rules={{ required: "Обязательно" }} />
-                                    <InputWithClear label="Отчество" name="middle_name" />
+                                    <InputWithClear 
+                                        label="Имя" 
+                                        placeholder="Введите имя" 
+                                        name="first_name" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="text"
+                                    />
+                                    <InputWithClear 
+                                        label="Фамилия" 
+                                        placeholder="Введите фамилию" 
+                                        name="last_name" 
+                                        rules={{ required: "Обязательно" }} 
+                                        type="text"
+                                    />
+                                    <InputWithClear 
+                                        label="Отчество" 
+                                        placeholder="Введите отчество (если есть)" 
+                                        name="middle_name" 
+                                        type="text"
+                                    />
                                 </>
                             )}
 
                             {step === 3 && (
                                 <>
-                                    <InputWithClear label="Телефон" name="phone" />
-                                    <InputWithClear label="Email" name="email" />
+                                    <InputWithClear 
+                                        label="Телефон"
+                                        placeholder="Введите телефон"
+                                        name="phone" 
+                                        type="tel"
+                                    />
+                                    <InputWithClear 
+                                        label="Email" 
+                                        placeholder="Введите почте" 
+                                        name="email" 
+                                        type="email"
+                                    />
                                 </>
                             )}
-                        </Flex>
 
-                        <Flex direction="row" gap="3" mt="6">
-                            <Button type="button" variant="soft" onClick={() => step > 1 ? setStep(step - 1) : setOpen(false)}>
-                                {step > 1 ? "Назад" : "Отмена"}
-                            </Button>
+                            <Flex direction="row" gap="3" mt="6">
+                                <Button type="button" variant="soft" onClick={() => step > 1 ? setStep(step - 1) : setOpen(false)}>
+                                    {step > 1 ? "Назад" : "Отмена"}
+                                </Button>
 
-                            <Button type={step === 3 ? "submit" : "button"} variant="solid" onClick={() => step < 3 && setStep(step + 1)}>
-                                {step === 3 ? "Сохранить" : "Далее"}
-                            </Button>
-                        </Flex>
-                    </form>
+                                {step === 3 ? (
+                                    <Button type="submit" variant="solid" disabled={saving}>
+                                        {saving ? "Сохранение..." : "Сохранить"}
+                                    </Button>
+                                ) : (
+                                    <Button type="submit" variant="solid">
+                                        Далее
+                                    </Button>
+                                )}
+                            </Flex>
+                        </form>
+                    </Flex>
                 </FormProvider>
             </Dialog.Content>
         </Dialog.Root>

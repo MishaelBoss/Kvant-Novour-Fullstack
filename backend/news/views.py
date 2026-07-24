@@ -1,11 +1,26 @@
 from rest_framework.views import APIView
-from .serializers import *
+from .serializers import NewsSerializer, CategorySerializer
 from rest_framework.response import Response
 from rest_framework import status
 from users.permissions import IsAdminRole
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
+from .models import Category, News
 
+
+class CreateCategoriesView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Категория успешно создана", "data": serializer.data}, 
+                status=status.HTTP_201_CREATED
+            )
+        print(f"Ошибки валидации: {serializer.errors}") 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateNewsCommandView(APIView):
     permission_classes = [IsAdminRole]
@@ -18,7 +33,6 @@ class CreateNewsCommandView(APIView):
                 {"message": "Новость успешно создана", "data": serializer.data}, 
                 status=status.HTTP_201_CREATED
             )
-        print(f"Ошибки валидации: {serializer.errors}") 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 

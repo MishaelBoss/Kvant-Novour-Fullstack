@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuth } from '../context/AuthContext';
 import { PAGES } from '../config/pages.config';
 import { HoverDropdown } from './HoverDropdown';
 import { AuthModal } from '../(auth)/_components/AuthModal';
+import { useMotionValueEvent, useScroll, motion } from 'framer-motion';
 
 interface Props {
     className?: string;
@@ -14,9 +15,27 @@ interface Props {
 
 export const Header: React.FC<Props> = () => {
     const { user, isAdmin, countNotifications } = useAuth();
+    const { scrollY } = useScroll()
+    const [hidden, setHidden] = useState(false)
+
+    useMotionValueEvent(scrollY, "change", (current) => {
+        const previous = scrollY.getPrevious() ?? 0
+        if (current > previous && current > 150) {
+            setHidden(true)
+        } else {
+            setHidden(false)
+        }
+    })
 
     return (
-        <div className="sticky top-0 z-1000 w-full bg-transparent px-4">
+        <motion.div 
+            className="sticky top-0 z-1000 w-full bg-transparent px-4" 
+            animate={{
+                y: hidden ? -140 : 0,
+                opacity: hidden ? 0 : 1,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
             <header className="relative w-full bg-white px-6 pb-3.5 pt-2 md:max-w-354 md:rounded-b-4xl mx-auto shadow-sm">
                 <div className="mx-auto flex min-h-15 items-center justify-end px-6">
                     <div className="flex items-center gap-2">
@@ -129,6 +148,6 @@ export const Header: React.FC<Props> = () => {
                     </div>
                 </div>
             </header>
-        </div>
+        </motion.div>
     );
 };

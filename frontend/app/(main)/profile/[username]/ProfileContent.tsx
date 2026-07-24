@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { getPublicProfile } from "@/app/lib/api";
 import { IPublicProfileData } from "@/app/types/profile.interface";
 import { useParams } from "next/navigation";
@@ -81,7 +81,7 @@ export default function ProfileContent(){
     };
 
     return (
-        <div className="min-h-screen bg-white font-sans text-[#2B2E33]">
+        <div className="min-h-screen font-sans text-[#2B2E33]">
             <header className="max-w-300 mx-auto pt-8 px-4">
                 <Link 
                     href={PAGES.HOME()} 
@@ -93,14 +93,14 @@ export default function ProfileContent(){
             </header>
 
             <main className="max-w-300 mx-auto mt-6 px-4 pb-16">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-10">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-10">
                     <div className="flex items-start gap-6">
                         <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0 bg-gray-100">
                             {profile.avatar ? (
                                 <Image 
                                     src={profile.avatar.replace('http://localhost', '')}
                                     fill
-                                    loading="eager"
+                                    priority
                                     alt={profile.username}
                                     className="object-cover"
                                 />
@@ -115,15 +115,27 @@ export default function ProfileContent(){
                         </div>
 
                         <div className="flex-1 pt-1">
-                            <div className="flex items-center gap-3 mb-3">
-                                <h1 className="text-[24px] font-bold">
-                                    {profile.first_name || profile.username}
-                                </h1>
-                                <span className={`text-[12px] font-medium px-3 py-1 rounded-full ${roleBadgeColor[profile.role] || 'bg-gray-50 text-gray-500'}`}>
+                            <div className="flex items-start gap-4 mb-3">
+                                <div className="flex-1">
+                                    <h1 className="text-[28px] font-bold leading-tight">
+                                        {profile.last_name || profile.first_name ? (
+                                            <>
+                                                {profile.last_name && <span>{profile.last_name}</span>}
+                                                {profile.last_name && profile.first_name && <span> </span>}
+                                                {profile.first_name && <span>{profile.first_name}</span>}
+                                                {profile.middle_name && <span className="text-gray-400 font-normal"> {profile.middle_name}</span>}
+                                            </>
+                                        ) : (
+                                            <span>{profile.username}</span>
+                                        )}
+                                    </h1>
+                                    <p className="text-[14px] text-gray-600 mt-1">@{profile.username}</p>
+                                </div>
+                                <span className={`shrink-0 text-[12px] font-medium px-3 py-1 rounded-full mt-1 ${roleBadgeColor[profile.role] || 'bg-gray-50 text-gray-500'}`}>
                                     {roleLabel}
                                 </span>
                             </div>
-                            <p className="text-[15px] text-gray-400">
+                            <p className="text-[15px] text-gray-600">
                                 На сайте с {new Date(profile.date_joined).toLocaleDateString('ru-RU', {
                                     day: 'numeric',
                                     month: 'long',
@@ -142,12 +154,12 @@ export default function ProfileContent(){
                             alt="Достижения" 
                             width={240} 
                             height={240}
-                            loading="eager"
+                            priority
                             className="opacity-90"
                         />
                         <div className="flex flex-col gap-1">
                             <p className="text-[16px] font-semibold text-gray-800">Пока достижений нет</p>
-                            <p className="text-[14px] text-gray-400 max-w-sm">
+                            <p className="text-[14px] text-gray-600 max-w-sm">
                                 Достижения появятся автоматически, когда вы будете их зарабатывать. 
                                 Просто продолжайте использовать сайт и достигать новых высот!
                             </p>

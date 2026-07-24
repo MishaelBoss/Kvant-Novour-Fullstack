@@ -1,15 +1,52 @@
+"use client";
+
 import Link from "next/link";
 import { Header } from "../components/Header";
 import { ArrowRight, Sparkles, GraduationCap, Phone, MoveUpRight } from "lucide-react";
 import Image from "next/image";
 import { PAGES } from "../config/pages.config";
 import { QUANTUMS } from "../data/quantumsData";
+import { motion } from "framer-motion"
+
+const containerVariants = {
+    initial: { opacity: 0},
+    enter: { 
+        opacity: 1, 
+        x: 0, 
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+        } 
+    },
+    exit: {
+        opacity: 0,
+        transition: { 
+            staggerChildren: 0.05,
+            delayChildren: -1,
+        },
+        x: 10
+    },
+};
+
+const cardVariants = {
+    initial: { opacity: 0, y: 20},
+    enter: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { duration: 0.4, ease: 'easeOut' as const },
+    },
+    exit: {
+        opacity: 0,
+        y: 20,
+        transition: { duration: 0.2 },
+    },
+};
 
 export default function Home() {
   return (
     <>
       <Header />
-      <div className="w-full p-4 md:p-8 pb-16">
+      <div className="w-full p-4 pb-16">
         <main className="max-w-354 mx-auto space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-linear-to-r from-[#005bff] to-[#003cb3] rounded-3xl p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-80 shadow-sm">
@@ -69,7 +106,7 @@ export default function Home() {
                   </div>
 
                   <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <span className="font-bold text-gray-800 block mb-0.5">3. Лично в МАУ ДО "СЮТ"</span>
+                    <span className="font-bold text-gray-800 block mb-0.5">3. Лично в МАУ ДО &quot;СЮТ&quot;</span>
                     <p className="text-gray-600 text-[11px] leading-tight">
                       ул. Комсомольская 21, каб. 107. Пн-Пт: 8:30 – 17:00 (перерыв 12:00 – 12:48).
                     </p>
@@ -113,11 +150,12 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" variants={containerVariants} initial="initial" animate="enter" exit="exit">
               {QUANTUMS.map((quant) => {
                 return (
-                  <div 
+                  <motion.div 
                     key={quant.id} 
+                    variants={cardVariants}
                     className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow group"
                   >
                     <div>
@@ -146,10 +184,10 @@ export default function Home() {
                     <button className="w-full bg-[#005bff] hover:bg-[#004ae6] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
                       Подробнее
                     </button>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </section>
         </main>
       </div>

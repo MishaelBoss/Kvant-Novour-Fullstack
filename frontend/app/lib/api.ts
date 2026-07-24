@@ -1,9 +1,10 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
 import { IEditProfile, IUser, IUserLogin, IUserRegister } from "../types/user.interface";
-import { INewsCreateInput } from "../types/news.interface";
+import { ICategory, INewsCreateInput } from "../types/news.interface";
 import { IFormCreate, IFormSettings, IQuizSession } from "../types/form.interface";
 import { ParamValue } from "next/dist/server/request/params";
+import { form } from "framer-motion/client";
 
 export const checkAuthStatus = async () => {
     try {
@@ -16,6 +17,26 @@ export const checkAuthStatus = async () => {
         if (axios.isAxiosError(error)) {            
             if (error.response?.status === 401) {
                 console.log("User не авторизован");
+                return null;
+            }
+        } else {
+            console.error("Неизвестная ошибка:", error);
+        }
+        return null;
+    }
+};
+
+export const tokenRefresh = async() => {
+    try {
+        const res = await axios.get(`/token/refresh/`, {
+            withCredentials: true, 
+        });
+
+        return res.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {            
+            if (error.response?.status === 401) {
+                console.log("Рефреш токен протух или отсутствует");
                 return null;
             }
         } else {
@@ -130,6 +151,26 @@ export const getPublicProfile = async(username: ParamValue) => {
     }
 }
 
+export const createCategory = async (data: ICategory) => {
+    try {
+        const formData = new FormData();
+
+        if (data.label) formData.append('label', data.label);
+        // if (data.slug) formData.append('slug', data.slug);
+
+        const response = await axios.post('create-category/', formData, {
+            withCredentials: true,
+        });
+
+        return response.data;
+    } catch(error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Ошибка при создание:', error.response?.data || error.message);
+        }
+        throw error;
+    }
+}
+
 export const createNews = async (data: INewsCreateInput): Promise<boolean> => {
     try {
         const formData = new FormData();
@@ -143,7 +184,7 @@ export const createNews = async (data: INewsCreateInput): Promise<boolean> => {
 
         if (Array.isArray(data.category_ids)) {
             data.category_ids.forEach((id) => {
-                formData.append('categories', id.toString());
+                formData.append('category_ids', id.toString());
             });
         }
 
@@ -258,6 +299,35 @@ export const deleteUser = async (id: number | undefined) => {
         if (axios.isAxiosError(error)) {
             console.error('Ошибка удаления:', error.response?.data || error.message);
         }
+    }
+}
+
+export const updateUserByAdmin = async (id: number, data: Partial<IUser>): Promise<boolean> => {
+    try {
+        const payload: Record<string, string> = {};
+        if (data.username !== undefined) payload.username = data.username;
+        if (data.first_name !== undefined) payload.first_name = data.first_name;
+        if (data.last_name !== undefined) payload.last_name = data.last_name;
+        if (data.middle_name !== undefined) payload.middle_name = data.middle_name;
+        if (data.phone !== undefined) payload.phone = data.phone;
+        if (data.email !== undefined) payload.email = data.email;
+        if (data.role !== undefined) payload.role = data.role;
+
+        const res = await axios.patch(`/user-update/${id}/`, payload, {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+        });
+
+        if (res.status === 200) {
+            window.dispatchEvent(new Event("fetchListUsers"));
+            return true;
+        }
+        return false;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw error;
+        }
+        return false;
     }
 }
 

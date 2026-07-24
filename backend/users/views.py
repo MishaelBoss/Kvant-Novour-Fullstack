@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
+from rest_framework_simplejwt.views import TokenRefreshView 
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.conf import settings
@@ -286,6 +287,7 @@ class PublickProfileViewView(APIView):
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "middle_name": profile.middle_name,
                 "date_joined": user.date_joined,
                 "avatar": avatar_url,
                 "role": profile.role
@@ -317,6 +319,7 @@ class ListUsersView(APIView):
                 'middle_name': p.middle_name,
                 'avatar': avatar_url,
                 'date_joined': u.date_joined,
+                'role': p.role
             })
         return Response({
             'count': users.count(),
@@ -341,6 +344,24 @@ class UserDeleteView(APIView):
             {'message': 'Пользователь успешно удален'}, 
             status=status.HTTP_200_OK
         )
+
+
+class UserUpdateByAdminView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def patch(self, request, id):
+        user = get_object_or_404(User, id=id)
+
+        serializer = UserUpdateByAdminSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Пользователь обновлен",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateUserView(APIView):
@@ -409,3 +430,49 @@ class SessionsDeleteAllView(APIView):
         response.delete_cookie('refresh_token')
 
         return response
+    
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token missing in cookies"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception:
+            return Response({"detail": "Token is invalid or expired"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        res_data = serializer.validated_data
+
+        response = Response({
+            "access": res_data.get("access")
+        }, status=status.HTTP_200_OK)
+
+        response.set_cookie(
+            key='access_token',
+            value=res_data["access"],
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=3600
+        )
+
+        if "refresh" in res_data:
+            response.set_cookie(
+                key='refresh_token',
+                value=res_data["refresh"],
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax',
+                max_age=7 * 24 * 60 * 60
+            )
+
+        return response
+    

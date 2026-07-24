@@ -1,7 +1,7 @@
 export interface ICategory{
     value: number;
     label: string;
-    slug: string;
+    slug?: string;
 }
 
 export interface INews {
@@ -15,6 +15,8 @@ export interface INews {
     form_id: number;
 }
 
-export interface INewsCreateInput extends Omit<INews, 'categories'> {
+export interface INewsCreateInput extends Omit<INews, 'categories' | 'form_slug' | 'form_id'> {
     category_ids?: number[];
+    form_slug?: string;
+    form_id?: number;
 }

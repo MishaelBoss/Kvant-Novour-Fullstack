@@ -8,12 +8,12 @@ import { Mail, Phone, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
-interface EditProfileModalProps {
+interface Props {
     children: React.ReactNode;
     user: IUser | null;
 }
 
-export function EditProfileModal({children, user}: EditProfileModalProps){
+export function EditProfileModal({children, user}: Props){
     const [open, setOpen] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -51,9 +51,11 @@ export function EditProfileModal({children, user}: EditProfileModalProps){
             setOpen(false);
             setError('');
             setIsLoading(false);
-        } catch(error) {
+        } catch(error: unknown) {
             let errorMessage = 'Произошла ошибка. Попробуйте снова.';
-            const responseData = (error as any)?.response?.data;
+
+            const axiosError = error as { response?: { data?: Record<string, string> } };
+            const responseData = axiosError?.response?.data;
             
             if (responseData) {
                 if (responseData.username?.[0]) errorMessage = responseData.username[0];
@@ -69,7 +71,6 @@ export function EditProfileModal({children, user}: EditProfileModalProps){
     return (
         <Dialog.Root open={open} onOpenChange={setOpen}>
             <Dialog.Trigger>{children}</Dialog.Trigger>
-            
             <Dialog.Content maxWidth="380px" style={{ borderRadius: '24px', padding: '28px' }}>
                 <Dialog.Title size="6" mb="1">Личные данные</Dialog.Title>
                 <Dialog.Description size="2" mb="3" color="gray">Здесь вы можете изменить свои личные данные</Dialog.Description>

@@ -6,6 +6,7 @@ import { PAGES } from "@/app/config/pages.config";
 import { CreateUserModal } from "./CreateUserModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { IUser } from "@/app/types/user.interface";
+import { EditUserModel } from "./EditUserModel";
 
 export function Users() {
     const [users, setUsers] = useState<IUser[]>([]);
@@ -76,12 +77,15 @@ export function Users() {
                                 </Link>
                             )}
                             
-                            <button title="Редактировать"
-                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
-                                <svg xmlns="http://w3.org" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
-                                </svg>
-                            </button>
+                            <EditUserModel user={item}>
+                                <button title="Редактировать"
+                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
+                                    <svg xmlns="http://w3.org" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                                    </svg>
+                                </button>
+                            </EditUserModel>
+
                             {user?.id !== item.id && (
                                 <DeleteConfirmModal title={item.username} onConfirm={async () => deleteUser(item.id)}>
                                     <button title="Удалить" 

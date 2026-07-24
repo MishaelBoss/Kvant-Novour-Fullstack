@@ -4,8 +4,9 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import *
+from io import BytesIO
+from PIL import Image, ImageOps
 import os
-
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -122,7 +123,7 @@ class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
             if value.size > max_size:
                 raise serializers.ValidationError("Размер файла не должен превышать 5 МБ.")
 
-            valid_mime_types = ['image/jpeg', 'image/png']
+            valid_mime_types = ['image/jpeg', 'image/png', 'image/webp']
             if value.content_type not in valid_mime_types:
                 raise serializers.ValidationError("Файл не является валидным изображением.")
 
@@ -136,6 +137,24 @@ class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
             if 'avatar' in profile_data:
                 new_avatar = profile_data['avatar']
                 
+                if new_avatar:
+                    img = Image.open(new_avatar)
+                    
+                    if img.mode in ('RGBA', 'LA'):
+                        background = Image.new('RGB', img.size, (255, 255, 255))
+                        background.paste(img, mask=img.split()[-1])
+                        img = background
+                    elif img.mode != 'RGB':
+                        img = img.convert('RGB')
+
+                    img = ImageOps.fit(img, (384, 384), Image.Resampling.LANCZOS)
+
+                    output_buffer = BytesIO()
+                    img.save(output_buffer, format='WEBP', quality=80)
+                    output_buffer.seek(0)
+
+                    new_avatar = ContentFile(output_buffer.read(), name=new_avatar.name)
+
                 if profile.avatar and os.path.isfile(profile.avatar.path):
                     try:
                         os.remove(profile.avatar.path)
@@ -207,6 +226,53 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return token
     
+
+class UserUpdateByAdminSerializer(serializers.ModelSerializer):
+    middle_name = serializers.CharField(source='userprofile.middle_name', required=False, allow_blank=True, allow_null=True)
+    phone = serializers.CharField(source='userprofile.phone', required=False, allow_blank=True, allow_null=True)
+    role = serializers.CharField(source='userprofile.role', required=False)
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'role']
+
+    def validate_username(self, value):
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким именем уже существует")
+        return value
+
+    def validate_email(self, value):
+        if not value:
+            return value
+        user = self.instance
+        if User.objects.exclude(pk=user.pk).filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким email уже существует")
+        return value
+
+    def validate_role(self, value):
+        valid_roles = ['user', 'teacher', 'admin']
+        if value not in valid_roles:
+            raise serializers.ValidationError(f"Роль должна быть одной из: {', '.join(valid_roles)}")
+        return value
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('userprofile', {})
+
+        instance = super().update(instance, validated_data)
+
+        if profile_data:
+            profile = instance.userprofile
+            if 'middle_name' in profile_data:
+                profile.middle_name = profile_data['middle_name']
+            if 'phone' in profile_data:
+                profile.phone = profile_data['phone']
+            if 'role' in profile_data:
+                profile.role = profile_data['role']
+            profile.save()
+
+        return instance
+
 
 class UserSessionSerializer(serializers.ModelSerializer):
     is_current = serializers.SerializerMethodField()

@@ -1,13 +1,17 @@
-'use client';
+"use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
-import { createNews, getCategories } from "@/app/lib/api";
+import { createCategory, createNews, getCategories } from "@/app/lib/api";
 import { ICategory, INews, INewsCreateInput } from "@/app/types/news.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import { PenLine } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { FileRejection, useDropzone } from "react-dropzone";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import Select from "react-select";
+import { motion, AnimatePresence } from "framer-motion"
+import { toast } from "react-hot-toast";
+import CreatableSelect from 'react-select/creatable';
+import { MultiValue } from "react-select";
 
 interface CreateNewsModalProps {
     children: React.ReactNode;
@@ -18,11 +22,21 @@ interface NewsFormValues extends Omit<INews, 'categories'> {
     categories: { value: number; label: string }[];
 }
 
+const VALID_MIME_TYPES = {
+    'image/jpeg': ['.jpeg', '.jpg'],
+    'image/png': ['.png'],
+    'image/webp': ['.webp']
+};
+
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+
+const GENERATE_UNIQUE_ID = (): number => Date.now();
+
 export function CreateNewsModal({children, news}: CreateNewsModalProps){
     const [categories, setCategories] = useState<ICategory[]>([]); 
+    const [selectedOption, setSelectedOption] = useState<MultiValue<ICategory>>([]);
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(typeof news?.image === 'string' ? news.image : null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const methods = useForm<NewsFormValues>({
         defaultValues: {
@@ -33,14 +47,38 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
         }
     }); 
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            methods.setValue('image', file);
-            const url = URL.createObjectURL(file);
-            setPreview(url);
+    const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
+        if (fileRejections.length > 0) {
+            const error = fileRejections[0].errors[0];
+
+            if (error.code === 'file-invalid-type') toast.error('Пожалуйста, выберите изображение в формате JPEG, PNG или WEBP.');
+            else if (error.code === 'file-too-large') toast.error('Размер файла не должен превышать 5 МБ.');
+            else toast.error('Ошибка при загрузке файла.');
+            return;
         }
-    };
+
+        const file = acceptedFiles[0];
+        if (!file) {
+            toast.error('Файл не поддерживается или не выбран.');
+            return;
+        }
+
+        methods.setValue('image', file);
+        const url = URL.createObjectURL(file);
+
+        setPreview((prevPreview) => {
+            if (prevPreview?.startsWith('blob:')) URL.revokeObjectURL(prevPreview);
+            return url;
+        });
+    }, [methods]);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: VALID_MIME_TYPES,
+        multiple: false,
+        maxSize: MAX_SIZE_BYTES, 
+        disabled: !!preview
+    });
 
     useEffect(() => {
         if (news) {
@@ -62,29 +100,79 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
             setCategories(data.results);
         };
         loadCats();
-    }, []);
+
+        return () => {
+            if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
+        }
+    }, [preview]);
 
     const removeImage = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
         
         setPreview(null);
         methods.setValue('image', null);
-        
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
     };
 
     const onSubmit = async (data: NewsFormValues) => {
+        const existingIds = new Set(categories.map(c => c.value));
+
+        const knownIds = data.categories
+            .filter(c => existingIds.has(c.value))
+            .map(c => c.value);
+
+        const newCats = data.categories.filter(c => !existingIds.has(c.value));
+
+        const createdIds: number[] = [];
+        if (data.categories.length == 0) {
+            try {
+                const res = await createCategory({ 
+                    label: 'Новости',
+                    value: GENERATE_UNIQUE_ID()
+                })
+                const catId = res?.data?.value || res?.value;
+                if (catId) createdIds.push(catId);
+            } catch {
+                toast.error('Ошибка при создании дефолтной категории "Новости"');
+                return;
+            }
+        } else {
+            for (const cat of newCats) {
+                try {
+                    const result = await createCategory(cat);
+                    createdIds.push(result.data.value);
+                } catch {
+                    toast.error(`Ошибка при создании категории "${cat.label}"`);
+                    return;
+                }
+            }
+        }
+
         const payload: INewsCreateInput = {
-            ...data,
-            category_ids: data.categories.map(c => c.value),
+            title: data.title,
+            content: data.content,
+            image: data.image,
+            category_ids: [...knownIds, ...createdIds],
         };
-        
-        const isSuccess = await createNews(payload); 
-        
-        if(isSuccess) setOpen(false);
+
+        const isSuccess = await createNews(payload);
+        if (isSuccess) setOpen(false);
+    };
+
+    const handleCreate = (inputValue: string) => {
+        const generatedSlug = inputValue.toLowerCase().replace(/\s+/g, '-');
+
+        const newOption: ICategory = {
+            label: inputValue,
+            value: Date.now(), 
+            slug: generatedSlug,
+        };
+
+        const newSelected = [...selectedOption, newOption];
+        setSelectedOption(newSelected);
+        methods.setValue('categories', newSelected);
     };
 
     return (
@@ -115,62 +203,84 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
 
                             <Box>
                                 <Text as="div" size="2" mb="2" weight="bold">Обложка</Text>
-                                <Box 
-                                    style={{ 
-                                        position: 'relative',
-                                        height: '180px',
-                                        borderRadius: '16px',
-                                        backgroundColor: 'var(--gray-3)',
-                                        border: '2px dashed var(--gray-6)',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    {preview ? (
-                                        <>
-                                            <Image objectFit="cover" fill src={preview} alt="Preview" className="object-cover" />
-                                            
-                                            <Flex 
-                                                className="image-overlay"
-                                                align="center" 
-                                                justify="center"
-                                                style={{
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                    backgroundColor: 'rgba(0,0,0,0.4)',
-                                                    opacity: 0,
-                                                    transition: 'opacity 0.2s',
-                                                    display: 'flex',
-                                                }}
-                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
-                                            >
-                                                <Button color="red" variant="solid" onClick={removeImage} size="2">
-                                                    Удалить фото
-                                                </Button>
-                                            </Flex>
-                                        </>
-                                    ) : (
-                                        <Flex direction="column" align="center" gap="1">
-                                            <Text size="2" color="gray">Нажмите для загрузки</Text>
-                                            <Text size="1" color="gray">JPG, PNG до 5MB</Text>
-                                        </Flex>
-                                    )}
+                                <div {...getRootProps()} style={{ position: 'relative' }}>
+                                    <motion.div 
+                                        animate={{ 
+                                            scale: isDragActive ? 1.02 : 1,
+                                            backgroundColor: isDragActive ? 'var(--blue-2)' : 'var(--gray-3)',
+                                            borderColor: isDragActive ? 'var(--blue-9)' : 'var(--gray-6)',
+                                            borderStyle: isDragActive ? 'solid' : 'dashed'
+                                        }}
+                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                        style={{ 
+                                            position: 'relative',
+                                            height: '180px',
+                                            borderRadius: '16px',
+                                            borderWidth: '2px',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: preview ? 'default' : 'pointer',
+                                        }}
+                                    >
+                                        <input {...getInputProps()} aria-label="Выберите изображение для загрузки" />
 
-                                    {!preview && (
-                                        <input 
-                                            ref={fileInputRef}
-                                            type="file" 
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            aria-label="Выберите изображение для загрузки" 
-                                        />
-                                    )}
-                                </Box>
+                                        <AnimatePresence mode="wait">
+                                            {preview ? (
+                                                <motion.div
+                                                    key="image-preview"
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                                                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+                                                >
+                                                    <Image 
+                                                        fill 
+                                                        src={preview} 
+                                                        alt="Preview" 
+                                                        style={{ objectFit: 'cover' }}
+                                                    />                                                    
+                                                    <motion.div 
+                                                        initial={{ opacity: 0 }}
+                                                        whileHover={{ opacity: 1 }}
+                                                        transition={{ duration: 0.15 }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            inset: 0,
+                                                            backgroundColor: 'rgba(0,0,0,0.4)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}
+                                                    >
+                                                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                                            <Button color="red" variant="solid" onClick={removeImage} size="2">
+                                                                Удалить фото
+                                                            </Button>
+                                                        </motion.div>
+                                                    </motion.div>
+                                                </motion.div>
+                                            ) : (
+                                                <motion.div
+                                                    key="dropzone-placeholder"
+                                                    initial={{ opacity: 0, y: 5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -5 }}
+                                                    transition={{ duration: 0.15 }}
+                                                >
+                                                    <Flex direction="column" align="center" gap="1">
+                                                        <Text size="2" color={isDragActive ? "blue" : "gray"} weight={isDragActive ? "bold" : "regular"}>
+                                                            {isDragActive ? 'Бросайте картинку сюда!' : 'Нажмите или перетащите для загрузки'}
+                                                        </Text>
+                                                        <Text size="1" color="gray">JPG, PNG, WEBP до 5MB</Text>
+                                                    </Flex>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div >
+                                </div>
                             </Box>
 
                             <Box>
@@ -179,10 +289,15 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                                     name="categories"
                                     control={methods.control}
                                     render={({ field }) => (
-                                        <Select
-                                            {...field}
+                                        <CreatableSelect
                                             isMulti
                                             options={categories || []}
+                                            value={selectedOption}
+                                            onChange={(newValue) => {
+                                                setSelectedOption(newValue);
+                                                field.onChange(newValue);
+                                            }}
+                                            onCreateOption={handleCreate} 
                                             placeholder="Выберите категории..."
                                             styles={{
                                                 control: (base) => ({
