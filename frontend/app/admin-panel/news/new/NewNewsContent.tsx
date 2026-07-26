@@ -1,59 +1,35 @@
-'use client';
-
-import { IFormCreate, IFormSettings, IQuestion } from "@/app/types/form.interface";
+"use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ModelConfirmAddForm } from "../_components/ModelConfirmAddForm";
+import { PublishPostModal } from "../../_components/PublishPostModal";
 import { Content } from "../_components/Content";
-import { Settings } from "../_components/Settings";
-import { QuestionCard } from "../_components/QuestionCard";
-import { createForm } from "@/app/lib/api";
+import { NewsCard } from "../_components/NewsCard";
+import { toast } from "react-hot-toast";
+import { INewsTest } from "@/app/types/news.interface";
 
-function generateId() {
+function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
 }
 
-export default function NewForm() {
+export default function NewNewsContent() {
     const router = useRouter();
-
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [deadline, setDeadline] = useState('');
-    const [questions, setQuestions] = useState<IQuestion[]>([]);
-
-    const [settings, setSettings] = useState<IFormSettings>({
-        timer_enabled: false,
-        timer_seconds: 1800,
-        one_question_per_page: true,
-        show_results_after: true,
-        require_profile: true,
-        survey_for_authorized_users: false,
-        one_time_participation_survey: false,
-    });
-
-    const updateSettings = (patch: Partial<IFormSettings>) => {
-        setSettings(prev => ({ ...prev, ...patch }));
-    };
+    const [questions, setQuestions] = useState<INewsTest[]>([]);
+    const [publishDate, setPublishDate] = useState('');
 
     const addQuestion = () => {
         setQuestions(prev => [...prev, {
-            id: generateId(),
+            id: GENERATE_ID(),
             text: '',
-            type: 'short_text',
-            is_required: false,
-            points: 0,
-            order: prev.length,
-            choices: [],
+            type: 'text',
             media: null,
-            correct_answer: '',
         }]);
     };
 
-    const updateQuestion = (id: string, patch: Partial<IQuestion>) => {
+    const updateQuestion = (id: string, patch: Partial<INewsTest>) => {
         setQuestions(prev => prev.map(q => q.id === id ? { ...q, ...patch } : q));
     };
 
@@ -61,17 +37,12 @@ export default function NewForm() {
         setQuestions(prev => prev.filter(q => q.id !== id));
     };
 
-    const duplicateQuestion = (quest: IQuestion) => {
+    const duplicateQuestion = (quest: INewsTest) => {
         setQuestions(prev => [...prev, {
-            id: generateId(),
+            id: GENERATE_ID(),
             text: quest.text || '',
-            type: quest.type || 'short_text',
-            is_required: quest.is_required || false,
-            points: quest.points || 0,
-            order: quest.order || prev.length,
-            choices: quest.choices || [],
+            type: quest.type || 'text',
             media: quest.media || null,
-            correct_answer: quest.correct_answer || '',
         }]);
     };
 
@@ -83,7 +54,7 @@ export default function NewForm() {
                     choices: [
                         ...q.choices, 
                         { 
-                            id: generateId(), 
+                            id: GENERATE_ID(), 
                             text: '', 
                             is_correct: false, 
                             order: q.choices.length
@@ -129,33 +100,13 @@ export default function NewForm() {
 
     const handleSave = async (status: 'draft' | 'active', newsImage: File | null = null) => {
         if (!title.trim()) {
-            setError('Введите название формы');
+            toast.error("Введите название формы");
             return;
         }
 
-        setError(null);
         setSaving(true);
 
         try {
-            const formData: IFormCreate = {
-                title: title,
-                description: description,
-                deadline: deadline,
-                status: status,
-                questions: questions
-            };
-            
-            const success = await createForm(formData, settings, newsImage);
-
-            setSaving(success);
-            
-            if (success) {
-                if (status === 'active') {
-                    router.push('/profile?tab=kvantoForm');
-                }
-            } else {
-                alert('Ошибка сохранения формы');
-            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -164,7 +115,7 @@ export default function NewForm() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
+        <div className="min-h-screen p-4 md:p-8">
             <div className="max-w-[860px] mx-auto flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <Link
@@ -176,67 +127,43 @@ export default function NewForm() {
                         </svg>
                         Назад
                     </Link>
-                    {error && (
-                        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-                            {error}
-                        </div>
-                    )}
                     <div className="flex gap-2">
                         <button
                             onClick={() => handleSave('draft')}
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             {saving ? 'Сохранение...' : 'Сохранить'}
                         </button>
-                        <ModelConfirmAddForm onPublish={(file) => handleSave('active', file)} isActive={false}>
+                        <PublishPostModal onPublish={(file) => handleSave('active', file)} isActive={false}>
                             <button
                                 className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
                                 Опубликовать
                             </button>
-                        </ModelConfirmAddForm>
+                        </PublishPostModal>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
                     <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
                         <button 
-                            onClick={() => setActiveTab('content')}
-                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${
-                                activeTab === 'content' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
-                            }`}>
+                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${'text-blue-500'}`}>
                             Контент
-                            {activeTab === 'content' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
-                            )}
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('settings')}
-                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${
-                                activeTab === 'settings' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
-                            }`}>
-                            Настройки
-                            {activeTab === 'settings' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
-                            )}
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
                         </button>
                     </div>
 
-                    {activeTab === 'content' ? (
-                        <Content 
-                            title={title} 
-                            setTitle={setTitle} 
-                            description={description} 
-                            setDescription={setDescription}
-                            deadline={deadline}
-                            setDeadline={setDeadline}
-                        />
-                    ) : (
-                        <Settings settings={settings} updateSettings={updateSettings}/>
-                    )}
+                    <Content 
+                        title={title} 
+                        setTitle={setTitle} 
+                        description={description} 
+                        setDescription={setDescription}
+                        publishDate={publishDate}
+                        setPublishDate={setPublishDate}
+                    />
                 </div>
 
                 <div className="flex flex-col gap-3">
                     {questions.map((q, index) => (
-                        <QuestionCard
+                        <NewsCard
                             key={q.id}
                             question={q}
                             index={index}
@@ -256,9 +183,9 @@ export default function NewForm() {
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    Добавить вопрос
+                    Добавить элемент
                 </button>
             </div>
         </div>
-    );
-}
+    )
+};

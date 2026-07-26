@@ -1,7 +1,6 @@
-export type QuestionType = 'short_text' | 'long_text' | 'radio' | 'checkbox' | 'dropdown' | 'number';
-export type MediaType = 'image' | 'audio' | 'video';
+import { FormStatus, MediaType } from "./global.intefrace";
 
-export type FormStatus = 'draft' | 'active' | 'closed';
+export type QuestionType = 'short_text' | 'long_text' | 'radio' | 'checkbox' | 'dropdown' | 'number';
 
 export interface IChoice {
     id: string;

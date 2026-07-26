@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             } else {
                 handleLogout();
             }
-        } catch (error) {
+        } catch {
             handleLogout();
         } finally {
             setIsLoading(false);

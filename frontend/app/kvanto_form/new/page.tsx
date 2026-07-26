@@ -1,4 +1,4 @@
-import NewForm from "./new_form";
+import NewFormContent from "./NewFormContent";
 
 export const metadata = {
     title: 'Кванто форм',
@@ -7,7 +7,7 @@ export const metadata = {
 export default function Page() {
     return (
         <>
-        <NewForm/>
+        <NewFormContent/>
         </>
     );
 }

@@ -14,7 +14,8 @@ from .permissions import *
 from notifications.models import *
 from django_user_agents.utils import get_user_agent
 from django.utils import timezone
-from users.services import GeolocationService
+from users.services import GeolocationService, SessionService
+from django.middleware.csrf import get_token
 
 
 class RegisterView(APIView):
@@ -33,63 +34,33 @@ class RegisterView(APIView):
             token_obj = AccessToken(access_token)
             access_jti = token_obj['jti']
 
-            user_agent = get_user_agent(request)
-            browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
-            os_platform = user_agent.os.family
-            user_agent_string = str(user_agent)
-
-            ip = GeolocationService.get_client_ip(request)
-            geo_data = GeolocationService.get_geo_by_ip(ip)
-
-            if ip in ('127.0.0.1', '::1') or geo_data['country_code'] == 'LOCAL':
-                location = "Локальная сеть"
-            elif geo_data['city'] != 'Unknown':
-                location = f"{geo_data['city']}, {geo_data['country']}"
-            else:
-                location = "Не удалось определить город"
-
-            existing_session = UserSession.objects.filter(
-                user=user,
-                user_agent_string=user_agent_string
-            ).first()
-
-            if existing_session:
-                existing_session.jti = access_jti
-                existing_session.ip_address = ip
-                existing_session.location = location
-                existing_session.save()
-            else:
-                UserSession.objects.create(
-                    user=user,
-                    jti=access_jti,
-                    ip_address=ip,
-                    location=location,
-                    browser=browser,
-                    os=os_platform,
-                    user_agent_string=user_agent_string
-                )
+            SessionService.create_or_update_session(user, access_jti, request, get_user_agent, GeolocationService)
 
             response = Response({"message": "Успех"}, status=status.HTTP_201_CREATED)
 
-            response.set_cookie(
-                key='access_token',
-                value=access_token,
-                httponly=True,
-                secure=not settings.DEBUG,
-                samesite='Lax',
-                max_age=3600
-            )
-
-            response.set_cookie(
-                key='refresh_token',
-                value=refresh_token,
-                httponly=True,
-                secure=not settings.DEBUG,
-                samesite='Lax',
-                max_age=3600 * 24 * 7
-            )
+            cls._set_auth_cookies(response, access_token, refresh_token)
             return response
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @classmethod
+    def _set_auth_cookies(cls, response, access_token, refresh_token):
+        response.set_cookie(
+            key='access_token',
+            value=access_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=3600
+        )
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=3600 * 24 * 7
+        )
     
 
 class LoginView(APIView):
@@ -113,76 +84,15 @@ class LoginView(APIView):
             "username": user.username
         }, status=status.HTTP_200_OK)
 
-        response.set_cookie(
-            key='access_token',
-            value=access_token,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite='Lax',
-            max_age=3600
+        RegisterView._set_auth_cookies(response, access_token, refresh_token)
+
+        is_new_device, device_info = SessionService.create_or_update_session(
+            user, access_jti, request, get_user_agent, GeolocationService
         )
 
-        response.set_cookie(
-            key='refresh_token',
-            value=refresh_token,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite='Lax',
-            max_age=3600 * 24 * 7
-        )
+        SessionService.send_login_notification(user, device_info, is_new_device)
 
-        ip = GeolocationService.get_client_ip(request)
-        geo_data = GeolocationService.get_geo_by_ip(ip)
-
-        if ip in ('127.0.0.1', '::1') or geo_data['country_code'] == 'LOCAL':
-            location = "Локальная сеть"
-        elif geo_data['city'] != 'Unknown':
-            location = f"{geo_data['city']}, {geo_data['country']}"
-        else:
-            location = "Не удалось определить город"
-
-        user_agent = get_user_agent(request)
-        browser = f"{user_agent.browser.family} (версия {user_agent.browser.version_string})"
-        os_platform = user_agent.os.family
-        user_agent_string = str(user_agent)
-
-        existing_session = UserSession.objects.filter(
-            user=user,
-            user_agent_string=user_agent_string
-        ).first()
-
-        if existing_session:
-            existing_session.jti = access_jti
-            existing_session.ip_address = ip
-            existing_session.location = location
-            existing_session.save()
-        else:
-            UserSession.objects.create(
-                user=user,
-                jti=access_jti,
-                ip_address=ip,
-                location=location,
-                browser=browser,
-                os=os_platform,
-                user_agent_string=user_agent_string
-            )
-
-        current_time = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M MSK')
-
-        description_text = (
-            f"Вход в аккаунт. Браузер {browser} на {os_platform}.\n"
-            f"Город: {location}, IP {ip}.\n"
-            f"Дата и время входа: {current_time}.\n"
-            f"Если это были не вы — напишите в поддержку и в настройках аккаунта завершите сеанс на подозрительном устройстве."
-        )
-
-        Notification.objects.create(
-            user=user,
-            type='system',
-            title='Вход с нового устройства',
-            description=description_text
-        )
-
+        response["X-CSRFToken"] = get_token(request)
         return response
     
 
