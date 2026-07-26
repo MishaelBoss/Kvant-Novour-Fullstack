@@ -73,23 +73,6 @@ export default function NewNewsContent() {
         ));
     };
 
-    const updateChoiceCorrect = (questionId: string, choiceId: string, is_correct: boolean) => {
-        setQuestions(prev => prev.map(q => {
-            if (q.id !== questionId) return q;
-
-            const isRadioType = q.type === 'radio' || q.type === 'dropdown';
-            return {
-                ...q,
-                choices: (q.choices || []).map(c => ({
-                    ...c,
-                    is_correct: isRadioType
-                        ? c.id === choiceId
-                        : c.id === choiceId ? is_correct : c.is_correct,
-                })),
-            };
-        }));
-    };
-
     const removeChoice = (questionId: string, choiceId: string) => {
         setQuestions(prev => prev.map(q =>
             q.id === questionId
@@ -172,7 +155,6 @@ export default function NewNewsContent() {
                             onDuplicate={duplicateQuestion}
                             onAddChoice={addChoice}
                             onUpdateChoice={updateChoice}
-                            onUpdateChoiceCorrect={updateChoiceCorrect}
                             onRemoveChoice={removeChoice}
                         />
                     ))}

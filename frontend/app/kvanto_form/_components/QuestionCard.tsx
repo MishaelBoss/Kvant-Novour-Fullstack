@@ -1,6 +1,6 @@
 "use client";
-
-import { IQuestion, MediaType, QuestionType } from "@/app/types/form.interface";
+import { IQuestion, QuestionType } from "@/app/types/form.interface";
+import { MediaType } from "@/app/types/global.intefrace";
 import { DropdownMenu } from "@radix-ui/themes";
 import Image from "next/image";
 import { useRef } from "react";
