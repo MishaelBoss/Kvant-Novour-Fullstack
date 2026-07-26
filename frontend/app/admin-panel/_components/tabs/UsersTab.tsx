@@ -1,14 +1,14 @@
 import { deleteUser, getListUsers } from "@/app/lib/api";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { DeleteConfirmModal } from "../../components/DeleteConfirmModal";
+import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { PAGES } from "@/app/config/pages.config";
-import { CreateUserModal } from "./CreateUserModal";
+import { CreateUserModal } from "../CreateUserModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { IUser } from "@/app/types/user.interface";
-import { EditUserModel } from "./EditUserModel";
+import { EditUserModel } from "../EditUserModel";
 
-export function Users() {
+export function UsersTab() {
     const [users, setUsers] = useState<IUser[]>([]);
     const [count, setCountNews] = useState(0);
     const { user } = useAuth();

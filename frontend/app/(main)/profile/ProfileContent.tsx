@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef } from "react";
 import Image from "next/image";
-import { Achievements } from "./_components/Achievements";
-import { PersonalData } from "./_components/PersonalData";
-import { Notifications } from "./_components/Notifications";
-import { KvantoForm } from "./_components/KvantoForm";
+import { AchievementsTab } from "./_components/tabs/AchievementsTab";
+import { PersonalDataTab } from "./_components/tabs/PersonalDataTab";
+import { NotificationsTab } from "./_components/tabs/NotificationsTab";
+import { KvantoFormTab } from "./_components/tabs/KvantoFormTab";
 import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { toast } from "react-hot-toast";
@@ -137,10 +137,10 @@ export default function ProfileContent() {
                         }
                     </nav>
                 </aside>
-                {activeTab === 'personal' && <PersonalData user={user} />}
-                {activeTab === 'achievements' && <Achievements/>}
-                {activeTab === 'notifications' && <Notifications/>}
-                {activeTab === 'kvantoForm' && (isTeacher || isAdmin) && <KvantoForm/>}
+                {activeTab === 'personal' && <PersonalDataTab user={user} />}
+                {activeTab === 'achievements' && <AchievementsTab/>}
+                {activeTab === 'notifications' && <NotificationsTab/>}
+                {activeTab === 'kvantoForm' && (isTeacher || isAdmin) && <KvantoFormTab/>}
             </div>
         </div>
     );

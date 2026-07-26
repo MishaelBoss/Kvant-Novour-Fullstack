@@ -1,15 +1,15 @@
 import Image from "next/image";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { NotificationSidebar } from "./NotificationSidebar";
-import { SystemNotificationCard } from "./SystemNotificationCard";
-import { ChatNotificationCard } from "./ChatNotificationCard";
+import { NotificationSidebar } from "../NotificationSidebar";
+import { SystemNotificationCard } from "../SystemNotificationCard";
+import { ChatNotificationCard } from "../ChatNotificationCard";
 import { getNotificationsList, readAllNotifications, readNotification } from "@/app/lib/api";
 import { INotifications } from "@/app/types/notifications.interface";
-import { NewsNotificationsCard } from "./NewsNotificationsCard";
+import { NewsNotificationsCard } from "../NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide-react";
 
-export function Notifications() {
+export function NotificationsTab() {
     const { isLoading } = useAuth();
     const [latestDates, setLatestDates] = useState({ system: '', chat: '', news: '' });
     const [notifications, setNotifications] = useState<INotifications[]>([]);

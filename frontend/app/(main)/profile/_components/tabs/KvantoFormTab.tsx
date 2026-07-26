@@ -7,7 +7,7 @@ import { IFormItem } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-export function KvantoForm(){
+export function KvantoFormTab(){
     const [forms, setForms] = useState<IFormItem[]>([]);
     const [count, setCountForm] = useState(0);
 

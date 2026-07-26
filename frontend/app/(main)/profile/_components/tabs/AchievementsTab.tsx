@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
-export function Achievements() {
+export function AchievementsTab() {
     const [achievements, setAchievements] = useState<[]>([]);
 
     if (achievements.length === 0) {

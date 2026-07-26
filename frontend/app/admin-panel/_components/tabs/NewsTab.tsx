@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { CreateNewsModal } from "./CreateNewsModal"
+import { CreateNewsModal } from "../CreateNewsModal"
 import { deleteNews, getListNews } from "@/app/lib/api";
 import Link from "next/link";
-import { DeleteConfirmModal } from "../../components/DeleteConfirmModal";
+import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { INews } from "@/app/types/news.interface";
 
-export function News() {
+export function NewsTab() {
     const [news, setNews] = useState<INews[]>([]);
     const [count, setCountNews] = useState(0);
 
