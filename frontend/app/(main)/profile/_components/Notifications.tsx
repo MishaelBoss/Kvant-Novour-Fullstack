@@ -7,6 +7,7 @@ import { getNotificationsList, readAllNotifications, readNotification } from "@/
 import { INotifications } from "@/app/types/notifications.interface";
 import { NewsNotificationsCard } from "./NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
+import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide-react";
 
 export function Notifications() {
     const { isLoading } = useAuth();
@@ -89,7 +90,7 @@ export function Notifications() {
             unread: unreadCounts.system,
             date: latestDates.system,
             bg: 'bg-gradient-to-b from-[#94a3b8] to-[#475569] shadow-[0_2px_6px_rgba(71,85,105,0.2),inset_0_1px_1px_rgba(255,255,255,0.2)]',
-            icon: <Image src='/buyer_security_chat_icon.png' width={100} height={100} alt="Системная иконка" className="rounded-2xl"/>
+            icon: <ShieldCheckIcon className="w-5 h-5 text-white"/>
         },
         {
             id: 'chat' as const,
@@ -98,7 +99,7 @@ export function Notifications() {
             unread: unreadCounts.chat,
             date: latestDates.chat,
             bg: 'bg-gradient-to-b from-[#60a5fa] to-[#2563eb] shadow-[0_2px_8px_rgba(37,99,235,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)]',
-            icon: <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            icon: <MessageCircleMoreIcon className="w-5 h-5 text-white"/>
         },
         {
             id: 'news' as const,
@@ -107,7 +108,7 @@ export function Notifications() {
             unread: unreadCounts.news,
             date: latestDates.news,
             bg: 'bg-gradient-to-b from-[#10b981] to-[#047857] shadow-[0_2px_8px_rgba(4,120,87,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)]',
-            icon: <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            icon: <CalendarDaysIcon className="w-5 h-5 text-white"/>
         }
     ];
 

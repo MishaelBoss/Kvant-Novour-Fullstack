@@ -2,6 +2,7 @@
 import { IQuestion, QuestionType } from "@/app/types/form.interface";
 import { MediaType } from "@/app/types/global.intefrace";
 import { DropdownMenu } from "@radix-ui/themes";
+import { CopyIcon, EllipsisIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
 
@@ -92,22 +93,16 @@ export function QuestionCard({
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
                         <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path fill="currentColor" fillRule="evenodd" d="M3 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0" clipRule="evenodd"/>
-                            </svg>
+                            <EllipsisIcon className="w-[17] h-[17]"/>
                         </button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Content>
                         <DropdownMenu.Item onClick={() => onDuplicate(q)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 outline-none !cursor-pointer">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path fill="currentColor" fillRule="evenodd" d="M12 2.5H8A1.5 1.5 0 0 0 6.5 4v1H8a3 3 0 0 1 3 3v1.5h1A1.5 1.5 0 0 0 13.5 8V4A1.5 1.5 0 0 0 12 2.5M11 11h1a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v1H4a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3zM4 6.5h4A1.5 1.5 0 0 1 9.5 8v4A1.5 1.5 0 0 1 8 13.5H4A1.5 1.5 0 0 1 2.5 12V8A1.5 1.5 0 0 1 4 6.5" clipRule="evenodd"/>
-                            </svg>
+                            <CopyIcon className="w-[17] h-[17] rotate-90"/>
                             Дублировать
                         </DropdownMenu.Item>
                         <DropdownMenu.Item onClick={() => onRemove(q.id)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 focus:bg-red-50 focus:text-red-700 outline-none !cursor-pointer">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path fill="currentColor" fillRule="evenodd" d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4H5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                            <TrashIcon className="w-[17] h-[17]"/>
                             Удалить
                         </DropdownMenu.Item>
                     </DropdownMenu.Content>

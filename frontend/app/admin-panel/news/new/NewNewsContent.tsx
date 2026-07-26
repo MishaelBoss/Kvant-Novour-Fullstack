@@ -7,6 +7,7 @@ import { Content } from "../_components/Content";
 import { NewsCard } from "../_components/NewsCard";
 import { toast } from "react-hot-toast";
 import { INewsTest } from "@/app/types/news.interface";
+import { PlusIcon } from "lucide-react";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -44,41 +45,6 @@ export default function NewNewsContent() {
             type: quest.type || 'text',
             media: quest.media || null,
         }]);
-    };
-
-    const addChoice = (questionId: string) => {
-        setQuestions(prev => prev.map(q =>
-            q.id === questionId
-                ? { 
-                    ...q, 
-                    choices: [
-                        ...(q.choices || []), 
-                        { 
-                            id: GENERATE_ID(), 
-                            text: '', 
-                            is_correct: false, 
-                            order: (q.choices || []).length
-                        }
-                    ] 
-                }
-                : q
-        ));
-    };
-
-    const updateChoice = (questionId: string, choiceId: string, text: string) => {
-        setQuestions(prev => prev.map(q =>
-            q.id === questionId
-                ? { ...q, choices: (q.choices || []).map(c => c.id === choiceId ? { ...c, text } : c) }
-                : q
-        ));
-    };
-
-    const removeChoice = (questionId: string, choiceId: string) => {
-        setQuestions(prev => prev.map(q =>
-            q.id === questionId
-                ? { ...q, choices: (q.choices || []).filter(c => c.id !== choiceId) }
-                : q
-        ));
     };
 
     const handleSave = async (status: 'draft' | 'active', newsImage: File | null = null) => {
@@ -153,18 +119,13 @@ export default function NewNewsContent() {
                             onUpdate={updateQuestion}
                             onRemove={removeQuestion}
                             onDuplicate={duplicateQuestion}
-                            onAddChoice={addChoice}
-                            onUpdateChoice={updateChoice}
-                            onRemoveChoice={removeChoice}
                         />
                     ))}
                 </div>
                 <button
                     onClick={addQuestion}
                     className="flex items-center justify-center gap-2 w-full py-3 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-[20px] hover:border-blue-300 hover:text-blue-500 transition-colors cursor-pointer">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
+                    <PlusIcon className="w-[17] h-[17]"/>
                     Добавить элемент
                 </button>
             </div>

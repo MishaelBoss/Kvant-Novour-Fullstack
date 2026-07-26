@@ -1,10 +1,10 @@
 "use client";
 import { INewsTest, NewsType, TextVariant, IBlockImage, IBlockFile } from "@/app/types/news.interface";
 import { DropdownMenu } from "@radix-ui/themes";
+import { CopyIcon, DownloadIcon, EllipsisIcon, FileIcon, ImageIcon, TrashIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { useState, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { toast } from "react-hot-toast";
 
 interface Props {
     question: INewsTest;
@@ -12,10 +12,6 @@ interface Props {
     onUpdate: (id: string, patch: Partial<INewsTest>) => void;
     onRemove: (id: string) => void;
     onDuplicate: (q: INewsTest) => void;
-    onAddChoice?: (questionId: string) => void;
-    onUpdateChoice?: (questionId: string, choiceId: string, text: string) => void;
-    onUpdateChoiceCorrect?: (questionId: string, choiceId: string, is_correct: boolean) => void;
-    onRemoveChoice?: (questionId: string, choiceId: string) => void;
 }
 
 const BLOCK_LABELS: Record<NewsType, string> = {
@@ -120,22 +116,16 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
                         <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path fill="currentColor" fillRule="evenodd" d="M3 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0" clipRule="evenodd"/>
-                            </svg>
+                            <EllipsisIcon className="w-[17] h-[17]"/>
                         </button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Content>
                         <DropdownMenu.Item onClick={() => onDuplicate(q)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 outline-none !cursor-pointer">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path fill="currentColor" fillRule="evenodd" d="M12 2.5H8A1.5 1.5 0 0 0 6.5 4v1H8a3 3 0 0 1 3 3v1.5h1A1.5 1.5 0 0 0 13.5 8V4A1.5 1.5 0 0 0 12 2.5M11 11h1a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v1H4a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3zM4 6.5h4A1.5 1.5 0 0 1 9.5 8v4A1.5 1.5 0 0 1 8 13.5H4A1.5 1.5 0 0 1 2.5 12V8A1.5 1.5 0 0 1 4 6.5" clipRule="evenodd"/>
-                            </svg>
+                            <CopyIcon className="w-[17] h-[17] rotate-90"/>
                             Дублировать
                         </DropdownMenu.Item>
                         <DropdownMenu.Item onClick={() => onRemove(q.id)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 focus:bg-red-50 focus:text-red-700 outline-none !cursor-pointer">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path fill="currentColor" fillRule="evenodd" d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4H5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                            <TrashIcon className="w-[17] h-[17]"/>
                             Удалить
                         </DropdownMenu.Item>
                     </DropdownMenu.Content>
@@ -196,11 +186,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                             isImageDrag ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/30'
                         }`}>
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isImageDrag ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className={isImageDrag ? 'text-blue-500' : 'text-gray-400'}>
-                                    <rect x="2" y="2" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="1.5"/>
-                                    <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
-                                    <path d="M2 14l5-5 4 4 3-3 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                                <ImageIcon className={`w-[22] h-[22] ${isImageDrag ? 'text-blue-500' : 'text-gray-400'}`}/>
                             </div>
                             <div className="text-center">
                                 <p className={`text-sm font-medium ${isImageDrag ? 'text-blue-500' : 'text-gray-500'}`}>
@@ -230,9 +216,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                                             onClick={() => removeImage(img.id)}
                                             className="absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full border border-gray-200 text-gray-400 hover:text-red-400 hover:border-red-200 transition-all opacity-0 group-hover/img:opacity-100 cursor-pointer shadow-sm"
                                             aria-label="Удалить изображение">
-                                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                            </svg>
+                                            <XIcon className="w-[16] h-[16]"/>
                                         </button>
                                     </div>
                                     <input
@@ -262,9 +246,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                             isFileDrag ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/30'
                         }`}>
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isFileDrag ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={isFileDrag ? 'text-blue-500' : 'text-gray-400'}>
-                                    <path d="M3 13v3a2 2 0 002 2h10a2 2 0 002-2v-3M10 3v10M6 9l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                                <DownloadIcon className={`w-[20] h-[20] ${isFileDrag ? 'text-blue-500' : 'text-gray-400'}`}/>
                             </div>
                             <div className="text-center">
                                 <p className={`text-sm font-medium ${isFileDrag ? 'text-blue-500' : 'text-gray-500'}`}>
@@ -280,10 +262,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                             {files.map(f => (
                                 <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-100 group/file">
                                     <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
-                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-blue-500">
-                                            <path d="M9 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5L9 1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-                                            <path d="M9 1v4h4" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-                                        </svg>
+                                        <FileIcon className="w-[16] h-[16] text-blue-500"/>
                                     </div>
                                     <span className="flex-1 text-sm text-gray-700 truncate">{f.name}</span>
                                     <button
@@ -291,9 +270,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                                         onClick={() => removeFile(f.id)}
                                         className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-400 opacity-0 group-hover/file:opacity-100 transition-all cursor-pointer rounded-lg hover:bg-red-50"
                                         aria-label="Удалить файл">
-                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                        </svg>
+                                        <XIcon className="w-[16] h-[16]"/>
                                     </button>
                                 </div>
                             ))}

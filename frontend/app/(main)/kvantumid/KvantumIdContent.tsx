@@ -12,7 +12,7 @@ import { LogoutConfirmModel } from './_components/LogoutConfirmModel';
 import { DeleteConfirmModal } from './_components/DeleteConfirmModel';
 import { useAuth } from '@/app/context/AuthContext';
 import { KvantumIDSkeleton } from './_components/KvantumIDSkeleton';
-import { Monitor, Laptop, Smartphone } from 'lucide-react';
+import { Monitor, Laptop, Smartphone, EllipsisVerticalIcon } from 'lucide-react';
 import { getActiveSessions } from '@/app/lib/api';
 import { DeleteSessionModel } from './_components/DeleteSessionModel';
 import { DeleteAllSessionModel } from './_components/DeleteAllSessionModel';
@@ -162,9 +162,7 @@ export default function KvantumIdContent() {
                                 <DropdownMenu.Root>
                                     <DropdownMenu.Trigger>
                                         <button type="button" className="text-gray-300 hover:text-gray-500 cursor-pointer! pt-1 focus-visible:outline-none outline-none" aria-label="Настройки аккаунта">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                            </svg>
+                                            <EllipsisVerticalIcon className="w-[25] h-[25]"/>
                                         </button>
                                     </DropdownMenu.Trigger>
                                     <DropdownMenu.Content>

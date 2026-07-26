@@ -57,5 +57,4 @@ export interface INewsTest {
     text_variant?: TextVariant;
     images?: IBlockImage[];
     files?: IBlockFile[];
-    choices?: any[];
 }

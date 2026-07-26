@@ -10,6 +10,7 @@ import { Settings } from "../_components/Settings";
 import { QuestionCard } from "../_components/QuestionCard";
 import { createForm } from "@/app/lib/api";
 import { toast } from "react-hot-toast";
+import { PlusIcon } from "lucide-react";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -246,9 +247,7 @@ export default function NewFormContent() {
                 <button
                     onClick={addQuestion}
                     className="flex items-center justify-center gap-2 w-full py-3 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-[20px] hover:border-blue-300 hover:text-blue-500 transition-colors cursor-pointer">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
+                    <PlusIcon className="w-[17] h-[17]"/>
                     Добавить вопрос
                 </button>
             </div>
