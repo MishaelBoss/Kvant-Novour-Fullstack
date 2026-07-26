@@ -15,7 +15,7 @@ export function CartNews({slug, image, title, content, categories}: Props){
         return text.length > limit ? text.substring(0, limit) + "..." : text;
     };
 
-    const isQuiz = categories?.some(cat => cat.slug === "oprosyi");
+    const isQuiz = categories?.some(cat => cat.slug?.startsWith('opros') || cat.label?.toLowerCase().includes('опрос'));
 
     return (
         <>

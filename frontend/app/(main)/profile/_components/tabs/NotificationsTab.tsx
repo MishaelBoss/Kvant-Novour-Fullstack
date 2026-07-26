@@ -8,6 +8,7 @@ import { INotifications } from "@/app/types/notifications.interface";
 import { NewsNotificationsCard } from "../NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function NotificationsTab() {
     const { isLoading } = useAuth();
@@ -127,18 +128,46 @@ export function NotificationsTab() {
             <main className="flex-1 p-6 bg-[#fafafa] flex flex-col gap-5 overflow-y-auto h-full scroll-smooth">
                 {filteredNotifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                        <Image src="/Digital nomad-rafiki.svg" alt="Пусто" width={220} height={220} loading="eager" />
-                        <div className="flex flex-col gap-1">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ 
+                                opacity: 1, 
+                                y: [0, -12, 0],
+                            }}
+                            transition={{
+                                opacity: { duration: 0.6, ease: "easeOut" },
+                                y: {
+                                    duration: 4,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }
+                            }}
+                            whileHover={{ scale: 1.03 }}
+                        >
+                            <Image src="/Digital nomad-rafiki.svg" alt="Пусто" width={220} height={220} loading="eager" />
+                        </motion.div>
+                        <motion.div 
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }} 
+                            className="flex flex-col gap-1"
+                        >
                             <p className="text-sm font-semibold text-gray-700">В этой категории пусто</p>
                             <p className="text-xs text-gray-400 max-w-xs">Новые оповещения появятся здесь сразу после их отправки.</p>
-                        </div>
+                        </motion.div>
                     </div>
                 ) : (
                     filteredNotifications.map((notif, index) => {
                         const showDateGroup = index === 0 || filteredNotifications[index - 1].groupDate !== notif.groupDate;
 
                         return (
-                            <div key={notif.id} className="w-full flex flex-col gap-4 shrink-0">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: 0.2, ease: "easeOut" }} 
+                                key={notif.id} 
+                                className="w-full flex flex-col gap-4 shrink-0"
+                            >
                                 {showDateGroup && (
                                     <div className="w-full flex justify-center my-1">
                                         <span className="text-[12px] font-medium text-gray-400 select-none">
@@ -167,7 +196,7 @@ export function NotificationsTab() {
                                         />
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         );
                     })
                 )}

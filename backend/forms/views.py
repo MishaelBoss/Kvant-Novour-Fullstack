@@ -280,11 +280,15 @@ class FormDetailView(APIView):
 class SubmitResponseView(APIView):
     def post(self, request, slug):
         try:
+            lookup = {'id': slug} if slug.isdigit() else {'slug': slug}
             form = Form.objects.prefetch_related(
                 'questions__choices'
-            ).get(slug=slug, status='active')
+            ).get(**lookup)
         except Form.DoesNotExist:
             return Response({"error": "Форма не найдена"}, status=404)
+
+        if form.status != 'active':
+            return Response({"error": "Форма ещё не опубликована"}, status=400)
 
         if form.deadline and form.deadline < timezone.now():
             return Response({"error": "Время приёма ответов истекло"}, status=400)

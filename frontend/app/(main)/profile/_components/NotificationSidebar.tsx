@@ -27,7 +27,7 @@ export function NotificationSidebar({
 }: INotificationSidebarProps) {
     return (
         <aside className="w-[340px] border-r border-[#e2e8f0] flex flex-col shrink-0 bg-white h-full p-2">
-             <div className="p-4 pb-2 flex items-center justify-between h-[44px]">
+            <div className="p-4 pb-2 flex items-center justify-between h-[44px]">
                 <h1 className="text-[20px] font-bold text-[#111827]">Уведомления</h1>
                 
                 <button 

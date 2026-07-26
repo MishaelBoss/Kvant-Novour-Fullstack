@@ -38,59 +38,62 @@ export default function AdminContent() {
                         <span>Вернуться</span>
                     </Link>
 
-                    <nav className="flex flex-col gap-1">
-                        <div className="text-xs font-semibold text-gray-500 px-3 mb-1 uppercase tracking-wider">
-                            Статистика
+                    <nav className="flex flex-col gap-3">
+                        <div className="border-l-2 border-blue-500 pl-3">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                Статистика
+                            </div>
+                            <button 
+                                onClick={() => setActiveTab('attendance')} 
+                                className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg w-full transition-all cursor-pointer ${
+                                    activeTab === 'attendance' 
+                                    ? 'bg-blue-50 text-blue-600 font-medium shadow-sm' 
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                Посещаемость
+                            </button>
                         </div>
 
-                        <button 
-                            onClick={() => setActiveTab('attendance')} 
-                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
-                                activeTab === 'attendance' 
-                                ? 'bg-blue-50 text-blue-600 font-medium' 
-                                : 'text-gray-700 hover:bg-gray-100'
-                            }`}
-                        >
-                            Посещаемость
-                        </button>
+                        <div className="border-t border-gray-100" />
 
-                        <hr className="border-gray-100 my-2" />
-                        <div className="text-xs font-semibold text-gray-500 px-3 mb-1 uppercase tracking-wider">
-                            Создание
+                        <div className="border-l-2 border-emerald-500 pl-3">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                Создание
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                                <button 
+                                    onClick={() => setActiveTab('users')} 
+                                    className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg w-full transition-all cursor-pointer ${
+                                        activeTab === 'users' 
+                                        ? 'bg-emerald-50 text-emerald-600 font-medium shadow-sm' 
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    Пользователи
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('news')} 
+                                    className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg w-full transition-all cursor-pointer ${
+                                        activeTab === 'news' 
+                                        ? 'bg-emerald-50 text-emerald-600 font-medium shadow-sm' 
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    Новости
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('forms')} 
+                                    className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg w-full transition-all cursor-pointer ${
+                                        activeTab === 'forms' 
+                                        ? 'bg-emerald-50 text-emerald-600 font-medium shadow-sm' 
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    Формы
+                                </button>
+                            </div>
                         </div>
-
-                        <button 
-                            onClick={() => setActiveTab('users')} 
-                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
-                                activeTab === 'users' 
-                                ? 'bg-blue-50 text-blue-600 font-medium' 
-                                : 'text-gray-700 hover:bg-gray-100'
-                            }`}
-                        >
-                            Пользователи
-                        </button>
-
-                        <button 
-                            onClick={() => setActiveTab('news')} 
-                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
-                                activeTab === 'news' 
-                                ? 'bg-blue-50 text-blue-600 font-medium' 
-                                : 'text-gray-700 hover:bg-gray-100'
-                            }`}
-                        >
-                            Новости
-                        </button>
-
-                        <button 
-                            onClick={() => setActiveTab('forms')} 
-                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
-                                activeTab === 'forms' 
-                                ? 'bg-blue-50 text-blue-600 font-medium' 
-                                : 'text-gray-700 hover:bg-gray-100'
-                            }`}
-                        >
-                            Формы
-                        </button>
                     </nav>
                 </aside>
 

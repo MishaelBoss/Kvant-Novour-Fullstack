@@ -4,6 +4,7 @@ import { deleteNews, getListNews } from "@/app/lib/api";
 import Link from "next/link";
 import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { INews } from "@/app/types/news.interface";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 
 export function NewsTab() {
     const [news, setNews] = useState<INews[]>([]);
@@ -114,9 +115,7 @@ export function NewsTab() {
                             
                             <button title="Редактировать"
                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
-                                <svg xmlns="http://w3.org" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
-                                </svg>
+                                <PencilIcon className="w-5 h-5"/>
                             </button>
                             
                             <DeleteConfirmModal title={item.title} onConfirm={async () => await deleteNews(item.id)}>
@@ -124,9 +123,7 @@ export function NewsTab() {
                                     type="button" 
                                     title="Удалить" 
                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
-                                    <svg xmlns="http://w3.org" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
-                                    </svg>
+                                    <Trash2Icon className="w-5 h-5"/>
                                 </button>
                             </DeleteConfirmModal>
                         </div>
