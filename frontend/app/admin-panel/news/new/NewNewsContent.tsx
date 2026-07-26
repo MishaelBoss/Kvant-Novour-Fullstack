@@ -52,12 +52,12 @@ export default function NewNewsContent() {
                 ? { 
                     ...q, 
                     choices: [
-                        ...q.choices, 
+                        ...(q.choices || []), 
                         { 
                             id: GENERATE_ID(), 
                             text: '', 
                             is_correct: false, 
-                            order: q.choices.length
+                            order: (q.choices || []).length
                         }
                     ] 
                 }
@@ -68,7 +68,7 @@ export default function NewNewsContent() {
     const updateChoice = (questionId: string, choiceId: string, text: string) => {
         setQuestions(prev => prev.map(q =>
             q.id === questionId
-                ? { ...q, choices: q.choices.map(c => c.id === choiceId ? { ...c, text } : c) }
+                ? { ...q, choices: (q.choices || []).map(c => c.id === choiceId ? { ...c, text } : c) }
                 : q
         ));
     };
@@ -80,7 +80,7 @@ export default function NewNewsContent() {
             const isRadioType = q.type === 'radio' || q.type === 'dropdown';
             return {
                 ...q,
-                choices: q.choices.map(c => ({
+                choices: (q.choices || []).map(c => ({
                     ...c,
                     is_correct: isRadioType
                         ? c.id === choiceId
@@ -93,7 +93,7 @@ export default function NewNewsContent() {
     const removeChoice = (questionId: string, choiceId: string) => {
         setQuestions(prev => prev.map(q =>
             q.id === questionId
-                ? { ...q, choices: q.choices.filter(c => c.id !== choiceId) }
+                ? { ...q, choices: (q.choices || []).filter(c => c.id !== choiceId) }
                 : q
         ));
     };

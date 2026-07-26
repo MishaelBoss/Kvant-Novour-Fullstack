@@ -1,6 +1,20 @@
 import { MediaType } from "./global.intefrace";
 
-export type NewsType = 'text' | 'image';
+export type NewsType = 'text' | 'image' | 'file';
+export type TextVariant = 'heading' | 'subheading' | 'body';
+
+export interface IBlockImage {
+    id: string;
+    file: File | null;
+    preview_url: string;
+    caption: string;
+}
+
+export interface IBlockFile {
+    id: string;
+    file: File | null;
+    name: string;
+}
 
 export interface INewsMedia {
     type: MediaType;
@@ -40,4 +54,8 @@ export interface INewsTest {
     image?: string | File | null;
     created_at?: string;
     media: INewsMedia | null;
+    text_variant?: TextVariant;
+    images?: IBlockImage[];
+    files?: IBlockFile[];
+    choices?: any[];
 }
