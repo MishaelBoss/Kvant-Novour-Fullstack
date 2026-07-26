@@ -79,7 +79,7 @@ export function KvantoFormTab(){
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border border-gray-100 rounded-2xl overflow-hidden divide-y divide-gray-100">
                 {forms.map((form) => (
                     <CartForms key={form.id} form={form}/>
                 ))}
