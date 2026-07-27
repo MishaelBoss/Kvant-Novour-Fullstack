@@ -1,7 +1,3 @@
-import { id } from "date-fns/locale";
-import { type } from "os";
-import { title } from "process";
-
 export const QUANTUMS = [
     {
         id: 1,

@@ -37,6 +37,12 @@ export function Content({ title, setTitle, description, setDescription, deadline
                 onChange={e => setDeadline(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 transition-colors"/>
         </div>
+        <div className="flex flex-col gap-1">
+            <label htmlFor="deadline-input" className="text-sm text-gray-600">Выбрать диплом за прохождения</label>
+            <button>
+                Открыть
+            </button>
+        </div>
         </>
     );
 }
