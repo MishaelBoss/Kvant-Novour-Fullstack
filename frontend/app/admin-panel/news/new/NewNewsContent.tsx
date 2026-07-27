@@ -6,8 +6,9 @@ import { PublishPostModal } from "../../_components/PublishPostModal";
 import { Content } from "../_components/Content";
 import { NewsCard } from "../_components/NewsCard";
 import { toast } from "react-hot-toast";
-import { INewsTest } from "@/app/types/news.interface";
+import { INewsSettings, INewsTest } from "@/app/types/news.interface";
 import { PlusIcon } from "lucide-react";
+import { Settings } from "../_components/Settings";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -16,11 +17,21 @@ function GENERATE_ID() {
 export default function NewNewsContent() {
     const router = useRouter();
     const [saving, setSaving] = useState(false);
+    const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [questions, setQuestions] = useState<INewsTest[]>([]);
     const [categories, setCategories] = useState('');
     const [publishDate, setPublishDate] = useState('');
+
+    const [settings, setSettings] = useState<INewsSettings>({
+        comments: true,
+        for_authorized_users: false
+    });
+
+    const updateSettings = (patch: Partial<INewsSettings>) => {
+        setSettings(prev => ({ ...prev, ...patch }));
+    };
 
     const addQuestion = () => {
         setQuestions(prev => [...prev, {
@@ -95,22 +106,41 @@ export default function NewNewsContent() {
                 <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
                     <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
                         <button 
-                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${'text-blue-500'}`}>
+                            onClick={() => setActiveTab('content')}
+                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${
+                                activeTab === 'content' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
+                            }`}>
                             Контент
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+                            {activeTab === 'content' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+                            )}
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('settings')}
+                            className={`pb-3 text-sm font-medium transition-all relative cursor-pointer ${
+                                activeTab === 'settings' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
+                            }`}>
+                            Настройки
+                            {activeTab === 'settings' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+                            )}
                         </button>
                     </div>
 
-                    <Content 
-                        title={title} 
-                        setTitle={setTitle} 
-                        description={description} 
-                        setDescription={setDescription}
-                        categories={categories}
-                        setCategories={setCategories}
-                        publishDate={publishDate}
-                        setPublishDate={setPublishDate}
-                    />
+                    {activeTab === 'content' ? (
+                        <Content 
+                            title={title} 
+                            setTitle={setTitle} 
+                            description={description} 
+                            setDescription={setDescription}
+                            categories={categories}
+                            setCategories={setCategories}
+                            publishDate={publishDate}
+                            setPublishDate={setPublishDate}
+                        />
+                    ) : (
+                        <Settings settings={settings} updateSettings={updateSettings}/>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-3">

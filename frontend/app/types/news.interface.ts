@@ -45,6 +45,11 @@ export interface INewsCreateInput extends Omit<INews, 'categories' | 'form_slug'
     form_id?: number;
 }
 
+export interface INewsSettings {
+    comments: boolean;
+    for_authorized_users: boolean;
+}
+
 export interface INewsTest {
     id: string;
     text?: string;
