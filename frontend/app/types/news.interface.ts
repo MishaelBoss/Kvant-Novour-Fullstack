@@ -48,6 +48,7 @@ export interface INewsCreateInput extends Omit<INews, 'categories' | 'form_slug'
 export interface INewsSettings {
     comments: boolean;
     for_authorized_users: boolean;
+    pinned: boolean;
 }
 
 export interface INewsTest {

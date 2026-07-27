@@ -26,7 +26,8 @@ export default function NewNewsContent() {
 
     const [settings, setSettings] = useState<INewsSettings>({
         comments: true,
-        for_authorized_users: false
+        for_authorized_users: false,
+        pinned: false,
     });
 
     const updateSettings = (patch: Partial<INewsSettings>) => {
@@ -89,6 +90,16 @@ export default function NewNewsContent() {
                         Назад
                     </Link>
                     <div className="flex gap-2">
+                        <button
+                            onClick={() => toast.error('Сначала сохраните новость')}
+                            className="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                            <svg className="inline-block w-4 h-4 mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15 3 21 3 21 9"/>
+                                <line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                            Предпросмотр
+                        </button>
                         <button
                             onClick={() => handleSave('draft')}
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
