@@ -19,6 +19,7 @@ export default function NewNewsContent() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [questions, setQuestions] = useState<INewsTest[]>([]);
+    const [categories, setCategories] = useState('');
     const [publishDate, setPublishDate] = useState('');
 
     const addQuestion = () => {
@@ -105,6 +106,8 @@ export default function NewNewsContent() {
                         setTitle={setTitle} 
                         description={description} 
                         setDescription={setDescription}
+                        categories={categories}
+                        setCategories={setCategories}
                         publishDate={publishDate}
                         setPublishDate={setPublishDate}
                     />

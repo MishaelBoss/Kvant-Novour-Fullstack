@@ -163,7 +163,6 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
 
     const handleCreate = (inputValue: string) => {
         const generatedSlug = inputValue.toLowerCase().replace(/\s+/g, '-');
-
         const newOption: ICategory = {
             label: inputValue,
             value: Date.now(), 
