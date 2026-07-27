@@ -57,4 +57,6 @@ export interface INewsTest {
     text_variant?: TextVariant;
     images?: IBlockImage[];
     files?: IBlockFile[];
+    image_display_mode?: 'grid' | 'carousel';
+    carousel_interval?: number;
 }

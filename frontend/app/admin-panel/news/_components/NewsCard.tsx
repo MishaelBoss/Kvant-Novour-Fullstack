@@ -51,7 +51,11 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
     const handleTypeChange = (type: NewsType) => {
         const patch: Partial<INewsTest> = { type };
         if (type === 'text' && !q.text_variant) patch.text_variant = 'body';
-        if (type === 'image') patch.images = q.images || [];
+        if (type === 'image') {
+            patch.images = q.images || [];
+            patch.image_display_mode = q.image_display_mode || 'grid';
+            patch.carousel_interval = q.carousel_interval || 2;
+        }
         if (type === 'file') patch.files = q.files || [];
         onUpdate(q.id, patch);
     };
@@ -67,7 +71,11 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
             preview_url: URL.createObjectURL(file),
             caption: '',
         }));
-        onUpdate(q.id, { images: [...images, ...newImages] });
+        const updatedImages = [...images, ...newImages];
+        const patch: Partial<INewsTest> = { images: updatedImages };
+        if (!q.image_display_mode) patch.image_display_mode = 'grid';
+        if (!q.carousel_interval) patch.carousel_interval = 2;
+        onUpdate(q.id, patch);
     }, [images, onUpdate, q.id]);
 
     const { getRootProps: getImageRoot, getInputProps: getImageInput, isDragActive: isImageDrag } = useDropzone({
@@ -106,6 +114,8 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
     const removeFile = (fileId: string) => {
         onUpdate(q.id, { files: files.filter(f => f.id !== fileId) });
     };
+
+    const isCarousel = q.image_display_mode === 'carousel';
 
     return (
         <div className="group bg-white rounded-[20px] p-6 shadow-sm border border-gray-200/50 hover:shadow-md hover:border-gray-200 transition-all duration-200 flex flex-col gap-5">
@@ -164,6 +174,42 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                         </svg>
                     </div>
                 )}
+
+                {q.type === 'image' && images.length > 0 && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => onUpdate(q.id, { image_display_mode: 'grid' })}
+                            className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                                !isCarousel
+                                    ? 'border-blue-300 bg-blue-50 text-blue-600'
+                                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                            }`}
+                            title="Сетка">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+                                <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+                                <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+                                <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+                            </svg>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onUpdate(q.id, { image_display_mode: 'carousel' })}
+                            className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                                isCarousel
+                                    ? 'border-blue-300 bg-blue-50 text-blue-600'
+                                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                            }`}
+                            title="Карусель">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+                                <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                                <path d="M3 8h2M11 8h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {q.type === 'text' && (
@@ -197,11 +243,44 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                         </div>
                     </div>
 
+                    {isCarousel && images.length > 0 && (
+                        <div className="flex items-center gap-3 px-1">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-gray-400">
+                                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/>
+                                <path d="M8 4v4l3 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                            </svg>
+                            <span className="text-xs text-gray-400 font-medium">Интервал:</span>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => onUpdate(q.id, { carousel_interval: Math.max(0, (q.carousel_interval ?? 2) - 1) })}
+                                    className="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-gray-300 hover:bg-gray-50 transition-all cursor-pointer text-sm font-medium">
+                                    −
+                                </button>
+                                <span className="w-10 text-center text-sm font-semibold text-gray-700 tabular-nums">
+                                    {q.carousel_interval != null && q.carousel_interval > 0 ? `${q.carousel_interval}с` : 'Выкл'}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => onUpdate(q.id, { carousel_interval: Math.min(10, (q.carousel_interval ?? 2) + 1) })}
+                                    className="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-gray-300 hover:bg-gray-50 transition-all cursor-pointer text-sm font-medium">
+                                    +
+                                </button>
+                            </div>
+                            {q.carousel_interval != null && q.carousel_interval > 0 && (
+                                <>
+                                    <span className="text-[10px] text-gray-300">·</span>
+                                    <span className="text-[10px] text-gray-400">авто-смена каждые {q.carousel_interval} сек</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+
                     {images.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className={isCarousel ? 'flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory' : 'grid grid-cols-2 md:grid-cols-3 gap-3'}>
                             {images.map(img => (
-                                <div key={img.id} className="group/img relative flex flex-col gap-1.5">
-                                    <div className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                <div key={img.id} className={`group/img relative flex flex-col gap-1.5 ${isCarousel ? 'snap-start shrink-0 w-[200px]' : ''}`}>
+                                    <div className={`relative overflow-hidden border border-gray-200 bg-gray-50 ${isCarousel ? 'rounded-xl aspect-[4/3] w-full' : 'aspect-square rounded-xl'}`}>
                                         {img.preview_url && (
                                             <Image
                                                 fill
@@ -233,6 +312,12 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                     {images.length > 0 && (
                         <div className="flex items-center gap-3 text-xs text-gray-400">
                             <span>{images.length} изображений</span>
+                            {isCarousel && (
+                                <>
+                                    <span className="text-gray-300">·</span>
+                                    <span className="text-gray-400">карусель</span>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
