@@ -1,10 +1,12 @@
 "use client";
 import { INewsTest, NewsType, TextVariant, IBlockImage, IBlockFile } from "@/app/types/news.interface";
 import { DropdownMenu } from "@radix-ui/themes";
-import { CopyIcon, DownloadIcon, EllipsisIcon, FileIcon, ImageIcon, TrashIcon, XIcon } from "lucide-react";
+import { CopyIcon, DownloadIcon, EllipsisIcon, FileIcon, GripVertical, ImageIcon, TrashIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Props {
     question: INewsTest;
@@ -45,6 +47,20 @@ function genId() {
 }
 
 export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }: Props) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: q.id });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+    };
+
     const images = q.images || [];
     const files = q.files || [];
 
@@ -118,11 +134,16 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
     const isCarousel = q.image_display_mode === 'carousel';
 
     return (
-        <div className="group bg-white rounded-[20px] p-6 shadow-sm border border-gray-200/50 hover:shadow-md hover:border-gray-200 transition-all duration-200 flex flex-col gap-5">
+        <div ref={setNodeRef} style={style} className="group bg-white rounded-[20px] p-6 shadow-sm border border-gray-200/50 hover:shadow-md hover:border-gray-200 transition-all duration-200 flex flex-col gap-5">
             <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    {BLOCK_LABELS[q.type] || 'Блок'} {index + 1}
-                </span>
+                <div className="flex items-center gap-2">
+                    <button type="button" {...attributes} {...listeners} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing transition-colors touch-none" aria-label="Переместить блок">
+                        <GripVertical className="w-[17] h-[17]"/>
+                    </button>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        {BLOCK_LABELS[q.type] || 'Блок'} {index + 1}
+                    </span>
+                </div>
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
                         <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
