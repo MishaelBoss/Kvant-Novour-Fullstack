@@ -1,6 +1,10 @@
 from django.db import models
 from django.conf import settings
 from news.models import News
+from .tasks import clean_old_notifications
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = (
@@ -23,15 +27,21 @@ class Notification(models.Model):
         super().save(*args, **kwargs)
 
         if is_new:
-            queryset = Notification.objects.filter(
-                user=self.user, 
-                type=self.type
-            ).order_by('-created_at')
-            
-            if queryset.count() > 10:
-                ids_to_delete = list(queryset.values_list('id', flat=True)[10:])
-                
-                Notification.objects.filter(id__in=ids_to_delete).delete()
+            try:
+                clean_old_notifications.delay(self.user_id, self.type)
+            except Exception as exc:
+                logger.error(
+                    f"Celery error: не удалось запустить очистку уведомлений для user {self.user_id}: {exc}", 
+                    exc_info=True
+                )
+
+    class Meta:
+        verbose_name = 'Уведомление'
+        verbose_name_plural = 'Уведомления'
+        ordering = ['-created_at'] 
+        indexes = [
+            models.Index(fields=['user', 'type', '-created_at'])
+        ]
 
     def __str__(self):
         return f"{self.user.username} | {self.get_type_display()} | {self.title}"

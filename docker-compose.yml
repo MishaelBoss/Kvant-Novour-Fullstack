@@ -10,6 +10,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  redis:
+    image: redis:alpine
+    restart: always
+    expose:
+      - "6379"
+
   backend:
     build: ./backend
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
@@ -34,6 +40,17 @@ services:
       - NEXT_PUBLIC_API_URL=/api
     depends_on:
       - backend
+
+  celery:
+    build: ./backend
+    command: celery -A core worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    depends_on:
+      - redis
+      - backend 
 
   gateway:
     image: nginx:1.30.4-alpine-slim

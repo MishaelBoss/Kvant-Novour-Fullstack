@@ -87,13 +87,13 @@ export function NotificationsTab() {
                     }
                     return notif;
                 });
-                if (readCount > 0) setCountNotifications(c => Math.max(0, c - readCount));
+                if (readCount > 0) queueMicrotask(() => { setCountNotifications(c => Math.max(0, c - readCount)); });
                 return updated;
             });
         }, 1500);
 
         return () => clearTimeout(timer);
-    }, [activeFilter]);
+    }, [activeFilter, setCountNotifications, readNotification]);
 
     const sidebarTabs = [
         {
