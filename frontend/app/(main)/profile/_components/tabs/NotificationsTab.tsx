@@ -11,7 +11,7 @@ import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide
 import { motion } from "framer-motion";
 
 export function NotificationsTab() {
-    const { isLoading } = useAuth();
+    const { isLoading, setCountNotifications } = useAuth();
     const [latestDates, setLatestDates] = useState({ system: '', chat: '', news: '' });
     const [notifications, setNotifications] = useState<INotifications[]>([]);
     const [activeFilter, setActiveFilter] = useState<'system' | 'chat' | 'news'>('system');
@@ -45,12 +45,20 @@ export function NotificationsTab() {
     }, [fetchNotifications]);
 
     const toggleRead = (id: number) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        setNotifications(prev => {
+            const target = prev.find(n => n.id === id);
+            if (target && !target.isRead) setCountNotifications(c => Math.max(0, c - 1));
+            return prev.map(n => n.id === id ? { ...n, isRead: true } : n);
+        });
         readNotification(id);
     };
 
     const markAllAsRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setNotifications(prev => {
+            const unread = prev.filter(n => !n.isRead).length;
+            if (unread > 0) setCountNotifications(c => Math.max(0, c - unread));
+            return prev.map(n => ({ ...n, isRead: true }));
+        });
         readAllNotifications();
     };
 
@@ -69,15 +77,19 @@ export function NotificationsTab() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            setNotifications(prev =>
-                prev.map(notif => {
+            let readCount = 0;
+            setNotifications(prev => {
+                const updated = prev.map(notif => {
                     if (notif.type === activeFilter && !notif.isRead) {
+                        readCount++;
                         readNotification(notif.id);
                         return { ...notif, isRead: true };
                     }
                     return notif;
-                })
-            );
+                });
+                if (readCount > 0) setCountNotifications(c => Math.max(0, c - readCount));
+                return updated;
+            });
         }, 1500);
 
         return () => clearTimeout(timer);
