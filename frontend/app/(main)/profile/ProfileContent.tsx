@@ -119,7 +119,7 @@ export default function ProfileContent() {
                         <button onClick={() => setActiveTab('notifications')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'notifications' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
                             Сообщения
                             {countNotifications > 0 && (
-                                <span className="absolute -top-1.5 -right-2 bg-[#f91155] text-white text-[12px] font-semibold min-w-4.5 h-5 rounded-full flex items-center justify-center px-1.5 font-mono leading-none">
+                                <span className="flex h-5 w-6 items-center justify-center rounded-full bg-[#f91155] text-[11px] font-semibold leading-none text-white shrink-0">
                                     {countNotifications}
                                 </span>
                             )}

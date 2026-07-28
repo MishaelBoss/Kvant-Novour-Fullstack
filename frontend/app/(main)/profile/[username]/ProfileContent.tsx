@@ -94,22 +94,16 @@ export default function ProfileContent(){
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-10">
                     <div className="flex items-start gap-6">
                         <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0 bg-gray-100">
-                            {profile.avatar ? (
-                                <Image 
-                                    src={profile.avatar.replace('http://localhost', '')}
-                                    fill
-                                    priority
-                                    alt={profile.username}
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <circle cx="12" cy="8" r="4" />
-                                        <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
-                                    </svg>
-                                </div>
-                            )}
+                            <Image 
+                                src={profile?.avatar?.replace('http://localhost', '') || '/undraw_finance-guy-avatar_vhop.svg'}
+                                loading="eager" 
+                                fill 
+                                priority
+                                alt={profile?.username || "Avatar"} 
+                                className="object-cover"
+                                sizes="80px"
+                                quality={75}
+                            />
                         </div>
 
                         <div className="flex-1 pt-1">
