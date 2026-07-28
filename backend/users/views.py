@@ -13,7 +13,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import *
 from notifications.models import *
 from django_user_agents.utils import get_user_agent
-from django.utils import timezone
 from users.services import GeolocationService, SessionService
 from django.middleware.csrf import get_token
 
@@ -183,7 +182,7 @@ class UploadAvatarView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-class PublickProfileViewView(APIView):
+class PublicProfileViewView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, username):

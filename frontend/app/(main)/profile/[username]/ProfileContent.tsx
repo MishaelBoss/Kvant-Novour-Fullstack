@@ -9,8 +9,6 @@ import { PAGES } from "@/app/config/pages.config";
 import { PublicProfileSkeleton } from "../_components/ProfileSkeleton";
 
 const ROLE_LABELS: Record<string, string> = {
-    student: 'Ученик',
-    parent: 'Родитель',
     user: 'Пользователь',
     teacher: 'Преподаватель',
     admin: 'Администратор',
