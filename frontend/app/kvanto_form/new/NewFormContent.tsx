@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { IFormCreate, IFormSettings, IQuestion } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +10,8 @@ import { QuestionCard } from "../_components/QuestionCard";
 import { createForm } from "@/app/lib/api";
 import { toast } from "react-hot-toast";
 import { PlusIcon } from "lucide-react";
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -127,6 +128,23 @@ export default function NewFormContent() {
         ));
     };
 
+    
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        setQuestions(prev => {
+            const oldIndex = prev.findIndex(q => q.id === active.id);
+            const newIndex = prev.findIndex(q => q.id === over.id);
+            if (oldIndex === -1 || newIndex === -1) return prev;
+            return arrayMove(prev, oldIndex, newIndex);
+        });
+    };
+
     const handleSave = async (status: 'draft' | 'active', newsImage: File | null = null) => {
         if (!title.trim()) {
             toast.error("Введите название формы");
@@ -228,22 +246,26 @@ export default function NewFormContent() {
                     )}
                 </div>
 
-                <div className="flex flex-col gap-3">
-                    {questions.map((q, index) => (
-                        <QuestionCard
-                            key={q.id}
-                            question={q}
-                            index={index}
-                            onUpdate={updateQuestion}
-                            onRemove={removeQuestion}
-                            onDuplicate={duplicateQuestion}
-                            onAddChoice={addChoice}
-                            onUpdateChoice={updateChoice}
-                            onUpdateChoiceCorrect={updateChoiceCorrect}
-                            onRemoveChoice={removeChoice}
-                        />
-                    ))}
-                </div>
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={questions.map(q => q.id)} strategy={verticalListSortingStrategy}>
+                        <div className="flex flex-col gap-3">
+                            {questions.map((q, index) => (
+                                <QuestionCard
+                                    key={q.id}
+                                    question={q}
+                                    index={index}
+                                    onUpdate={updateQuestion}
+                                    onRemove={removeQuestion}
+                                    onDuplicate={duplicateQuestion}
+                                    onAddChoice={addChoice}
+                                    onUpdateChoice={updateChoice}
+                                    onUpdateChoiceCorrect={updateChoiceCorrect}
+                                    onRemoveChoice={removeChoice}
+                                />
+                            ))}
+                        </div>
+                    </SortableContext>
+                </DndContext>
                 <button
                     onClick={addQuestion}
                     className="flex items-center justify-center gap-2 w-full py-3 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-[20px] hover:border-blue-300 hover:text-blue-500 transition-colors cursor-pointer">

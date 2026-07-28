@@ -1,12 +1,14 @@
 "use client";
 import { IQuestion, QuestionType } from "@/app/types/form.interface";
 import { MediaType } from "@/app/types/global.intefrace";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { DropdownMenu } from "@radix-ui/themes";
-import { CopyIcon, EllipsisIcon, TrashIcon } from "lucide-react";
+import { CopyIcon, EllipsisIcon, GripVertical, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
 
-interface QuestionCardProps {
+interface Props {
     question: IQuestion;
     index: number;
     onUpdate: (id: string, patch: Partial<IQuestion>) => void;
@@ -51,7 +53,21 @@ export function QuestionCard({
     onUpdateChoice,
     onUpdateChoiceCorrect,
     onRemoveChoice,
-}: QuestionCardProps) {
+}: Props) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: q.id });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+    };
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleMediaTypeSelect = (type: MediaType) => {
@@ -85,11 +101,16 @@ export function QuestionCard({
     };
 
     return (
-        <div className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-200/50 flex flex-col gap-4">
+        <div ref={setNodeRef} style={style} className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-200/50 flex flex-col gap-4">
             <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Вопрос {index + 1}
-                </span>
+                <div className="flex items-center gap-2">
+                    <button type="button" {...attributes} {...listeners} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing transition-colors touch-none" aria-label="Переместить блок">
+                        <GripVertical className="w-[17] h-[17]"/>
+                    </button>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        {QUESTION_TYPE_LABELS[q.type] || 'Блок'} {index + 1}
+                    </span>
+                </div>
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
                         <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
