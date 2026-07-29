@@ -1,3 +1,5 @@
+import { PAGES } from "../config/pages.config";
+
 export const QUANTUMS = [
     {
         id: 1,
@@ -12,6 +14,7 @@ export const QUANTUMS = [
             "Создание сайтов",
             "Алгоритмы и логика",
         ],
+        url_about: PAGES.COURSES_IT(),
     },
     {
         id: 2,
@@ -26,6 +29,7 @@ export const QUANTUMS = [
             "Датчики и контроллеры",
             "Автоматизация процессов",
         ],
+        url_about: PAGES.COURSES_PROM(),
     },
     {
         id: 3,
@@ -40,6 +44,7 @@ export const QUANTUMS = [
             "Разработка в Unity",
             "Создание виртуальных миров",
         ],
+        url_about: PAGES.COURSES_VRAR(),
     },
     {
         id: 4,
@@ -54,6 +59,7 @@ export const QUANTUMS = [
             "3D-печать и слайсинг",
             "Схемотехника и пайка",
         ],
+        url_about: PAGES.COURSES_HITECH(),
     },
     {
         id: 5,
@@ -68,6 +74,7 @@ export const QUANTUMS = [
             "Прикладные задачи",
             "Развитие интеллекта",
         ],
+        url_about: PAGES.COURSES_MATHEMATICS(),
     },
     {
         id: 6,
@@ -82,6 +89,7 @@ export const QUANTUMS = [
             "Анализ партий и позиций",
             "Участие в турнирах",
         ],
+        url_about: PAGES.COURSES_CHESS(),
     },
     {
         id: 7,
@@ -96,5 +104,6 @@ export const QUANTUMS = [
             "Профильный вокабуляр",
             "Презентация проектов",
         ],
+        url_about: PAGES.COURSES_ENGLISH(),
     },
 ];

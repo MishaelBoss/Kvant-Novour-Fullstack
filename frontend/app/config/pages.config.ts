@@ -32,4 +32,25 @@ export const PAGES = new class PageConfig{
     INSTRUCTION() {
         return "/instruction/"
     }
+    COURSES_CHESS() {
+        return "/courses/chess/"
+    }
+    COURSES_ENGLISH() {
+        return "/courses/english/"
+    }
+    COURSES_HITECH() {
+        return "/courses/hi-tech/"
+    }
+    COURSES_IT() {
+        return "/courses/it/"
+    }
+    COURSES_MATHEMATICS() {
+        return "/courses/mathematics/"
+    }
+    COURSES_PROM() {
+        return "/courses/prom/"
+    }
+    COURSES_VRAR() {
+        return "/courses/vr-ar/"
+    }
 }

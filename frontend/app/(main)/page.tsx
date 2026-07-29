@@ -180,9 +180,9 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <button className="w-full bg-[#005bff] hover:bg-[#004ae6] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                    <Link href={quant.url_about ?? "#"} className="w-full bg-[#005bff] hover:bg-[#004ae6] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
                       Подробнее
-                    </button>
+                    </Link>
                   </motion.div>
                 );
               })}
