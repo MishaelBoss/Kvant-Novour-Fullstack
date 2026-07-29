@@ -1,10 +1,11 @@
+import logging
 from django.db import models
 from django.conf import settings
 from news.models import News
 from .tasks import clean_old_notifications
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = (
@@ -29,9 +30,9 @@ class Notification(models.Model):
         if is_new:
             try:
                 clean_old_notifications.delay(self.user_id, self.type)
-            except Exception as exc:
+            except Exception as ex:
                 logger.error(
-                    f"Celery error: не удалось запустить очистку уведомлений для user {self.user_id}: {exc}", 
+                    f"Celery error: не удалось запустить очистку уведомлений для user {self.user_id}: {ex}", 
                     exc_info=True
                 )
 

@@ -328,8 +328,8 @@ class SessionsDeleteAllView(APIView):
                 for t in outstanding_tokens
             ]
             BlacklistedToken.objects.bulk_create(blacklisted_objects, ignore_conflicts=True)
-        except Exception as e:
-            print(f"Ошибка блэклиста: {e}")
+        except Exception as ex:
+            print(f"Ошибка блэклиста: {ex}")
 
         UserSession.objects.filter(user=request.user).delete()
 
