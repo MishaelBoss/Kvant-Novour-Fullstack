@@ -50,18 +50,7 @@ services:
       - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
     depends_on:
       - redis
-      - backend
-
-  celery-beat:
-    build: ./backend
-    command: celery -A core beat --loglevel=info
-    volumes:
-      - ./backend:/app
-    environment:
-      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-    depends_on:
-      - redis
-      - backend
+      - backend 
 
   gateway:
     image: nginx:1.30.4-alpine-slim
