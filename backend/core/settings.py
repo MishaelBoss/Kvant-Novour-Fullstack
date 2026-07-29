@@ -1,7 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
 import os
-from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -173,10 +172,3 @@ CELERY_TASK_TRACK_STARTED = True
 # Жесткий лимит времени на выполнение одной задачи — 30 минут (30 * 60 секунд).
 # Если задача зависнет (например, из-за бесконечного цикла), Celery принудительно убьет её, чтобы спасти сервер.
 CELERY_TASK_TIME_LIMIT = 30 * 60
-
-CELERY_BEAT_SCHEDULE = {
-    'cleanup-old-notifications': {
-        'task': 'notifications.tasks.cleanup_old_notifications',
-        'schedule': crontab(hour=3, minute=0),
-    },
-}
