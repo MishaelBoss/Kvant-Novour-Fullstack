@@ -159,8 +159,8 @@ SIMPLE_JWT = {
     'CHECK_REVOCATION_TOKEN': True,
 }
 
-CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/0'
-CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 
 # Синхронизация часового пояса Celery с основным часовым поясом Django (переменная TIME_ZONE).
 # Это нужно, чтобы задачи по расписанию (например, ночная очистка) выполнялись по вашему времени.
