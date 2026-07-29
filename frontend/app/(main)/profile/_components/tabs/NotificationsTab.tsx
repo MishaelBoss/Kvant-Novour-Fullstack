@@ -7,11 +7,13 @@ import { getNotificationsList, readAllNotifications, readNotification } from "@/
 import { INotifications } from "@/app/types/notifications.interface";
 import { NewsNotificationsCard } from "../NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
+import { useWebSocket, LiveNotification } from "@/app/context/WebSocketContext";
 import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function NotificationsTab() {
     const { isLoading, setCountNotifications } = useAuth();
+    const { liveNotifications } = useWebSocket();
     const [latestDates, setLatestDates] = useState({ system: '', chat: '', news: '' });
     const [notifications, setNotifications] = useState<INotifications[]>([]);
     const [activeFilter, setActiveFilter] = useState<'system' | 'chat' | 'news'>('system');
@@ -20,12 +22,16 @@ export function NotificationsTab() {
         try {
             const res = await getNotificationsList();
             if (Array.isArray(res?.results)) {
-                const formattedData = res.results.map((n: any) => ({
+                const formattedData: INotifications[] = res.results.map((n: any) => ({
                     ...n,
                     isRead: n.is_read !== undefined ? n.is_read : n.isRead
                 }));
 
-                setNotifications(formattedData);
+                setNotifications((prev: INotifications[]) => {
+                    const apiIds = new Set(formattedData.map(n => n.id));
+                    const keptLive = prev.filter(n => !apiIds.has(n.id) && n.id < 0);
+                    return [...keptLive, ...formattedData];
+                });
                 
                 if (res.latest_dates) {
                     setLatestDates(res.latest_dates);
@@ -44,21 +50,40 @@ export function NotificationsTab() {
         init();
     }, [fetchNotifications]);
 
-    const toggleRead = (id: number) => {
+    useEffect(() => {
+        if (liveNotifications.length === 0) return;
         setNotifications(prev => {
-            const target = prev.find(n => n.id === id);
-            if (target && !target.isRead) setCountNotifications(c => Math.max(0, c - 1));
-            return prev.map(n => n.id === id ? { ...n, isRead: true } : n);
+            const existingIds = new Set(prev.map(n => n.id));
+            const newItems = liveNotifications
+                .filter((n): n is LiveNotification & { id: number } => n.id != null)
+                .filter(n => !existingIds.has(n.id))
+                .map(n => ({
+                    id: n.id ?? -(Date.now() + Math.random()),
+                    type: n.type as 'system' | 'chat' | 'news',
+                    title: n.title,
+                    description: n.description,
+                    isRead: n.isRead,
+                    time: n.time,
+                    groupDate: 'Только что',
+                    senderName: '',
+                    avatarUrl: '',
+                    news: null as any,
+                }));
+            if (newItems.length === 0) return prev;
+            return [...newItems, ...prev];
         });
+    }, [liveNotifications]);
+
+    const toggleRead = (id: number) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        setCountNotifications(prev => Math.max(0, prev - 1));
         readNotification(id);
     };
 
     const markAllAsRead = () => {
-        setNotifications(prev => {
-            const unread = prev.filter(n => !n.isRead).length;
-            if (unread > 0) setCountNotifications(c => Math.max(0, c - unread));
-            return prev.map(n => ({ ...n, isRead: true }));
-        });
+        const unread = notifications.filter(n => !n.isRead).length;
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        if (unread > 0) setCountNotifications(prev => Math.max(0, prev - unread));
         readAllNotifications();
     };
 

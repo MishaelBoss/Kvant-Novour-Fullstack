@@ -13,6 +13,8 @@ from django.db.models import Sum
 from django.db.models import Count
 import openpyxl
 from django.http import HttpResponse
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from .serializers import *
 
 
@@ -95,7 +97,34 @@ class CreateFormView(APIView):
                     ]
                     
                     if notifications_to_create:
-                        Notification.objects.bulk_create(notifications_to_create)
+                        created = Notification.objects.bulk_create(
+                            notifications_to_create,
+                            returning_fields=['id', 'created_at'],
+                        )
+
+                        def notify_users():
+                            try:
+                                channel_layer = get_channel_layer()
+                                for notif, user in zip(created, users):
+                                    async_to_sync(channel_layer.group_send)(
+                                        f'notifications_{user.id}',
+                                        {
+                                            'type': 'send_notification',
+                                            'data': {
+                                                'id': notif.id,
+                                                'type': notif.type,
+                                                'title': notif.title,
+                                                'description': notif.description,
+                                                'is_read': notif.is_read,
+                                                'created_at': notif.created_at.isoformat() if notif.created_at else None,
+                                            },
+                                        },
+                                    )
+                            except Exception as ex:
+                                logger = __import__('logging').getLogger(__name__)
+                                logger.error(f'WS notify error for polls: {ex}')
+
+                        transaction.on_commit(notify_users)
 
                 return Response({"id": form.id, "slug": form.slug}, status=201)
 

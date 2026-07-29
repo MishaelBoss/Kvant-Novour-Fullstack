@@ -19,7 +19,7 @@ def send_notification_to_websocket(sender, instance, created, **kwargs):
     def send_ws():
         try:
             channel_layer = get_channel_layer()
-            group_name = f"user_{instance.user_id}_notification"
+            group_name = f"notifications_{instance.user_id}"
             
             notification_data = {
                 "id": instance.id,
