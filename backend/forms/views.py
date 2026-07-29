@@ -1,11 +1,11 @@
-from datetime import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import *
 from news.models import *
 from notifications.models import *
 import json
-from django.db import transaction
+from django.db import transaction, IntegrityError, IntegrityError
+from django.utils import timezone
 from pytils.translit import slugify
 from users.permissions import *
 from django.shortcuts import get_object_or_404
@@ -34,8 +34,14 @@ class CreateFormView(APIView):
         try:
             with transaction.atomic():
                 title_val = request.data.get('title', 'Без названия')
-                generated_slug = slugify(title_val)
-            
+                base_slug = slugify(title_val)[:190]
+                generated_slug = base_slug
+                counter = 1
+                while Form.objects.filter(slug=generated_slug).exists():
+                    suffix = f"-{counter}"
+                    generated_slug = f"{base_slug[:190 - len(suffix)]}{suffix}"
+                    counter += 1
+
                 form = Form.objects.create(
                     owner=request.user,
                     title=title_val,
@@ -73,13 +79,26 @@ class CreateFormView(APIView):
                 if status_val == 'active':
                     news_image = request.FILES.get('news_image')
 
-                    new_post = News.objects.create(
-                        title=f"Новый опрос: {form.title}",
-                        content=form.description or "Пройдите наш новый опрос!",
-                        form_id=form.id,
-                        form_slug=generated_slug,
-                        image=news_image
-                    )
+                    try:
+                        new_post, _ = News.objects.update_or_create(
+                            form_id=form.id,
+                            defaults={
+                                'title': f"Новый опрос: {form.title}",
+                                'content': form.description or "Пройдите наш новый опрос!",
+                                'form_slug': generated_slug,
+                                'image': news_image,
+                            }
+                        )
+                    except IntegrityError:
+                        new_post, _ = News.objects.update_or_create(
+                            form_id=form.id,
+                            defaults={
+                                'title': f"Новый опрос #{form.id}: {form.title}",
+                                'content': form.description or "Пройдите наш новый опрос!",
+                                'form_slug': generated_slug,
+                                'image': news_image,
+                            }
+                        )
                     category, _ = Category.objects.get_or_create(name="Опросы")
                     new_post.categories.add(category)
 
@@ -97,26 +116,26 @@ class CreateFormView(APIView):
                     ]
                     
                     if notifications_to_create:
-                        created = Notification.objects.bulk_create(
-                            notifications_to_create,
-                            returning_fields=['id', 'created_at'],
-                        )
+                        now = timezone.now()
+                        for n in notifications_to_create:
+                            n.created_at = now
+                        created = Notification.objects.bulk_create(notifications_to_create)
 
                         def notify_users():
                             try:
                                 channel_layer = get_channel_layer()
-                                for notif, user in zip(created, users):
+                                for i, user in enumerate(users):
                                     async_to_sync(channel_layer.group_send)(
                                         f'notifications_{user.id}',
                                         {
                                             'type': 'send_notification',
                                             'data': {
-                                                'id': notif.id,
-                                                'type': notif.type,
-                                                'title': notif.title,
-                                                'description': notif.description,
-                                                'is_read': notif.is_read,
-                                                'created_at': notif.created_at.isoformat() if notif.created_at else None,
+                                                'id': -(i + 1),
+                                                'type': 'news',
+                                                'title': notifications_to_create[i].title,
+                                                'description': notifications_to_create[i].description,
+                                                'is_read': False,
+                                                'created_at': now.isoformat(),
                                             },
                                         },
                                     )

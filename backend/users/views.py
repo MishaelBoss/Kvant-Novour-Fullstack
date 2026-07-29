@@ -37,7 +37,7 @@ class RegisterView(APIView):
 
             response = Response({"message": "Успех"}, status=status.HTTP_201_CREATED)
 
-            cls._set_auth_cookies(response, access_token, refresh_token)
+            self._set_auth_cookies(response, access_token, refresh_token)
             return response
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
