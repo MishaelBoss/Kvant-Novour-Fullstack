@@ -153,7 +153,7 @@ export function NotificationsTab() {
     if (isLoading) return <div className="p-8 text-center text-gray-500">Загрузка уведомлений...</div>;
 
     return (
-        <div className="flex-1 bg-white rounded-[24px] shadow-sm border border-gray-200/50 flex h-[650px] overflow-hidden font-sans antialiased">
+        <div className="flex-1 bg-white rounded-3xl shadow-sm border border-gray-200/50 flex h-162.5 overflow-hidden font-sans antialiased">
             <NotificationSidebar 
                 activeFilter={activeFilter}
                 setActiveFilter={setActiveFilter}
@@ -227,7 +227,7 @@ export function NotificationsTab() {
                                 )}
 
                                 {notif.type === 'news' && (
-                                    <div className="w-[460] max-w-[460px] max-w-[740px] xl:max-w-none gap-6 auto-rows-fr">
+                                    <div className="w-[460] max-w-185 xl:max-w-none gap-6 auto-rows-fr">
                                         <NewsNotificationsCard
                                             notif={notif}
                                         />
