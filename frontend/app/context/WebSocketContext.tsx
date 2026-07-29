@@ -31,9 +31,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
         if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        const url = `${protocol}//${host}/ws/notifications/`;
+        const wsBase = process.env.NEXT_PUBLIC_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+        const url = `${wsBase}/ws/notifications/`;
 
         const ws = new WebSocket(url);
         wsRef.current = ws;
