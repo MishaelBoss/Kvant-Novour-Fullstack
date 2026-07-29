@@ -11,6 +11,10 @@ export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const homeUrl = new URL('/', request.url);
 
+    if (/^\/profile\/[^\/]+/.test(pathname)) {
+        return NextResponse.next();
+    }
+
     if (pathname.startsWith('/kvanto_form')) {
         const requiresAuth = pathname === '/kvanto_form/new' || pathname.startsWith('/kvanto_form/edit') || /^\/kvanto_form\/[^\/]+\/responses/.test(pathname);
         

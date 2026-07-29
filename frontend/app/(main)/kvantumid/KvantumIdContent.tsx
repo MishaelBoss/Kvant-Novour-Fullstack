@@ -1,5 +1,4 @@
 "use client";
-
 import { PAGES } from '@/app/config/pages.config';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
@@ -133,21 +132,6 @@ export default function KvantumIdContent() {
                                     </button>
                                 </LogoutConfirmModel>
                             </div>
-
-                            <DropdownMenu.Root>
-                                <DropdownMenu.Trigger>
-                                    <button type="button" className="text-gray-300 hover:text-gray-500 cursor-pointer! pt-1 focus-visible:outline-none outline-none" aria-label="Настройки аккаунта">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                        </svg>
-                                    </button>
-                                </DropdownMenu.Trigger>
-                                <DropdownMenu.Content>
-                                    <DropdownMenu.Item color="red" className="cursor-pointer! focus:outline-none" onSelect={() => setDeleteModalOpen(true)}>
-                                        Удалить аккаунт
-                                    </DropdownMenu.Item>
-                                </DropdownMenu.Content>
-                            </DropdownMenu.Root>
 
                             <DeleteConfirmModal open={isDeleteModalOpen} onOpenChange={setDeleteModalOpen} />
                         </div>

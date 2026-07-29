@@ -29,8 +29,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
 
     const checkAndRedirect = useCallback((currentUser: IUser | null) => {
-        const isProtected = PROTECTED_PATHS.some(path => pathname?.startsWith(path));
-        
+        if (!pathname) return;
+
+        const isPublicProfile = /^\/profile\/[^\/]+/.test(pathname);
+        const isProtected = PROTECTED_PATHS.some(path => pathname?.startsWith(path) && !isPublicProfile);
+
         if (!currentUser && isProtected) {
             router.replace('/');
         }

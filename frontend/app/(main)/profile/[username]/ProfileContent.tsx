@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PAGES } from "@/app/config/pages.config";
 import { PublicProfileSkeleton } from "../_components/ProfileSkeleton";
+import { motion } from "framer-motion";
 
 const ROLE_LABELS: Record<string, string> = {
     user: 'Пользователь',
@@ -60,7 +61,7 @@ export default function ProfileContent(){
                         href={PAGES.HOME()} 
                         className="inline-flex items-center gap-2 text-[15px] text-[#005BFF] mb-10 hover:opacity-80 transition-opacity font-medium group"
                     >
-                        <span className="text-[20px] leading-none -mt-[2px]">‹</span>
+                        <span className="text-[20px] leading-none -mt-0.5">‹</span>
                         <span>На главную</span>
                     </Link>
                 </div>
@@ -149,13 +150,18 @@ export default function ProfileContent(){
                             priority
                             className="opacity-90"
                         />
-                        <div className="flex flex-col gap-1">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5 }} 
+                            className="flex flex-col gap-1"
+                        >
                             <p className="text-[16px] font-semibold text-gray-800">Пока достижений нет</p>
                             <p className="text-[14px] text-gray-600 max-w-sm">
                                 Достижения появятся автоматически, когда вы будете их зарабатывать. 
                                 Просто продолжайте использовать сайт и достигать новых высот!
                             </p>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </main>
