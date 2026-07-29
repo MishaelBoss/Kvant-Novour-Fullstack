@@ -2,6 +2,7 @@ import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from channels.exceptions import ChannelFull
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import get_user_model
@@ -43,13 +44,21 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             return
 
         self.group_name = f'notifications_{self.user.id}'
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
+
+        try:
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+        except Exception as ex:
+            logger.error(f'Redis error on group_add for user {self.user.id}: {ex}')
+
         await self.accept()
         logger.info(f'WS connected: user {self.user.id} ({self.user.username})')
 
     async def disconnect(self, close_code):
         if hasattr(self, 'group_name'):
-            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+            try:
+                await self.channel_layer.group_discard(self.group_name, self.channel_name)
+            except Exception:
+                pass
             if hasattr(self, 'user'):
                 logger.info(f'WS disconnected: user {self.user.id}')
 
@@ -57,7 +66,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         pass
 
     async def send_notification(self, event):
-        await self.send(text_data=json.dumps(event['data']))
+        try:
+            await self.send(text_data=json.dumps(event['data']))
+        except Exception as ex:
+            logger.error(f'WS send error for user {getattr(self, "user", None)}: {ex}')
 
     def get_token_from_cookies(self):
         headers = dict(self.scope.get('headers', []))

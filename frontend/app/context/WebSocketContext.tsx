@@ -41,6 +41,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
             if (!mountedRef.current) return;
             setIsConnected(true);
             reconnectDelay.current = RECONNECT_DELAY;
+            if (process.env.NODE_ENV !== 'production') console.log(`WS connected: ${url}`);
         };
 
         ws.onmessage = (event) => {
@@ -55,9 +56,10 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
             }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event) => {
             if (!mountedRef.current) return;
             setIsConnected(false);
+            if (process.env.NODE_ENV !== 'production') console.warn(`WS closed: ${url} code=${event.code} reason=${event.reason}`);
             wsRef.current = null;
             if (!userRef.current) return;
             reconnectTimer.current = setTimeout(() => {
