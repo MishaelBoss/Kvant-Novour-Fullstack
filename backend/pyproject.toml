@@ -21,9 +21,6 @@ dependencies = [
     "transliterate (>=1.10.2,<2.0.0)",
     "celery (>=5.6.3,<6.0.0)",
     "redis (>=8.0.1,<9.0.0)",
-    "channels (>=4.2.0,<5.0.0)",
-    "channels-redis (>=4.2.0,<5.0.0)",
-    "daphne (>=4.1.0,<5.0.0)",
 ]
 
 

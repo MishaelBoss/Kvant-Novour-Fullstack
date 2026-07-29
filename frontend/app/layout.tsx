@@ -5,7 +5,6 @@ import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import AxiosConfig from "./components/AxiosConfig";
 import { AuthProvider } from "./context/AuthContext";
-import { WebSocketProvider } from "./context/WebSocketContext";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -42,11 +41,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Theme appearance="light" hasBackground={false} suppressHydrationWarning>
           <AuthProvider>
-            <WebSocketProvider>
-              <AxiosConfig/>
-              <Toaster position="bottom-right" />
-              {children}
-            </WebSocketProvider>
+            <AxiosConfig/>
+            <Toaster position="bottom-right" />
+            {children}
           </AuthProvider>
         </Theme>
       </body>

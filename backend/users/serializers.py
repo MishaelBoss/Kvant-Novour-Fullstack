@@ -158,8 +158,8 @@ class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
                 if profile.avatar and os.path.isfile(profile.avatar.path):
                     try:
                         os.remove(profile.avatar.path)
-                    except Exception as ex:
-                        print(f"Не удалось удалить старый файл: {ex}")
+                    except Exception as e:
+                        print(f"Не удалось удалить старый файл: {e}")
                 profile.avatar = new_avatar
             profile.save()
 

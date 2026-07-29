@@ -48,8 +48,8 @@ class GeolocationService:
             return default_data
         except AddressNotFoundError:
             return default_data
-        except Exception as ex:
-            logger.error(f"GeoIP crash for IP {ip_address}: {ex}")
+        except Exception as e:
+            logger.error(f"GeoIP crash for IP {ip_address}: {e}")
             return default_data
 
 
