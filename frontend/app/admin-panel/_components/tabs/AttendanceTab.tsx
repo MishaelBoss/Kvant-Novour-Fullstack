@@ -1,108 +1,97 @@
 "use client";
-
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useState } from "react";
+import { IAttendance } from "@/app/types/attendance.interface";
+import { getAttendanceList } from "@/app/lib/api";
+import { ApiError } from "next/dist/server/api-utils";
+import toast from "react-hot-toast";
 
 export function AttendanceTab() {
+    const [records, setRecords] = useState<IAttendance[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchAttendance = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await getAttendanceList();
+    
+            const data = Array.isArray(res?.results) 
+                ? res.results 
+                : (Array.isArray(res?.data) ? res.data : []);
+                
+            setRecords(data);
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+            setRecords([]);
+        } finally {
+            setLoading(false); 
+        }
+    }, []);
+
+    useEffect(() => {
+        const handleFetchEvent = async() => await fetchAttendance();
+
+        handleFetchEvent();
+    }, []);
+
+    if (loading) {
+        return (
+            <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-100 flex items-center justify-center">
+                <div className="text-gray-400">Загрузка...</div>
+            </main>
+        );
+    }
+
     return (
-        <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-100">
-            <div className="flex flex-col items-center justify-center min-h-[500px] h-full py-12 px-4 text-center select-none">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ 
-                        opacity: 1, 
-                        y: [0, -12, 0],
-                    }}
-                    transition={{
-                        opacity: { duration: 0.6, ease: "easeOut" },
-                        y: {
-                            duration: 4,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                        }
-                    }}
-                    whileHover={{ scale: 1.03 }}
-                    className="relative mb-8 cursor-pointer w-[280px] h-[280px] flex items-center justify-center"
-                >
-                    <svg
-                        viewBox="0 0 200 200"
-                        className="w-full h-full drop-shadow-[0_20px_40px_rgba(79,70,229,0.06)]"
-                        fill="none"
-                        xmlns="http://w3.org"
-                    >
-                        <circle cx="100" cy="100" r="75" fill="#F5F7FF" />
-                        <circle cx="100" cy="100" r="55" fill="#EEF2FF" />
-                        
-                        <line x1="60" y1="140" x2="140" y2="140" stroke="#E2E8F0" strokeWidth="1.5" strokeLinecap="round" />
-                        <line x1="60" y1="115" x2="140" y2="115" stroke="#F1F5F9" strokeWidth="1.5" strokeLinecap="round" />
-                        <line x1="60" y1="90" x2="140" y2="90" stroke="#F1F5F9" strokeWidth="1.5" strokeLinecap="round" />
-                        
-                        <rect x="65" y="110" width="12" height="30" rx="4" fill="#C7D2FE" />
-                        <rect x="83" y="85" width="12" height="55" rx="4" fill="#93C5FD" />
-                        <rect x="101" y="100" width="12" height="40" rx="4" fill="#60A5FA" />
-                        <rect x="119" y="75" width="12" height="65" rx="4" fill="#3B82F6" />
-                        
-                        <path 
-                            d="M 60 122 Q 85 95, 105 88 T 132 60" 
-                            stroke="#4F46E5" 
-                            strokeWidth="4" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round"
-                        />
-                        
-                        <g transform="translate(118, 46)">
-                            <circle cx="14" cy="14" r="15" fill="#4F46E5" stroke="#FFFFFF" strokeWidth="2" />
-                            <path 
-                                d="M8.5 14 L12 17.5 L19.5 10" 
-                                stroke="white" 
-                                strokeWidth="2.5" 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                            />
-                        </g>
-
-                        <circle cx="50" cy="72" r="3.5" fill="#818CF8" />
-                        <circle cx="152" cy="112" r="4.5" fill="#A5B4FC" />
-                    </svg>
-                </motion.div>
-
-                <motion.div 
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                    className="space-y-2 max-w-sm"
-                >
-                    <h3 className="text-xl font-bold text-gray-900 tracking-tight sm:text-2xl">
-                        Раздел в разработке
-                    </h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                        Мы уже создаем этот функционал. Скоро здесь появится удобная статистика и учет посещаемости.
-                    </p>
-                </motion.div>
-
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="mt-8 flex gap-2 justify-center items-center h-2"
-                >
-                    {[0, 1, 2].map((index) => (
-                        <motion.span
-                            key={index}
-                            animate={{
-                                scale: [1, 1.4, 1],
-                                opacity: [0.4, 1, 0.4]
-                            }}
-                            transition={{
-                                duration: 1.2,
-                                repeat: Infinity,
-                                delay: index * 0.2,
-                                ease: "easeInOut"
-                            }}
-                            className="w-2 h-2 rounded-full bg-indigo-600"
-                        />
-                    ))}
-                </motion.div>
+        <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Посещаемость</h2>
+                <span className="text-sm text-gray-500">{records.length} записей</span>
             </div>
+
+            {records.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">
+                    <p className="text-lg">Нет записей посещаемости</p>
+                    <p className="text-sm mt-1">Данные появятся после того, как преподаватели начнут отмечать учеников.</p>
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead>
+                            <tr className="border-b border-gray-200 text-gray-500 uppercase text-xs tracking-wider">
+                                <th className="pb-3 pr-4">Ученик</th>
+                                <th className="pb-3 pr-4">Группа</th>
+                                <th className="pb-3 pr-4">Дата</th>
+                                <th className="pb-3 pr-4">Статус</th>
+                                <th className="pb-3">Заметки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {records.map((r) => (
+                                <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                    <td className="py-3 pr-4 font-medium text-gray-900">{r.student_full_name || r.student_username}</td>
+                                    <td className="py-3 pr-4 text-gray-600">{r.group_name}</td>
+                                    <td className="py-3 pr-4 text-gray-600">{r.date}</td>
+                                    <td className="py-3 pr-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            r.status === "present"
+                                                ? "bg-green-100 text-green-800"
+                                                : r.status === "late"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
+                                        }`}>
+                                            {r.status === "present" ? "Присутствовал" : r.status === "late" ? "Опоздал" : "Отсутствовал"}
+                                        </span>
+                                    </td>
+                                    <td className="py-3 text-gray-500">{r.notes || "—"}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </main>
     );
 }

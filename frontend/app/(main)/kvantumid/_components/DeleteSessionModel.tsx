@@ -1,16 +1,31 @@
 "use client";
-
 import { deleteSession } from "@/app/lib/api";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
+import { ApiError } from "next/dist/server/api-utils";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
-interface DeleteSessionModelProps {
+interface Props {
     session_id: number;
+    fetchSessions: () => void;
     children: React.ReactNode;
 }
 
-export function DeleteSessionModel({children, session_id}: DeleteSessionModelProps){
+export function DeleteSessionModel({children, session_id, fetchSessions}: Props){
     const [open, setOpen] = useState(false);
+
+    const handleDelete = async (id: number) => {
+        try {
+            const success = await deleteSession(id);
+            
+            if (success) {
+                toast.success("Сессия успешно удалена");
+                fetchSessions();
+            }
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+        }
+    };
 
     return (
         <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -40,7 +55,7 @@ export function DeleteSessionModel({children, session_id}: DeleteSessionModelPro
                         size="3" 
                         style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
                         onClick={async () => {
-                            await deleteSession(session_id);
+                            await handleDelete(session_id);
                         }}
                     >
                         Выйти

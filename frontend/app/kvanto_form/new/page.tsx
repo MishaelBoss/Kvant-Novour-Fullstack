@@ -1,7 +1,7 @@
 import NewFormContent from "./NewFormContent";
 
 export const metadata = {
-    title: 'Кванто форм',
+    title: 'Создание новой Кванто форм',
 };
 
 export default function Page() {

@@ -1,5 +1,4 @@
 "use client";
-
 import { CartNews } from "@/app/components/CartNews";
 import { CartNewsSkeleton } from "@/app/components/CartNewsSkeleton";
 import { getCategories, getListNews } from "@/app/lib/api";
@@ -7,6 +6,8 @@ import { ICategory, INews } from "@/app/types/news.interface";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion"
+import toast from "react-hot-toast";
+import { ApiError } from "next/dist/server/api-utils";
 
 const variants = {
     initial: { opacity: 0},
@@ -41,37 +42,31 @@ export default function NewsContent() {
     };
 
     const fetchNews = useCallback(async () => {
-        const [resListNews, resCategories] = await Promise.all([
-            getListNews(),
-            getCategories()
-        ])
+        setIsLoading(true); 
 
-        if (Array.isArray(resListNews?.results)) {
+        try {
+             const [resListNews, resCategories] = await Promise.all([
+                getListNews(),
+                getCategories()
+            ]);
+
             setNews(resListNews.results);
-        } else {
-            setNews([]);
-        }
-        
-        if (Array.isArray(resCategories?.results)) {
             setCategories(resCategories.results);
-        } else {
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+            
+            setNews([]);
             setCategories([]);
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        const init = async () => {
-            setIsLoading(true); 
-            try {
-                await fetchNews();
-            }
-            catch (error) {
-                console.error('Error fetching news:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
+        const init = async () => await fetchNews();
         init();
     }, [fetchNews])
 
@@ -82,7 +77,7 @@ export default function NewsContent() {
     return (
         <>
         <div className="w-full p-4 md:p-8">
-            <div className="max-w-[1416px] mx-auto flex flex-col md:flex-row gap-8">
+            <div className="max-w-354 mx-auto flex flex-col md:flex-row gap-8">
                 <aside className="w-full md:w-64 bg-white rounded-2xl p-5 shadow-sm h-fit">
                     <nav className="flex flex-col gap-4">
                         <p className="text-sm font-bold uppercase text-[#717171] tracking-wider">

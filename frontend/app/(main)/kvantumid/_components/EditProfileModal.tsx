@@ -1,19 +1,21 @@
 "use client";
-
 import { InputWithClear } from "@/app/components/InputWithClear";
+import { useAuth } from "@/app/context/AuthContext";
 import { editProfile } from "@/app/lib/api";
 import { IEditProfile, IUser } from "@/app/types/user.interface";
 import { Dialog, Button, Flex, Callout } from "@radix-ui/themes";
 import { Mail, Phone, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ApiError } from "next/dist/server/api-utils";
+import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 interface Props {
     children: React.ReactNode;
-    user: IUser | null;
 }
 
-export function EditProfileModal({children, user}: Props){
+export function EditProfileModal({children}: Props){
+    const { user, updateUser } = useAuth();
     const [open, setOpen] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -29,41 +31,32 @@ export function EditProfileModal({children, user}: Props){
         }
     }); 
 
-    useEffect(() => {
-        if (user) {
-            methods.reset({
-                username: user.username || '',
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                middle_name: user.middle_name || '',
-                phone: user?.phone || '',
-                email: user?.email || ''
-            });
-        }
-    }, [user, methods]);
-
     const onSubmit = async (data: IEditProfile) => {
         setIsLoading(true);
+        setError('');
 
         try {
             await editProfile(data);
             
-            setOpen(false);
-            setError('');
-            setIsLoading(false);
-        } catch(error: unknown) {
-            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
+            updateUser(data);
 
-            const axiosError = error as { response?: { data?: Record<string, string> } };
-            const responseData = axiosError?.response?.data;
-            
-            if (responseData) {
-                if (responseData.username?.[0]) errorMessage = responseData.username[0];
-                else if (responseData.email?.[0]) errorMessage = responseData.email[0];
-                else if (responseData.non_field_errors?.[0]) errorMessage = responseData.non_field_errors[0];
+            setOpen(false);
+            toast.success("Данные успешно сохранены");
+        } catch(error: unknown) {
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+
+            if (isApiError(error)) {
+                toast.error(error.message);
+                setError(error.message);
+            } else { 
+                toast.error("Произошла непредвиденная ошибка на клиенте");
+                setError("Не удалось сохранить изменения");
             }
-            
-            setError(errorMessage);
+
+            console.error("Ошибка при загрузке:", error);
+        } finally {
             setIsLoading(false);
         }
     };

@@ -26,8 +26,8 @@ export function NotificationSidebar({
     onMarkAllAsRead
 }: INotificationSidebarProps) {
     return (
-        <aside className="w-[340px] border-r border-[#e2e8f0] flex flex-col shrink-0 bg-white h-full p-2">
-            <div className="p-4 pb-2 flex items-center justify-between h-[44px]">
+        <aside className="w-85 border-r border-[#e2e8f0] flex flex-col shrink-0 bg-white h-full p-2">
+            <div className="p-4 pb-2 flex items-center justify-between h-11">
                 <h1 className="text-[20px] font-bold text-[#111827]">Уведомления</h1>
                 
                 <button 
@@ -59,11 +59,11 @@ export function NotificationSidebar({
                                 isActive ? 'bg-[#f0f7ff]' : 'hover:bg-[#f8fafc]'
                             }`}
                         >
-                            <div className={`w-[44px] h-[44px] rounded-[14px] flex items-center justify-center shrink-0 ${tab.bg}`}>
+                            <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 ${tab.bg}`}>
                                 {tab.icon}
                             </div>
 
-                            <div className="flex-1 min-w-0 flex flex-col justify-between h-[40px]">
+                            <div className="flex-1 min-w-0 flex flex-col justify-between h-10">
                                 <div className="flex items-center justify-between">
                                     <span className={`font-bold text-[14px] truncate leading-tight ${isActive ? 'text-[#005bff]' : 'text-[#111827]'}`}>
                                         {tab.title}
@@ -86,7 +86,7 @@ export function NotificationSidebar({
                                         backgroundColor: 'rgba(255, 121, 140, 0.078)',
                                         color: '#f91155'
                                     }}
-                                    className="text-[10px] font-bold px-[8px] py-[2px] rounded-full min-w-[16px] text-center shrink-0 absolute right-3 bottom-3"
+                                    className="text-[10px] font-bold px-2 py-0.5 rounded-full min-w-4 text-center shrink-0 absolute right-3 bottom-3"
                                 >
                                     {tab.unread}
                                 </span>

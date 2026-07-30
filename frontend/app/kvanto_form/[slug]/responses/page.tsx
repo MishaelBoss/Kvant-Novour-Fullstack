@@ -60,7 +60,7 @@ export default function ResponsesList() {
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
-            <div className="max-w-[860px] mx-auto flex flex-col gap-6">
+            <div className="max-w-215 mx-auto flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={() => router.push('/profile?tab=kvantoForm')}
@@ -97,7 +97,7 @@ export default function ResponsesList() {
                     </>
                 )}
 
-                <div className="bg-white rounded-[24px] shadow-sm border border-gray-200/50 overflow-hidden">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
 
                     {loading ? (
                         <div className="flex flex-col gap-3 p-6">
@@ -135,7 +135,7 @@ export default function ResponsesList() {
                                             onClick={() => router.push(`/kvanto_form/${slug}/responses/${res.id}`)}
                                             className="grid grid-cols-[1.5fr_1fr_100px_80px_120px] gap-4 items-center px-6 py-4 hover:bg-gray-50/50 cursor-pointer transition-colors">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
                                                     <span className="text-xs font-semibold text-blue-500">
                                                         {res.full_name?.charAt(0).toUpperCase() || '?'}
                                                     </span>

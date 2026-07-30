@@ -4,7 +4,7 @@ import { NotificationSidebar } from "../NotificationSidebar";
 import { SystemNotificationCard } from "../SystemNotificationCard";
 import { ChatNotificationCard } from "../ChatNotificationCard";
 import { getNotificationsList, readAllNotifications, readNotification } from "@/app/lib/api";
-import { INotifications } from "@/app/types/notifications.interface";
+import { INotifications, NotificationsType } from "@/app/types/notifications.interface";
 import { NewsNotificationsCard } from "../NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { useWebSocket, LiveNotification } from "@/app/context/WebSocketContext";
@@ -22,15 +22,10 @@ export function NotificationsTab() {
         try {
             const res = await getNotificationsList();
             if (Array.isArray(res?.results)) {
-                const formattedData: INotifications[] = res.results.map((n: any) => ({
-                    ...n,
-                    isRead: n.is_read !== undefined ? n.is_read : n.isRead
-                }));
-
                 setNotifications((prev: INotifications[]) => {
-                    const apiIds = new Set(formattedData.map(n => n.id));
-                    const keptLive = prev.filter(n => !apiIds.has(n.id) && n.id < 0);
-                    return [...keptLive, ...formattedData];
+                    const apiIds = new Set(res.results.map(item => item.id));
+                    const keptLive = prev.filter(item => !apiIds.has(item.id) && item.id < 0);
+                    return [...keptLive, ...res.results];
                 });
                 
                 if (res.latest_dates) {
@@ -59,14 +54,15 @@ export function NotificationsTab() {
                 .filter(n => !existingIds.has(n.id))
                 .map(n => ({
                     id: n.id ?? -(Date.now() + Math.random()),
-                    type: n.type as 'system' | 'chat' | 'news',
+                    type: n.type as NotificationsType,
                     title: n.title,
                     description: n.description,
-                    isRead: n.isRead,
-                    time: n.time,
-                    groupDate: 'Только что',
-                    senderName: '',
-                    avatarUrl: '',
+                    is_read: n.isRead ?? false,
+                    created_at: new Date().toISOString(),
+                    time: n.time || 'Только что',
+                    group_date: 'Только что',
+                    sender_name: '',
+                    avatar_url: '',
                     news: null as any,
                 }));
             if (newItems.length === 0) return prev;
@@ -75,14 +71,14 @@ export function NotificationsTab() {
     }, [liveNotifications]);
 
     const toggleRead = (id: number) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
         setCountNotifications(prev => Math.max(0, prev - 1));
         readNotification(id);
     };
 
     const markAllAsRead = () => {
-        const unread = notifications.filter(n => !n.isRead).length;
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        const unread = notifications.filter(n => !n.is_read).length;
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         if (unread > 0) setCountNotifications(prev => Math.max(0, prev - unread));
         readAllNotifications();
     };
@@ -93,10 +89,10 @@ export function NotificationsTab() {
 
     const unreadCounts = useMemo(() => {
         return {
-            all: notifications.filter(n => !n.isRead).length,
-            system: notifications.filter(n => n.type === 'system' && !n.isRead).length,
-            chat: notifications.filter(n => n.type === 'chat' && !n.isRead).length,
-            news: notifications.filter(n => n.type === 'news' && !n.isRead).length,
+            all: notifications.filter(n => !n.is_read).length,
+            system: notifications.filter(n => n.type === 'system' && !n.is_read).length,
+            chat: notifications.filter(n => n.type === 'chat' && !n.is_read).length,
+            news: notifications.filter(n => n.type === 'news' && !n.is_read).length,
         };
     }, [notifications]);
 
@@ -105,10 +101,10 @@ export function NotificationsTab() {
             let readCount = 0;
             setNotifications(prev => {
                 const updated = prev.map(notif => {
-                    if (notif.type === activeFilter && !notif.isRead) {
+                    if (notif.type === activeFilter && !notif.is_read) {
                         readCount++;
                         readNotification(notif.id);
-                        return { ...notif, isRead: true };
+                        return { ...notif, is_read: true };
                     }
                     return notif;
                 });
@@ -195,7 +191,7 @@ export function NotificationsTab() {
                     </div>
                 ) : (
                     filteredNotifications.map((notif, index) => {
-                        const showDateGroup = index === 0 || filteredNotifications[index - 1].groupDate !== notif.groupDate;
+                        const showDateGroup = index === 0 || filteredNotifications[index - 1].group_date !== notif.group_date;
 
                         return (
                             <motion.div 
@@ -208,7 +204,7 @@ export function NotificationsTab() {
                                 {showDateGroup && (
                                     <div className="w-full flex justify-center my-1">
                                         <span className="text-[12px] font-medium text-gray-400 select-none">
-                                            {notif.groupDate}
+                                            {notif.group_date}
                                         </span>
                                     </div>
                                 )}

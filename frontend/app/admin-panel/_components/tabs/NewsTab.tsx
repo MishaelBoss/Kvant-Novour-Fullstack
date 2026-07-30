@@ -5,18 +5,25 @@ import Link from "next/link";
 import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { INews } from "@/app/types/news.interface";
 import { PencilIcon, Trash2Icon } from "lucide-react";
+import { ApiError } from "next/dist/server/api-utils";
+import toast from "react-hot-toast";
 
 export function NewsTab() {
     const [news, setNews] = useState<INews[]>([]);
     const [count, setCountNews] = useState(0);
 
     const fetchNews = useCallback(async () => {
-        const res = await getListNews();
+        try {
+            const res = await getListNews();
 
-        if (Array.isArray(res?.results)) {
             setNews(res.results);
-            setCountNews(res.count ?? 0);
-        } else {
+            setCountNews(res.count);
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+
             setNews([]);
             setCountNews(0);
         }
@@ -24,29 +31,22 @@ export function NewsTab() {
 
     useEffect(() => {
         const handleFetchEvent = async() => await fetchNews();
-
         handleFetchEvent();
-
-        window.addEventListener("fetchListNews", handleFetchEvent);
-
-        return () => {
-            window.removeEventListener("fetchListNews", handleFetchEvent);
-        };
     }, [fetchNews]);
 
     if (news.length == 0) {
         return (
-            <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
+            <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-xl font-bold">Всего новостей: {count}</h1>
-                    <CreateNewsModal news={null}>
+                    <CreateNewsModal news={null} fetch={async () => fetchNews()}>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                             Добавить
                         </button>
                     </CreateNewsModal>
                 </div>
 
-                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4 text-center">
+                <div className="flex flex-col items-center justify-center h-full min-h-100 gap-4 text-center">
                     <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="42" y="10" width="30" height="30" rx="6" stroke="#9CA3AF" strokeWidth="2.5"/>
                         <rect x="42" y="46" width="30" height="30" rx="6" stroke="#9CA3AF" strokeWidth="2.5"/>
@@ -64,7 +64,7 @@ export function NewsTab() {
                         </p>
                     </div>
 
-                    <CreateNewsModal news={null}>
+                    <CreateNewsModal news={null} fetch={async () => fetchNews()}>
                         <button className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             Создать новость
                         </button>
@@ -75,10 +75,10 @@ export function NewsTab() {
     };
 
     return (
-        <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
+        <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Всего новостей: {count}</h1>
-                <CreateNewsModal news={null}>
+                <CreateNewsModal news={null} fetch={async () => fetchNews()}>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                         Добавить
                     </button>
@@ -118,7 +118,7 @@ export function NewsTab() {
                                 <PencilIcon className="w-5 h-5"/>
                             </button>
                             
-                            <DeleteConfirmModal title={item.title} onConfirm={async () => await deleteNews(item.id)}>
+                            <DeleteConfirmModal title={item.title} onConfirm={async () => await deleteNews(item.id)} fetch={async () => await fetchNews()}>
                                 <button 
                                     type="button" 
                                     title="Удалить" 

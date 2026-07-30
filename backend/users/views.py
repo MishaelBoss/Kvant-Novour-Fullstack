@@ -10,7 +10,7 @@ from .authentication import *
 from .models import *
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import *
+from .permissions import IsAdminRole
 from notifications.models import *
 from django_user_agents.utils import get_user_agent
 from users.services import GeolocationService, SessionService

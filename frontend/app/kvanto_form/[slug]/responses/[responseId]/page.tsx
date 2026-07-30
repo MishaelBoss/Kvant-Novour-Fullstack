@@ -1,5 +1,4 @@
 "use client";
-
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getResponseDetail, gradeAnswer } from "@/app/lib/api";
@@ -77,7 +76,7 @@ export default function ResponseDetailPage() {
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
-            <div className="max-w-[720px] mx-auto flex flex-col gap-6">
+            <div className="max-w-180 mx-auto flex flex-col gap-6">
                 <button
                     onClick={() => router.back()}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer w-fit">
@@ -87,10 +86,10 @@ export default function ResponseDetailPage() {
                     Назад к списку
                 </button>
 
-                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-200/50">
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200/50">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
                                 <span className="text-lg font-bold text-blue-500">
                                     {data.respondent_name?.charAt(0).toUpperCase() || '?'}
                                 </span>
@@ -143,7 +142,7 @@ export default function ResponseDetailPage() {
                                     <p className="text-sm font-medium text-gray-800">{ans.question_text}</p>
                                 </div>
                                 {ans.max_points > 0 && (
-                                    <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
+                                    <span className="text-xs text-gray-400 whitespace-nowrap shrink-0">
                                         до {ans.max_points} б.
                                     </span>
                                 )}

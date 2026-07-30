@@ -1,16 +1,19 @@
 "use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
-import { updateUserByAdmin } from "@/app/lib/api";
+import { editUser } from "@/app/lib/api";
 import { IUser } from "@/app/types/user.interface";
 import { Button, Callout, Dialog, Flex } from "@radix-ui/themes";
 import { Mail, Phone, User, ShieldCheck } from "lucide-react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { RadioGroup } from "radix-ui";
 import { useEffect, useState } from "react";
+import { ApiError } from "next/dist/server/api-utils";
+import toast from "react-hot-toast";
 
 interface Props {
     children: React.ReactNode;
     user: IUser | null;
+    fetch: () => Promise<void>;
 }
 
 const ROLES = [
@@ -19,7 +22,7 @@ const ROLES = [
     { value: 'admin', label: 'Администратор' },
 ];
 
-export function EditUserModel({ children, user }: Props) {
+export function EditUserModel({ children, user, fetch }: Props) {
     const [open, setOpen] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -57,32 +60,25 @@ export function EditUserModel({ children, user }: Props) {
         setError('');
 
         try {
-            const success = await updateUserByAdmin(user.id, {
-                username: data.username,
-                first_name: data.first_name,
-                last_name: data.last_name,
-                middle_name: data.middle_name || '',
-                phone: data.phone || '',
-                email: data.email || '',
-                role: data.role,
-            });
+            await editUser(user.id, data);
 
-            if (success) {
-                setOpen(false);
-                setError('');
-            }
+            setOpen(false);
+            fetch();
+            toast.success("Данные пользователя успешно обновлены!"); 
         } catch (error: unknown) {
-            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
 
-            const axiosError = error as { response?: { data?: Record<string, unknown> } };
-            const responseData = axiosError?.response?.data;
-
-            if (responseData) {
-                const errorValues = Object.values(responseData).flat() as string[];
-                if (errorValues.length > 0 && typeof errorValues[0] === 'string') errorMessage = errorValues[0];
+            if (isApiError(error)) {
+                toast.error(error.message);
+                setError(error.message);
+            } else { 
+                toast.error("Произошла непредвиденная ошибка на клиенте");
+                setError("Не удалось сохранить изменения");
             }
-
-            setError(errorMessage);
+    
+            console.error("Ошибка при загрузке:", error);
         } finally {
             setIsLoading(false);
         }

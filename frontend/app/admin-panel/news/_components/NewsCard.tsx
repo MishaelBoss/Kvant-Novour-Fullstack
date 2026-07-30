@@ -146,16 +146,16 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                 </div>
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
-                        <button type="button" className="text-gray-300 hover:text-gray-500 !cursor-pointer pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
+                        <button type="button" className="text-gray-300 hover:text-gray-500 cursor-pointer! pt-1 focus-visible:outline-none outline-none" aria-label="Настройки вопроса">
                             <EllipsisIcon className="w-[17] h-[17]"/>
                         </button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Content>
-                        <DropdownMenu.Item onClick={() => onDuplicate(q)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 outline-none !cursor-pointer">
+                        <DropdownMenu.Item onClick={() => onDuplicate(q)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 outline-none cursor-pointer!">
                             <CopyIcon className="w-[17] h-[17] rotate-90"/>
                             Дублировать
                         </DropdownMenu.Item>
-                        <DropdownMenu.Item onClick={() => onRemove(q.id)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 focus:bg-red-50 focus:text-red-700 outline-none !cursor-pointer">
+                        <DropdownMenu.Item onClick={() => onRemove(q.id)} className="flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 focus:bg-red-50 focus:text-red-700 outline-none cursor-pointer!">
                             <TrashIcon className="w-[17] h-[17]"/>
                             Удалить
                         </DropdownMenu.Item>
@@ -168,7 +168,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                     <select
                         value={q.type}
                         onChange={e => handleTypeChange(e.target.value as NewsType)}
-                        className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer bg-white text-gray-700 font-medium min-w-[140px]"
+                        className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer bg-white text-gray-700 font-medium min-w-35"
                         aria-label="Тип блока">
                         {Object.entries(BLOCK_LABELS).map(([value, label]) => (
                             <option key={value} value={value}>{label}</option>
@@ -184,7 +184,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                         <select
                             value={q.text_variant || 'body'}
                             onChange={e => handleVariantChange(e.target.value as TextVariant)}
-                            className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer bg-white text-gray-500 min-w-[130px]"
+                            className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer bg-white text-gray-500 min-w-32.5s"
                             aria-label="Стиль текста">
                             {Object.entries(TEXT_VARIANT_LABELS).map(([value, label]) => (
                                 <option key={value} value={value}>{label}</option>
@@ -300,8 +300,8 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                     {images.length > 0 && (
                         <div className={isCarousel ? 'flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory' : 'grid grid-cols-2 md:grid-cols-3 gap-3'}>
                             {images.map(img => (
-                                <div key={img.id} className={`group/img relative flex flex-col gap-1.5 ${isCarousel ? 'snap-start shrink-0 w-[200px]' : ''}`}>
-                                    <div className={`relative overflow-hidden border border-gray-200 bg-gray-50 ${isCarousel ? 'rounded-xl aspect-[4/3] w-full' : 'aspect-square rounded-xl'}`}>
+                                <div key={img.id} className={`group/img relative flex flex-col gap-1.5 ${isCarousel ? 'snap-start shrink-0 w-50' : ''}`}>
+                                    <div className={`relative overflow-hidden border border-gray-200 bg-gray-50 ${isCarousel ? 'rounded-xl aspect-4/3 w-full' : 'aspect-square rounded-xl'}`}>
                                         {img.preview_url && (
                                             <Image
                                                 fill
@@ -367,7 +367,7 @@ export function NewsCard({ question: q, index, onUpdate, onRemove, onDuplicate }
                         <div className="flex flex-col gap-2">
                             {files.map(f => (
                                 <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-100 group/file">
-                                    <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0">
                                         <FileIcon className="w-[16] h-[16] text-blue-500"/>
                                     </div>
                                     <span className="flex-1 text-sm text-gray-700 truncate">{f.name}</span>

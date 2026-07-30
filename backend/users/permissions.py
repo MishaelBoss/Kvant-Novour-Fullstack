@@ -29,3 +29,13 @@ class IsTeacherRole(permissions.BasePermission):
             return True
 
         return False
+
+
+class IsAdminOrTeacher(permissions.BasePermission):
+    def has_permission(self, request, view):
+
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        profile = getattr(request.user, 'userprofile', None)
+        return profile and profile.role in ('admin', 'teacher')

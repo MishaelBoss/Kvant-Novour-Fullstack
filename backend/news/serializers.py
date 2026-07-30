@@ -9,10 +9,11 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['value', 'label', 'slug']
+        read_only_fields = ['slug'] 
 
     def create(self, validated_data):
-        name = validated_data.get('name')
-        category, created = Category.objects.get_or_create(name=name)
+        category_name  = validated_data.get('name')
+        category, created = Category.objects.get_or_create(name=category_name )
 
         return category
 

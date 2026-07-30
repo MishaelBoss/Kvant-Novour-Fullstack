@@ -5,12 +5,18 @@ export type NotificationsType = 'system' | 'chat' | 'news';
 export interface INotifications {
     id: number;
     type: NotificationsType;
-    senderName: string;
-    avatarUrl: string;
     title: string;
     description: string;
-    groupDate: string; 
-    time: string;
-    isRead: boolean;
+    is_read: boolean;
     news: INews;
+    created_at: string; 
+    time: string;
+    sender_name: string | null; 
+    avatar_url: string | null;
+    group_date: string | null; 
+}
+
+export interface INotificationsResponse {
+    results: INotifications[];
+    latest_dates?: any;
 }

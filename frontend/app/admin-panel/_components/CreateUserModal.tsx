@@ -6,10 +6,13 @@ import { useState } from "react";
 import { RadioGroup } from "radix-ui";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { IUser } from "@/app/types/user.interface";
+import toast from "react-hot-toast";
+import { ApiError } from "next/dist/server/api-utils";
 
 interface Props {
     children: React.ReactNode;
     user: IUser | null;
+    fetch: () => Promise<void>;
 }
 
 const ROLES = [
@@ -47,13 +50,19 @@ export function CreateUserModal({children, user}: Props){
         if (!isValid) return;
 
         setSaving(true);
-        const success = await createUser(methods.getValues());
         setSaving(false);
 
-        if (success) {
+        try {
+            await createUser(methods.getValues());
+
             setOpen(false);
             setStep(1);
             methods.reset();
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
         }
     };
 

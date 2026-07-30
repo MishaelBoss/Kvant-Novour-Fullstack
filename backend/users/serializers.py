@@ -1,3 +1,4 @@
+import os
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -6,7 +7,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import *
 from io import BytesIO
 from PIL import Image, ImageOps
-import os
+from django.core.files.base import ContentFile
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -153,7 +155,7 @@ class UpdateProfileAvatarSerializer(serializers.ModelSerializer):
                     img.save(output_buffer, format='WEBP', quality=80)
                     output_buffer.seek(0)
 
-                    new_avatar = ContentFile(output_buffer.read(), name=new_avatar.name)
+                    new_avatar = ContentFile(output_buffer.read(), name="avatar.webp")
 
                 if profile.avatar and os.path.isfile(profile.avatar.path):
                     try:

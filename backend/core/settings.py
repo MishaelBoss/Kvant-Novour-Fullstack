@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django_user_agents',
     'rest_framework_simplejwt.token_blacklist',
     'channels',
+    'attendance',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'users.middleware.GeolocationMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [

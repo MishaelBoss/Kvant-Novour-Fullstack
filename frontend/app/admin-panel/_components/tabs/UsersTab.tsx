@@ -8,6 +8,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { IUser } from "@/app/types/user.interface";
 import { EditUserModel } from "../EditUserModel";
 import { PencilIcon, Trash2Icon } from "lucide-react";
+import { ApiError } from "next/dist/server/api-utils";
+import toast from "react-hot-toast";
 
 export function UsersTab() {
     const [users, setUsers] = useState<IUser[]>([]);
@@ -15,33 +17,32 @@ export function UsersTab() {
     const { user } = useAuth();
 
     const fetchUsers = useCallback(async () => {
-        const res = await getListUsers();
+        try {
+            const res = await getListUsers();
 
-        if (Array.isArray(res?.results)) {
             setUsers(res.results);
-            setCountNews(res.count ?? 0);
-        } else {
+            setCountNews(res.count);
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+
             setUsers([]);
+            setCountNews(0);
         }
     }, []);
 
     useEffect(() => {
         const handleFetchEvent = async() => await fetchUsers();
-
         handleFetchEvent();
-
-        window.addEventListener("fetchListUsers", handleFetchEvent);
-
-        return () => {
-            window.removeEventListener("fetchListUsers", handleFetchEvent);
-        };
     }, [fetchUsers])
     
     return (
-        <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
+        <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Всего пользователей: {count}</h1>
-                <CreateUserModal user={null}>
+                <CreateUserModal user={null} fetch={async () => fetchUsers()}>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                         Добавить
                     </button>
@@ -78,7 +79,7 @@ export function UsersTab() {
                                 </Link>
                             )}
                             
-                            <EditUserModel user={item}>
+                            <EditUserModel user={item} fetch={async () => await fetchUsers()}>
                                 <button title="Редактировать"
                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
                                     <PencilIcon className="w-5 h-5"/>
@@ -86,7 +87,7 @@ export function UsersTab() {
                             </EditUserModel>
 
                             {user?.id !== item.id && (
-                                <DeleteConfirmModal title={item.username} onConfirm={async () => deleteUser(item.id)}>
+                                <DeleteConfirmModal title={item.username} onConfirm={async () => await deleteUser(item.id)} fetch={async () => fetchUsers()}>
                                     <button title="Удалить" 
                                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                                         <Trash2Icon className="w-5 h-5"/>

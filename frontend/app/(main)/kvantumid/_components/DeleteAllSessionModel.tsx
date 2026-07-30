@@ -1,15 +1,14 @@
 "use client";
-
 import { deleteAllSessions } from "@/app/lib/api";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
 import { useRouter } from "next/navigation";
 
-interface DeleteAllSessionModelProps {
+interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteAllSessionModel({open, onOpenChange}: DeleteAllSessionModelProps){
+export function DeleteAllSessionModel({open, onOpenChange}: Props){
     const router = useRouter();
 
     return (

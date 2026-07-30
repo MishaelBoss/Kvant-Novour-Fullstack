@@ -1,4 +1,4 @@
-import { FormStatus, MediaType } from "./global.intefrace";
+import { FormStatus, MediaType } from "./global.interface";
 
 export type QuestionType = 'short_text' | 'long_text' | 'radio' | 'checkbox' | 'dropdown' | 'number';
 
@@ -52,6 +52,11 @@ export interface IFormItem {
     status: 'draft' | 'active';
     created_at: string;
     responses_count: number;
+}
+
+export interface IFormItemResponse {
+    results: IFormItem[];
+    count: number;
 }
 
 export interface IParticipantProfile {

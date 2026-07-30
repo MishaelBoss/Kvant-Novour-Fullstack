@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
-import AxiosConfig from "./components/AxiosConfig";
 import { AuthProvider } from "./context/AuthContext";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import { Toaster } from "react-hot-toast";
@@ -43,7 +42,6 @@ export default function RootLayout({
         <Theme appearance="light" hasBackground={false} suppressHydrationWarning>
           <AuthProvider>
             <WebSocketProvider>
-              <AxiosConfig/>
               <Toaster position="bottom-right" />
               {children}
             </WebSocketProvider>

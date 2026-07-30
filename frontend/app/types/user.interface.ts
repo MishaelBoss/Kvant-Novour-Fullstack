@@ -1,12 +1,12 @@
 export interface IUser {
-    id?: number;
-    role?: 'student' | 'parent' | 'user' | 'teacher' | 'admin';
+    id: number;
+    role?: 'user' | 'teacher' | 'admin';
     is_admin?: boolean;
     is_teacher?: boolean;
     username?: string;
     first_name?: string;
     last_name?: string;
-    middle_name?: string;
+    middle_name?: string | null;
     email?: string;
     phone?: string;
     avatar?: string | null;
@@ -15,15 +15,12 @@ export interface IUser {
     password?: string; 
 }
 
-export interface IEditProfile {
-    username: string;
-    first_name: string;
-    last_name: string;
-    middle_name: string;
-    phone: string;
-    email: string;
-    avatar?: string | File | null;
+export interface IUserResponse {
+    results: IUser[];
+    count: number;
 }
+
+export interface IEditProfile extends Pick<IUser, 'username' | 'first_name' | 'last_name' | 'middle_name' | 'phone' | 'email' | 'avatar'> {}
 
 export interface IUserLogin {
     username: string;
@@ -31,11 +28,16 @@ export interface IUserLogin {
 }
 
 export interface IUserRegister {
-    username: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-    middle_name: string;
+    username: NonNullable<IUser['username']>;
+    email: NonNullable<IUser['email']>;
+    first_name: NonNullable<IUser['first_name']>;
+    last_name: NonNullable<IUser['last_name']>;
+    middle_name?: IUser['middle_name'];
     password: string;
     confirmPassword: string;
+}
+
+export interface IAvatarResponse {
+    message: string;
+    user: Required<Pick<IUser, 'avatar'>>;
 }

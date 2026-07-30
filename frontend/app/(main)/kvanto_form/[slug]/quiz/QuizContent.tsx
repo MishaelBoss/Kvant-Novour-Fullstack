@@ -1,12 +1,14 @@
 "use client";
-
-import { getFormDetail, submitFormResponse } from "@/app/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
+import { getFormDetail as apiGetFormDetail, submitFormResponse } from "@/app/lib/api";
 import { IFormDetail, IQuestion, IQuestionAnswer } from "@/app/types/form.interface";
+import { ApiError } from "next/dist/server/api-utils";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
-function formatTimer(seconds: number): string {
+function FORMAT_TIMER(seconds: number): string {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
@@ -15,12 +17,15 @@ function formatTimer(seconds: number): string {
 export default function QuizContent() {
     const router = useRouter();
     const { slug } = useParams();
+    const { user } = useAuth();
 
     const [form, setForm] = useState<IFormDetail | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answers, setAnswers] = useState<IQuestionAnswer[]>([]);
     const [timeLeft, setTimeLeft] = useState(0);
     const [finished, setFinished] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const answersRef = useRef(answers);
 
@@ -28,31 +33,68 @@ export default function QuizContent() {
         answersRef.current = answers;
     }, [answers]);
 
-    useEffect(() => {
-        async function init() {
-            if (!slug) return;
-            try {
-                const data = await getFormDetail(slug as string);
-                console.log("Данные от API:", data);
+    const getFormDetail = useCallback(async () => {
+        if (!slug || typeof slug !== 'string') return;
+    
+        setError(null);
+        setLoading(true); 
+    
+        try {
+            const data = await apiGetFormDetail(slug);
+            // if (!data) {
+            //     setError("Форма не найдена");
+            //     return;
+            // }
 
-                if (!data || !Array.isArray(data.questions)) {
-                    console.error("Структура неверна. Ожидали questions, получили:", data);
-                    throw new Error("Неверная структура данных от сервера");
-                }
-
-                setForm(data);
-                setTimeLeft(data.settings?.timer_seconds ?? 0); 
-
-                setAnswers(data.questions.map((q: IQuestion) => ({
-                    question_id: q.id,
-                    text_value: '',
-                    selected_choice_ids: [],
-                })));
-            } catch (err) {
-                console.error("Ошибка инициализации:", err);
+            if (!data || !Array.isArray(data.questions)) {
+                console.error("Структура неверна. Ожидали questions, получили:", data);
+                throw new Error("Неверная структура данных от сервера");
             }
+
+    
+            setForm(data);
+    
+            if (data.settings?.survey_for_authorized_users && !user) {
+                setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
+                return;
+            }
+    
+            if (data.settings?.one_time_participation_survey && data.has_user_participated) {
+                setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
+                return;
+            }
+
+            setTimeLeft(data.settings?.timer_seconds ?? 0);
+
+            setAnswers(data.questions.map((q: IQuestion) => ({
+                question_id: q.id,
+                text_value: '',
+                selected_choice_ids: [],
+            })));
+        } catch (error) {
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+
+            if (isApiError(error)) {
+                toast.error(error.message);
+                setError(error.message);
+            } else { 
+                toast.error("Произошла непредвиденная ошибка на клиенте");
+                setError("Не удалось сохранить изменения");
+            }
+    
+            console.error("Ошибка при загрузке:", error);
+    
+            setError("Форма не найдена или недоступна");
+        } finally {
+            setLoading(false);
         }
-        init();
+    }, [slug, user]);
+
+    useEffect(() => {
+        const handleFetchEvent = async () => getFormDetail();
+        handleFetchEvent();
     }, [slug]);
 
     const updateAnswerById = (qId: string, patch: Partial<IQuestionAnswer>) => {
@@ -102,11 +144,17 @@ export default function QuizContent() {
             </div>
         );
     }
-    
-    const currentQuestion = form.questions[currentIndex];
-    const answer = answers[currentIndex];
+
     const isLast = currentIndex === form.questions.length - 1;
     const progress = ((currentIndex + 1) / form.questions.length) * 100;
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+                <p className="text-gray-400 text-sm">Загрузка...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
@@ -117,7 +165,7 @@ export default function QuizContent() {
                         <span className={`text-sm font-mono font-semibold px-3 py-1 rounded-lg ${
                             timeLeft < 60 ? 'bg-red-50 text-red-500' : 'bg-gray-100 text-gray-600'
                         }`}>
-                            ⏱ {formatTimer(timeLeft)}
+                            ⏱ {FORMAT_TIMER(timeLeft)}
                         </span>
                     )}
                 </div>
@@ -181,7 +229,6 @@ export default function QuizContent() {
         </div>
     );
 }
-
 
 function QuestionItem({ 
     question, 

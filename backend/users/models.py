@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
 from django.db.models.signals import post_save
-from django.core.files.base import ContentFile
 from django.dispatch import receiver
 from django.conf import settings
 
@@ -26,7 +25,10 @@ class UserProfile(models.Model):
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:
-            UserProfile.objects.get_or_create(user=instance)
+            profile, _ = UserProfile.objects.get_or_create(user=instance)
+            if instance.is_superuser or instance.is_staff:
+                profile.role = 'admin'
+                profile.save()
 
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def save_user_profile(sender, instance, **kwargs):

@@ -6,8 +6,8 @@ export function AchievementsTab() {
 
     if (achievements.length === 0) {
         return (
-            <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
-                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4 text-center">
+            <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
+                <div className="flex flex-col items-center justify-center h-full min-h-100 gap-4 text-center">
                     <Image src="/Achievement-rafiki.svg" alt="Achievement" width={300} height={300} loading="eager"/>
 
                     <div className="flex flex-col gap-1">
@@ -22,7 +22,7 @@ export function AchievementsTab() {
     }
 
     return (
-        <main className="flex-1 bg-white rounded-[24px] p-6 md:p-10 shadow-sm border border-gray-200/50">
+        <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <>
             </>
         </main>

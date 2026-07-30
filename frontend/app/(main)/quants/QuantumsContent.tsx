@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { PAGES } from "@/app/config/pages.config";
 import { ArrowRight } from "lucide-react";
@@ -44,7 +43,7 @@ const cardVariants = {
 export default function QuantumsContent() {
     return (
         <>
-        <div className="w-full p-4 md:p-8 font-sans">
+        <div className="w-full p-4 md:p-8">
             <main className="max-w-354 mx-auto space-y-10">
                 <div className="space-y-2">
                     <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-gray-950">

@@ -15,42 +15,38 @@ import { Monitor, Laptop, Smartphone, EllipsisVerticalIcon } from 'lucide-react'
 import { getActiveSessions } from '@/app/lib/api';
 import { DeleteSessionModel } from './_components/DeleteSessionModel';
 import { DeleteAllSessionModel } from './_components/DeleteAllSessionModel';
+import { ISession } from '@/app/types/session.interface';
+import toast from 'react-hot-toast';
+import { ApiError } from 'next/dist/server/api-utils';
 
 export default function KvantumIdContent() {
     const { user, isLoading: isAuthLoading } = useAuth();
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const [isDeleteAllSessionsModalOpen, setDeleteAllSessionsModalOpen] = useState(false);
-    const [sessions, setSessions] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<ISession[]>([]);
     const [showAllSessions, setShowAllSessions] = useState(false);
 
     const fetchSessions = useCallback(async () => {
-        await getActiveSessions().then((res) => {
-            let data: any[] = [];
-            if (Array.isArray(res?.results)) {
-                data = res.results;
-            } else if (Array.isArray(res)) {
-                data = res;
-            }
-            const seen = new Set<number>();
-            setSessions(data.filter(s => {
-                if (seen.has(s.id)) return false;
-                seen.add(s.id);
-                return true;
-            }));
-        });
+        try {
+            const res = await getActiveSessions();
+            const data = Array.isArray(res) ? res : [];
+
+            const uniqueSessions = data.filter(
+                (session, index, self) => self.findIndex(s => s.id === session.id) === index
+            );
+
+            setSessions(uniqueSessions);
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+        }
     }, []);
 
     useEffect(() => {
-        fetchSessions();
-
-        const handleCustomEvent = () => {
-            fetchSessions();
-        };
-
-        window.addEventListener("fetchSessions", handleCustomEvent);
-        return () => {
-            window.removeEventListener("fetchSessions", handleCustomEvent);
-        };
+        const handleCustomEvent = async () => await fetchSessions();
+        handleCustomEvent();
     }, [fetchSessions]);
 
     const getDeviceIcon = (os: string) => {
@@ -94,14 +90,14 @@ export default function KvantumIdContent() {
                                 <div>
                                     <p className="text-[12px] text-gray-600 mb-1">Телефон</p>
                                     <p className="text-[14px]">{FormatPhoneNumber(user?.phone)}</p>
-                                    <EditProfileModal user={user}>
+                                    <EditProfileModal>
                                         <Link href="#" className="text-[13px] text-[#005BFF] mt-2 hover:underline" style={{ cursor: "pointer" }}>Изменить</Link>
                                     </EditProfileModal>
                                 </div>
                                 <div>
                                     <p className="text-[12px] text-gray-600 mb-1">Почта</p>
                                     <p className="text-[14px]">{user?.email || 'не указанно'}</p>
-                                    <EditProfileModal user={user}>
+                                    <EditProfileModal>
                                         <Link href="#" className="text-[13px] text-[#005BFF] mt-2 hover:underline" style={{ cursor: "pointer" }}>Изменить</Link>
                                     </EditProfileModal>
                                 </div>
@@ -193,7 +189,7 @@ export default function KvantumIdContent() {
                                             </div>
 
                                             {!session.is_current && (
-                                                <DeleteSessionModel session_id={session.id}>
+                                                <DeleteSessionModel session_id={session.id} fetchSessions={async () => { await fetchSessions(); }}>
                                                     <button
                                                         type="button"
                                                         className="absolute right-4 opacity-0 group-hover:opacity-100 text-10 font-semibold text-[#005bff] hover:underline bg-white pl-2 transition-opacity duration-150 cursor-pointer focus:outline-none"

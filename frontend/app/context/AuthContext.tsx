@@ -1,9 +1,11 @@
 "use client";
-
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { checkAuthStatus, logout as logoutUser, notificationsCount } from '../lib/api';
+import { checkAuthStatus, logout as logoutUser, notificationsCount, login as apiLogin, register as apiRegister } from '../lib/api';
 import { usePathname, useRouter } from 'next/navigation';
-import { IUser } from '../types/user.interface';
+import { IUser, IUserLogin, IUserRegister } from '../types/user.interface';
+import { PAGES } from '../config/pages.config';
+import { ApiError } from 'next/dist/server/api-utils';
+import toast from 'react-hot-toast';
 
 interface AuthContextType {
     user: IUser | null;
@@ -14,6 +16,8 @@ interface AuthContextType {
     setCountNotifications: React.Dispatch<React.SetStateAction<number>>;
     refreshAuth: () => Promise<void>;
     logout: () => Promise<void>;
+    login: (data: IUserLogin) => Promise<void>;
+    register: (data: IUserRegister) => Promise<void>;
     updateUser: (data: Partial<IUser>) => void;
 }
 
@@ -55,10 +59,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 checkAndRedirect(userData);
 
                 try {
-                    const notifCount = await notificationsCount();
+                    const count = await notificationsCount();
 
-                    setCountNotifications(notifCount?.count ?? 0);
-                } catch {
+                    setCountNotifications(count);
+                } catch (error) {
+                    console.error("Ошибка при получении счетчика уведомлений:", error);
                     setCountNotifications(0); 
                 }
             } else {
@@ -78,15 +83,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAdmin = useMemo(() => user?.is_admin === true, [user]);
     const isTeacher = useMemo(() => user?.is_teacher === true, [user]);
 
+    const login = useCallback(async (data: IUserLogin) => {
+        try {
+            await apiLogin(data);
+            await refreshAuth();
+            router.replace(PAGES.MY_PROFILE()); 
+        } catch(error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+        } 
+    }, [refreshAuth, router]);
+
+    const register = useCallback(async (data: IUserRegister) => {
+        try {
+            await apiRegister(data);
+            await refreshAuth();
+            router.replace(PAGES.MY_PROFILE()); 
+        } catch(error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+        }
+    }, [refreshAuth, router]);
+
     const logout = useCallback(async () => {
         setIsLoading(true);
         try {
             await logoutUser();
+
+            setUser(null);
+            setCountNotifications(0); 
+
+            router.replace(PAGES.HOME()); 
         } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
             console.error("Ошибка при выходе:", error);
         } finally {
-            setUser(null);
-            router.replace('/');
             setIsLoading(false);
         }
     }, [router]);
@@ -100,6 +137,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setCountNotifications,
         refreshAuth,
         logout,
+        login,
+        register,
         updateUser
     }), [
         user, 
@@ -109,6 +148,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         countNotifications,
         refreshAuth, 
         logout, 
+        login,
+        register,
         updateUser
     ]);
 

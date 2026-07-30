@@ -1,548 +1,227 @@
-import axios, { Axios } from "axios";
 import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]/page";
-import { IEditProfile, IUser, IUserLogin, IUserRegister } from "../types/user.interface";
-import { ICategory, INewsCreateInput } from "../types/news.interface";
-import { IFormCreate, IFormSettings, IQuizSession } from "../types/form.interface";
-import { ParamValue } from "next/dist/server/request/params";
-import { form } from "framer-motion/client";
+import { IAvatarResponse, IEditProfile, IUser, IUserLogin, IUserRegister, IUserResponse } from "../types/user.interface";
+import { ICategory, ICategoryResponse, INewsCreateInput, INewsResponse } from "../types/news.interface";
+import { IFormCreate, IFormDetail, IFormItemResponse, IFormResponseSummary, IFormSettings, IQuizSession } from "../types/form.interface";
+import { IGroup } from "../types/group.interface";
+import { IAttendanceResponse } from "../types/attendance.interface";
+import { apiClient } from "./client";
+import { ISession } from "../types/session.interface";
+import { INotificationsResponse } from "../types/notifications.interface";
+import { IPublicProfileData } from "../types/profile.interface";
 
-export const checkAuthStatus = async () => {
-    try {
-        const res = await axios.get(`/is_authenticated/`, {
-            withCredentials: true, 
-        });
-
-        return res.data.is_authenticated ? res.data : null;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {            
-            if (error.response?.status === 401) {
-                console.log("User не авторизован");
-                return null;
-            }
-        } else {
-            console.error("Неизвестная ошибка:", error);
-        }
-        return null;
-    }
+export const checkAuthStatus = async (): Promise<IUser | null> => {
+    const res = await apiClient.get<IUser>(`/is_authenticated/`);
+    return res.data.is_authenticated ? res.data : null;
 };
 
-export const tokenRefresh = async() => {
-    try {
-        const res = await axios.get(`/token/refresh/`, {
-            withCredentials: true, 
-        });
-
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {            
-            if (error.response?.status === 401) {
-                console.log("Рефреш токен протух или отсутствует");
-                return null;
-            }
-        } else {
-            console.error("Неизвестная ошибка:", error);
-        }
-        return null;
-    }
+export const tokenRefresh = async(): Promise<string> => {
+    const res = await apiClient.post(`/token/refresh/`);
+    return res.data;
 };
 
-export const login = async (data: IUserLogin) => {
-    try{
-        const res = await axios.post(`/login/`, data, {
-            withCredentials: true, 
-        });
-
-        if (res.status >= 200 || res.status < 300){
-            window.dispatchEvent(new Event("fetchUser"));
-            return;
-        };
-
-        throw new Error("Ошибка входа");
-    } catch (error){
-        if (axios.isAxiosError(error) && error.response?.data) {
-            throw error;
-        }
-        throw error;
-    }
+export const login = async (data: IUserLogin): Promise<void> => {
+    await apiClient.post(`/login/`, data);
 };
 
-export const register = async (data: IUserRegister) => {
-    try{
-        const res =  await axios.post(`/register/`, data, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-            withCredentials: true, 
-        });
-
-        if (res.status === 200 || res.status === 201){
-            window.dispatchEvent(new Event("fetchUser"));
-            return;
-        };
-
-        throw new Error("Ошибка регистрации");
-    } catch (error){
-        if (axios.isAxiosError(error) && error.response?.data) {
-            console.error('Ошибка при регистрации:', error.response.data || error.message);
-            throw error;
-        }
-        throw error;
-    }
+export const register = async (data: IUserRegister): Promise<void> => {
+    await apiClient.post(`/register/`, data);
 };
 
-export const editProfile = async (data: IEditProfile) => {
-    try{
-        const formData = new FormData();
+export const editProfile = async (data: IEditProfile): Promise<void> => {
+    const formData = new FormData();
 
-        Object.entries(data).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-                formData.append(key, value as string | Blob);
-            }
+    Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            formData.append(key, value as string | Blob);
+        }
+    });1
+
+    await apiClient.patch(`/edit-profile/`, formData);
+}
+
+export const logout = async (): Promise<void> => {
+    await apiClient.post(`/logout/`);
+}
+
+export const getPublicProfile = async(username: string): Promise<IPublicProfileData> => {
+    const res = await apiClient.get<IPublicProfileData>(`/profile/${username}/`);
+    return res.data;
+}
+
+export const createCategory = async (label: string): Promise<ICategory> => {
+    const formData = new FormData();
+    if (label) formData.append('label', label);
+
+    const response = await apiClient.post<ICategory>('create-category/', formData);
+    return response.data;
+}
+
+export const createNews = async (data: INewsCreateInput): Promise<void> => {
+    const formData = new FormData();
+
+    if (data.title) formData.append('title', data.title);
+    if (data.content) formData.append('content', data.content);
+
+    if (data.image instanceof File) formData.append('image', data.image);
+    if (Array.isArray(data.category_ids)) {
+        data.category_ids.forEach((id) => {
+            formData.append('category_ids', id.toString());
         });
-
-        const res = await axios.patch(`/edit-profile/`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-            withCredentials: true, 
-        })
-
-        if (res.status === 200 || res.status === 201) {
-            window.dispatchEvent(new Event("fetchUser"));
-        }
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при редактирования:', error.response?.data || error.message);
-            throw error;
-        }
-        throw error;
     }
+
+    await apiClient.post(`/run-create-news/`, formData);
 }
 
-export const logout = async () => {
-    try{
-        const res = await axios.post(`/logout/`, {
-            withCredentials: true, 
-        })
-
-        if (res.status === 201){
-            window.dispatchEvent(new Event("fetchUser"));
-        };
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка выхода из аккаунта:', error.response?.data || error.message);
-        }
-    }
+export const getCategories = async (): Promise<ICategoryResponse> => {
+    const res = await apiClient.get<ICategoryResponse>(`/categories-list/`);
+    return res.data;
 }
 
-export const getPublicProfile = async(username: ParamValue) => {
-    try {
-        const res = await axios.get(`/profile/${username}/`, {
-            withCredentials: true
-        });
-
-        return res.data;
-    } catch (error) {
-        if(axios.isAxiosError(error)) {
-            console.error('Ошибка получение публичного профиля:', error.response?.data || error.message);
-            throw error;
-        }
-        throw error;
-    }
+export const getListNews = async (): Promise<INewsResponse> => {
+    const res = await apiClient.get<INewsResponse>(`/news-list/`);
+    return res.data;
 }
 
-export const createCategory = async (data: ICategory) => {
-    try {
-        const formData = new FormData();
-
-        if (data.label) formData.append('label', data.label);
-        // if (data.slug) formData.append('slug', data.slug);
-
-        const response = await axios.post('create-category/', formData, {
-            withCredentials: true,
-        });
-
-        return response.data;
-    } catch(error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при создание:', error.response?.data || error.message);
-        }
-        throw error;
-    }
+export const deleteNews = async (id: number): Promise<void> => {
+    await apiClient.delete(`/news-delete/${id}/`);
 }
 
-export const createNews = async (data: INewsCreateInput): Promise<boolean> => {
-    try {
-        const formData = new FormData();
-
-        if (data.title) formData.append('title', data.title);
-        if (data.content) formData.append('content', data.content);
-
-        if (data.image instanceof File) {
-            formData.append('image', data.image);
-        }
-
-        if (Array.isArray(data.category_ids)) {
-            data.category_ids.forEach((id) => {
-                formData.append('category_ids', id.toString());
-            });
-        }
-
-        const res = await axios.post(`/run-create-news/`, formData, {
-            withCredentials: true,
-        })
-
-        if(res.status === 201){
-            window.dispatchEvent(new Event("fetchListNews"));
-            return true;
-        }
-
-        return false;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при создание:', error.response?.data || error.message);
-        }
-        return false;
-    }
+export const getListUsers = async (): Promise<IUserResponse> => {
+    const res = await apiClient.get<IUserResponse>(`/users-list/`);
+    return res.data;
 }
 
-export const getCategories = async () => {
-    try {
-        const res = await axios.get(`/categories-list/`, {
-            withCredentials: true
-        })
-
-        if (res.status === 200) {
-            const data = await res.data;
-            return data;
-        }
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка получения списка:', error.response?.data || error.message);
-        }
-    }
+export const deleteUser = async (id: number) => {
+    await apiClient.delete(`/user-delete/${id}/`);
 }
 
-export const getListNews = async () => {
-    try {
-        const res = await axios.get(`/news-list/`, {
-            withCredentials: true
-        })
+export const editUser = async (id: number, data: Partial<IUser>): Promise<void> => {
+    const payload: Record<string, string | null | undefined> = {};
 
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка получения списка:', error.response?.data || error.message);
+    const allowedFields: Array<keyof IUser> = [
+        'username', 'first_name', 'last_name', 'middle_name', 'phone', 'email', 'role'
+    ];
+        
+    allowedFields.forEach((field) => {
+        if (data[field] !== undefined) {
+            payload[field] = data[field] as string | null | undefined;
         }
+    });
 
-        return { 
-            results: [], 
-            count: 0 
-        };
-    }
+    await apiClient.patch(`/user-update/${id}/`, payload);
 }
 
-export const deleteNews = async (id: number | undefined) => {
-    if(!id) {
-        console.error('ID новостей 0, такого не должно');
-        return;
-    }
+export const createUser = async (data: IUser): Promise<void> => {
+    const formData = new FormData();
 
-    try{
-        const res = await axios.delete(`/news-delete/${id}/`, {
-            withCredentials: true
-        })
+    if (data.username) formData.append('username', data.username);
+    if (data.password) formData.append('password', data.password);
+    if (data.first_name) formData.append('first_name', data.first_name);
+    if (data.last_name) formData.append('last_name', data.last_name);
+    if (data.middle_name) formData.append('middle_name', data.middle_name);
+    if (data.phone) formData.append('phone', data.phone);
+    if (data.email) formData.append('email', data.email);
+    if (data.role) formData.append('role', data.role)
 
-        if (res.status >= 200 && res.status < 300) {
-            window.dispatchEvent(new Event("fetchListNews"));
-        }
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка удаления:', error.response?.data || error.message);
-        }
-    }
+    await apiClient.post(`/run-create-user/`, formData);
 }
 
-export const getListUsers = async () => {
-    try {
-        const res = await axios.get(`/users-list/`, {
-            withCredentials: true
-        })
+export const createForm = async (data: IFormCreate, settings: IFormSettings, newsImage?: File | null): Promise<void> => {
+    const formData = new FormData();
+        
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('status', data.status);
 
-        return await res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка получения списка:', error.response?.data || error.message);
+    if (newsImage) formData.append('news_image', newsImage);
+    if (data.deadline) formData.append('deadline', data.deadline);
+        
+    formData.append('settings', JSON.stringify(settings));
+        
+    const questionsForApi = data.questions.map((q, index) => ({
+        id: q.id,
+        text: q.text,
+        type: q.type,
+        is_required: q.is_required,
+        points: q.points,
+        order: index,
+        choices: q.choices.map(choice => ({
+            id: choice.id,
+            text: choice.text,
+            is_correct: choice.is_correct,
+            order: choice.order
+        })),
+        has_media: !!q.media
+    }));
+        
+    formData.append('questions', JSON.stringify(questionsForApi));
+
+    data.questions.forEach((question, index) => {
+        if (question.media && question.media.file) {
+            formData.append(`question_media_${index}`, question.media.file);
         }
-        return { 
-            results: [], 
-            count: 0 
-        };
-    }
-}
-
-export const deleteUser = async (id: number | undefined) => {
-    if(!id) {
-        console.error('ID пользователя 0, такого не должно');
-        return;
-    }
+    });
     
-    try {
-        const res = await axios.delete(`/user-delete/${id}/`, {
-            withCredentials: true
-        })
-
-        if (res.status >= 200 && res.status < 300) {
-            window.dispatchEvent(new Event("fetchListUsers"));
-        }
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка удаления:', error.response?.data || error.message);
-        }
-    }
-}
-
-export const updateUserByAdmin = async (id: number, data: Partial<IUser>): Promise<boolean> => {
-    try {
-        const payload: Record<string, string> = {};
-        if (data.username !== undefined) payload.username = data.username;
-        if (data.first_name !== undefined) payload.first_name = data.first_name;
-        if (data.last_name !== undefined) payload.last_name = data.last_name;
-        if (data.middle_name !== undefined) payload.middle_name = data.middle_name;
-        if (data.phone !== undefined) payload.phone = data.phone;
-        if (data.email !== undefined) payload.email = data.email;
-        if (data.role !== undefined) payload.role = data.role;
-
-        const res = await axios.patch(`/user-update/${id}/`, payload, {
-            headers: { 'Content-Type': 'application/json' },
-            withCredentials: true,
-        });
-
-        if (res.status === 200) {
-            window.dispatchEvent(new Event("fetchListUsers"));
-            return true;
-        }
-        return false;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            throw error;
-        }
-        return false;
-    }
-}
-
-export const createUser = async (data: IUser): Promise<boolean> => {
-    try{
-        const formData = new FormData();
-
-        if (data.username) formData.append('username', data.username);
-        if (data.password) formData.append('password', data.password);
-        if (data.first_name) formData.append('first_name', data.first_name);
-        if (data.last_name) formData.append('last_name', data.last_name);
-        if (data.middle_name) formData.append('middle_name', data.middle_name);
-        if (data.phone) formData.append('phone', data.phone);
-        if (data.email) formData.append('email', data.email);
-        if (data.role) formData.append('role', data.role)
-
-        console.log("FormData role:", formData.get('role')); 
-
-        const res = await axios.post(`/run-create-user/`, formData, {
-            withCredentials: true
-        })
-
-        if(res.status === 201){
-            window.dispatchEvent(new Event("fetchListUsers"));
-            return true;
-        }
-
-        return false;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при создание:', error.response?.data || error.message);
-        }
-        return false;
-    }
-}
-
-export const createForm = async (data: IFormCreate, settings: IFormSettings, newsImage?: File | null): Promise<boolean> => {
-    try {
-        const formData = new FormData();
-        
-        formData.append('title', data.title);
-        formData.append('description', data.description);
-        formData.append('status', data.status);
-
-        if (newsImage) {
-            formData.append('news_image', newsImage);
-        }
-        
-        if (data.deadline) {
-            formData.append('deadline', data.deadline);
-        }
-        
-        formData.append('settings', JSON.stringify(settings));
-        
-        const questionsForApi = data.questions.map((q, index) => ({
-            id: q.id,
-            text: q.text,
-            type: q.type,
-            is_required: q.is_required,
-            points: q.points,
-            order: index,
-            choices: q.choices.map(choice => ({
-                id: choice.id,
-                text: choice.text,
-                is_correct: choice.is_correct,
-                order: choice.order
-            })),
-            has_media: !!q.media
-        }));
-        
-        formData.append('questions', JSON.stringify(questionsForApi));
-
-        data.questions.forEach((question, index) => {
-            if (question.media && question.media.file) {
-                formData.append(`question_media_${index}`, question.media.file);
-            }
-        });
-        
-        const res = await axios.post('/run-create-form/', formData, {
-            withCredentials: true,
-        });
-        
-        if (res.status === 201) {
-            window.dispatchEvent(new Event("fetchFormsList"));
-            return res.data;
-        }
-        
-        return false;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при создании формы:', error.response?.data || error.message);
-        }
-        return false;
-    }
+    await apiClient.post('/run-create-form/', formData);
 };
 
-export const updateForm = async (id: number, data: IFormCreate, settings: IFormSettings, newsImage?: File | null) => {
-    try {
-        const formData = new FormData();
+export const updateForm = async (id: number, data: IFormCreate, settings: IFormSettings, newsImage?: File | null): Promise<void> => {
+    const formData = new FormData();
 
-        formData.append('title', data.title);
-        formData.append('description', data.description);
-        formData.append('status', data.status);
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('status', data.status);
 
-        if (newsImage) {
-            formData.append('news_image', newsImage);
-        }
-
-        if (data.deadline) {
-            formData.append('deadline', data.deadline);
-        }
+    if (newsImage) formData.append('news_image', newsImage);
+    if (data.deadline) formData.append('deadline', data.deadline);
         
-        formData.append('settings', JSON.stringify(settings));
+    formData.append('settings', JSON.stringify(settings));
         
-        const questionsForApi = data.questions.map((q, index) => ({
-            id: q.id,
-            text: q.text,
-            type: q.type,
-            is_required: q.is_required,
-            points: q.points,
-            order: index,
-            choices: q.choices.map(choice => ({
-                id: choice.id,
-                text: choice.text,
-                is_correct: choice.is_correct,
-                order: choice.order
-            })),
-            has_media: !!q.media
-        }));
+    const questionsForApi = data.questions.map((q, index) => ({
+        id: q.id,
+        text: q.text,
+        type: q.type,
+        is_required: q.is_required,
+        points: q.points,
+        order: index,
+        choices: q.choices.map(choice => ({
+            id: choice.id,
+            text: choice.text,
+            is_correct: choice.is_correct,
+            order: choice.order
+        })),
+        has_media: !!q.media
+    }));
         
-        formData.append('questions', JSON.stringify(questionsForApi));
+    formData.append('questions', JSON.stringify(questionsForApi));
 
-        data.questions.forEach((question, index) => {
-            if (question.media && question.media.file) {
-                formData.append(`question_media_${index}`, question.media.file);
-            }
-        });
-
-        const res = await axios.put(`/form/${id}/update/`, formData, {
-            withCredentials: true,
-        });
-
-        return res.status === 200;
-    } catch (error) {
-        if(axios.isAxiosError(error)) {
-            console.error('Неудалось обновить форму', error.response?.data || error.message);
+    data.questions.forEach((question, index) => {
+        if (question.media && question.media.file) {
+            formData.append(`question_media_${index}`, question.media.file);
         }
-        return false;
-    }
+    });
+
+    await apiClient.put(`/form/${id}/update/`, formData);
 };
 
-export const getMyFormsList = async () => {
-    try {
-        const res = await axios.get('/my-forms-list/', { 
-            withCredentials: true 
-        });
-
-        return res.data;
-    } catch(error) {
-        if(axios.isAxiosError(error)){
-            console.error('Ошибка при получение списка:', error.response?.data || error.message);
-        }
-
-        return {
-            results: [],
-            count: 0
-        }
-    }
+export const getMyFormsList = async (): Promise<IFormItemResponse> => {
+    const res = await apiClient.get<IFormItemResponse>('/my-forms-list/');
+    return res.data;
 };
 
-export const getAllFormsList = async () => {
-    try {
-        const res = await axios.get('/all-forms-list/', {
-            withCredentials: true
-        });
-
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)){
-            console.error('Ошибка при получение списка:', error.response?.data || error.message);
-        }
-
-        return {   
-            results: [],
-            count: 0
-        }
-    }
+export const getAllFormsList = async (): Promise<IFormItemResponse> => {
+    const res = await apiClient.get<IFormItemResponse>('/all-forms-list/');
+    return res.data;
 };
 
-export const getFormDetail = async (slug: string) => {
-    try{
-        const res = await axios.get(`/form/${slug}/`, {
-            withCredentials: true
-        });
-
-        return res.data.results || res.data;
-    } catch (error) {
-        if(axios.isAxiosError(error)) {
-            console.error('Ошибка получение данных:', error.response?.data || error.message);
-        }
-    }
+export const getFormDetail = async (slug: string): Promise<IFormDetail> => {
+    const res = await apiClient.get<IFormDetail>(`/form/${slug}/`);
+    return res.data;
 }
 
-export const submitQuizResults = async (slug: string, payload: IQuizSession) => {
-    try {
-        const res = await axios.post(`/form/${slug}/submit/`, payload, {
-            withCredentials: true
-        });
-
-        return res.data.results || res.data;
-    } catch (error) {
-        if(axios.isAxiosError(error)) {
-            console.error('Ошибка при отправки', error.response?.data || error.message);
-        }
-    }
+export const submitQuizResults = async (slug: string, payload: IQuizSession): Promise<void> => {
+    const res = await apiClient.post(`/form/${slug}/submit/`, payload);
+    return res.data.results || res.data;
 }
 
 export async function submitFormResponse(slug: string, session: IQuizSession): Promise<{
@@ -551,197 +230,77 @@ export async function submitFormResponse(slug: string, session: IQuizSession): P
     max_score: number;
     show_results_after: boolean;
 }> {
-    const res = await axios.post(`/form/${slug}/submit/`, session, {
-        withCredentials: true,
-    });
-
+    const res = await apiClient.post(`/form/${slug}/submit/`, session);
     return res.data.results || res.data;
 }
 
-export const deleteForm = async (id: number) => {
-    try {
-        const res = await axios.delete(`/form/${id}/delete/`, {
-            withCredentials: true,
-        });
-
-        return res.status === 204 || res.status === 200;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при удалении формы:', error.response?.data || error.message);
-        }
-        return false;
-    }
+export const deleteForm = async (id: number): Promise<boolean> => {
+    await apiClient.delete(`/form/${id}/delete/`);
+    return true;
 };
 
-export const getFormResponses = async (slug: string) => {
-    try {
-        const res = await axios.get(`/form/${slug}/responses/`, {
-            withCredentials: true
-        });
-
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при получении списка ответов:', error.response?.data || error.message);
-        }
-        return [];
-    }
+export const getFormResponses = async (slug: string): Promise<IFormResponseSummary[]> => {
+    const res = await apiClient.get<IFormResponseSummary[]>(`/form/${slug}/responses/`);
+    return res.data;
 };
 
-export const getResponseDetail = async (id: number): Promise<FullResponseDetail | null> => {
-    try {
-        const res = await axios.get(`/responses/${id}/`, {
-            withCredentials: true
-        });
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при получении деталей ответа:', error.response?.data || error.message);
-        }
-        return null;
-    }
+export const getResponseDetail = async (id: number): Promise<FullResponseDetail> => {
+    const res = await apiClient.get<FullResponseDetail>(`/responses/${id}/`);
+    return res.data;
 };
 
-export const gradeAnswer = async (answerId: number, score: number): Promise<boolean> => {
-    try {
-        const res = await axios.patch(`/answers/${answerId}/grade/`, 
-            { manual_score: score }, 
-            { withCredentials: true }
-        );
-        return res.status === 200;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при выставлении баллов:', error.response?.data || error.message);
-        }
-        return false;
-    }
+export const gradeAnswer = async (answerId: number, score: number): Promise<boolean> => {    
+    await apiClient.patch(`/answers/${answerId}/grade/`, { manual_score: score });
+    return true;
 };
 
-export const getNotificationsList = async () => {
-    try {
-        const res = await axios.get('/notifications-list/', {
-            withCredentials: true,
-        });
-
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при получении списка уведомлений:', error.response?.data || error.message);
-        }
-
-        return null;
-    }
+export const getNotificationsList = async (): Promise<INotificationsResponse> => {
+    const res = await apiClient.get<INotificationsResponse>('/notifications-list/');
+    return res.data;
 };
 
-export const readNotification = async (id: number) => {
-    try {
-        await axios.post(`/notifications/${id}/read/`, {
-            withCredentials: true,
-        });
-    } catch(error){
-        if(axios.isAxiosError(error)){
-            console.error('Не удалось изменить статус', error.response?.data || error.message);
-        }
-    }
+export const readNotification = async (id: number): Promise<void> => {
+    await apiClient.post(`/notifications/${id}/read/`);
 };
 
-export const readAllNotifications = async () => {
-    try {
-        await axios.post('/notifications/read-all/', {
-            withCredentials: true,
-        });
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Не удалось изменить статус', error.response?.data || error.message);
-        }
-    }
+export const readAllNotifications = async (): Promise<void> => {
+    await apiClient.post('/notifications/read-all/');
 };
 
-export const notificationsCount = async () => {
-    try{
-        const res = await axios.get('/notifications/count/', {
-            withCredentials: true
-        });
-
-        return res.data || 0;
-    } catch (error){
-        if(axios.isAxiosError(error)){
-            console.error('Ошибка при получение количеств уведомлений', error.response?.data || error.message);
-        }
-        
-        return 0;
-    }
+export const notificationsCount = async (): Promise<number> => {
+    const res = await apiClient.get<{ count: number }>('/notifications/count/');
+    return res.data?.count ?? 0;
 }
 
-export const getActiveSessions = async () => {
-    try {
-        const res = await axios.get('/sessions-list/', {
-            withCredentials: true,
-        });
-        
-        return res.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при получении активных сеансов:', error.response?.data || error.message);
-        }
-
-        return [];
-    }
+export const getActiveSessions = async (): Promise<ISession[]> => {
+    const res = await apiClient.get<ISession[]>('/sessions-list/');
+    return res.data;
 };
 
-export const deleteSession = async (sessionId: number) => {
-    try {
-        const res = await axios.delete(`/sessions-delete/${sessionId}/`, {
-            withCredentials: true,
-        });
-
-        if (res.status === 204 || res.status === 200){
-            window.dispatchEvent(new Event("fetchSessions"));
-            return;
-        };
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при удалении сеанса:', error.response?.data || error.message);
-        }
-
-        return false;
-    }
+export const deleteSession = async (sessionId: number): Promise<boolean> => {
+    await apiClient.delete(`/sessions-delete/${sessionId}/`);
+    return true;
 };
 
-export const deleteAllSessions = async () => {
-    try {
-        const res = await axios.delete('/sessions-delete-all/', {
-            withCredentials: true,
-        });
-
-        return res.status === 204 || res.status === 200;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка при удалении всех сеансов:', error.response?.data || error.message);
-        }
-
-        return false;
-    }
+export const deleteAllSessions = async (): Promise<boolean> => {
+    await apiClient.delete('/sessions-delete-all/');
+    return true;
 };
 
-export const uploadAvatar = async (file: File) => {
-    try {
-        const formData = new FormData();
-        formData.append('avatar', file);
+export const uploadAvatar = async (file: File): Promise<IAvatarResponse> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
 
-        const res = await axios.post('/upload-avatar/', formData, {
-            withCredentials: true
-        });
-        
-        if (res.status === 200 || res.status === 201) {
-            window.dispatchEvent(new Event("fetchUser"));
-            return res.data;
-        }
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Ошибка: ', error.response?.data || error.message);
-            throw error;
-        }
-        throw error;
-    }
+    const res = await apiClient.post<IAvatarResponse>('/upload-avatar/', formData);
+    return res.data;
+};
+
+export const getAttendanceList = async (): Promise<IAttendanceResponse> => {
+    const res = await apiClient.get<IAttendanceResponse>('/attendance/');
+    return res.data;
+};
+
+export const getGroupList = async (): Promise<IGroup[]> => {
+    const res = await apiClient.get<IGroup[]>('/group/');
+    return res.data;
 };

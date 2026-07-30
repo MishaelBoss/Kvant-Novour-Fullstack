@@ -96,7 +96,7 @@ export default function NewNewsContent() {
 
     return (
         <div className="min-h-screen p-4 md:p-8">
-            <div className="max-w-[860px] mx-auto flex flex-col gap-6">
+            <div className="max-w-215 mx-auto flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <Link
                         href="#"
@@ -132,7 +132,7 @@ export default function NewNewsContent() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
+                <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
                     <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
                         <button 
                             onClick={() => setActiveTab('content')}

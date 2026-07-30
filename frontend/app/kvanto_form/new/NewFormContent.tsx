@@ -9,9 +9,10 @@ import { Settings } from "../_components/Settings";
 import { QuestionCard } from "../_components/QuestionCard";
 import { createForm } from "@/app/lib/api";
 import { toast } from "react-hot-toast";
-import { PlusIcon } from "lucide-react";
+import { ChevronLeftIcon, PlusIcon } from "lucide-react";
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { ApiError } from "next/dist/server/api-utils";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -128,7 +129,6 @@ export default function NewFormContent() {
         ));
     };
 
-    
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -162,19 +162,14 @@ export default function NewFormContent() {
                 questions: questions
             };
             
-            const success = await createForm(formData, settings, newsImage);
-
-            setSaving(success);
+            createForm(formData, settings, newsImage);
             
-            if (success) {
-                if (status === 'active') {
-                    router.push('/profile?tab=kvantoForm');
-                }
-            } else {
-                alert('Ошибка сохранения формы');
-            }
+            if (status === 'active') router.push('/profile?tab=kvantoForm');
         } catch (error) {
-            console.error(error);
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка при загрузке:", error);
         } finally {
             setSaving(false);
         }
@@ -182,15 +177,13 @@ export default function NewFormContent() {
 
     return (
         <div className="min-h-screen p-4 md:p-8">
-            <div className="max-w-[860px] mx-auto flex flex-col gap-6">
+            <div className="max-w-215 mx-auto flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <Link
                         href="#"
                         onClick={() => router.back()}
                         className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <ChevronLeftIcon width="16" height="16"/>
                         Назад
                     </Link>
                     <div className="flex gap-2">
@@ -208,7 +201,7 @@ export default function NewFormContent() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
+                <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
                     <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
                         <button 
                             onClick={() => setActiveTab('content')}

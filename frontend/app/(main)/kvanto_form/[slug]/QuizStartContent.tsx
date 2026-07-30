@@ -1,14 +1,15 @@
 "use client";
-
 import { PAGES } from "@/app/config/pages.config";
 import { useAuth } from "@/app/context/AuthContext";
-import { getFormDetail } from "@/app/lib/api";
+import { getFormDetail as apiGetFormDetail } from "@/app/lib/api";
 import { IFormDetail, IParticipantProfile } from "@/app/types/form.interface";
+import { ApiError } from "next/dist/server/api-utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
@@ -18,7 +19,7 @@ export default function QuizStartContent() {
     const router = useRouter();
     const params = useParams();
     const slug = params?.slug;
-
+    
     const [form, setForm] = useState<IFormDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,42 +34,55 @@ export default function QuizStartContent() {
         }
     });
 
-    useEffect(() => {
-        if (!slug) return;
+    const getFormDetail = useCallback(async () => {
+        if (!slug || typeof slug !== 'string') return;
 
-        async function init() {
-            try {
-                const data = await getFormDetail(slug as string);
-                if (!data) {
-                    setError("Форма не найдена");
-                    setLoading(false);
-                    return;
-                }
+        setError(null);
+        setLoading(true); 
 
-                setForm(data);
-
-                if (data.settings?.survey_for_authorized_users && !user) {
-                    setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
-                    setLoading(false);
-                    return;
-                }
-
-                if (data.settings?.one_time_participation_survey && data.has_user_participated) {
-                    setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
-                    setLoading(false);
-                    return;
-                }
-
-                setLoading(false);
-            } catch (err) {
-                console.error("Ошибка загрузки формы:", err);
-                setError("Не удалось загрузить форму");
-                setLoading(false);
+        try {
+            const data = await apiGetFormDetail(slug);
+            if (!data) {
+                setError("Форма не найдена");
+                return;
             }
-        }
 
-        init();
+            setForm(data);
+
+            if (data.settings?.survey_for_authorized_users && !user) {
+                setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
+                return;
+            }
+
+            if (data.settings?.one_time_participation_survey && data.has_user_participated) {
+                setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
+                return;
+            }
+        } catch (error) {
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+
+            if (isApiError(error)) {
+                toast.error(error.message);
+                setError(error.message);
+            } else { 
+                toast.error("Произошла непредвиденная ошибка на клиенте");
+                setError("Не удалось сохранить изменения");
+            }
+
+            console.error("Ошибка при загрузке:", error);
+
+            setError("Форма не найдена или недоступна");
+        } finally {
+            setLoading(false);
+        }
     }, [slug, user]);
+
+    useEffect(() => {
+        const handleFetchEvent = async () => await getFormDetail();
+        handleFetchEvent();
+    }, [getFormDetail]);
 
     useEffect(() => {
         if (user) {

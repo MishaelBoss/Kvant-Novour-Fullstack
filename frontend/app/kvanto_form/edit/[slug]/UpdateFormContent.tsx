@@ -1,26 +1,29 @@
-'use client';
-
+"use client";
 import { IFormCreate, IFormDetail, IFormSettings, IQuestion } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getFormDetail, updateForm } from "@/app/lib/api";
+import { useCallback, useEffect, useState } from "react";
+import { getFormDetail as apiGetFormDetail, updateForm } from "@/app/lib/api";
 import { ModelConfirmAddForm } from "../../_components/ModelConfirmAddForm";
 import { Content } from "../../_components/Content";
 import { Settings } from "../../_components/Settings";
 import { QuestionCard } from "../../_components/QuestionCard";
+import toast from "react-hot-toast";
+import { ApiError } from "next/dist/server/api-utils";
+import { ChevronLeftIcon } from "lucide-react";
 
 function generateId() {
     return Math.random().toString(36).slice(2, 9);
 }
 
-export default function UpdateForm() {
+export default function UpdateFormContent() {
     const router = useRouter();
     const params = useParams();
-    const formId = params?.id as string; 
+    const slug = params?.slug;
 
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<IFormDetail | null>(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
@@ -130,32 +133,49 @@ export default function UpdateForm() {
         ));
     };
 
-    useEffect(() => {
-        async function loadForm() {
-            if (!formId) return;
-            try {
-                const data: IFormDetail = await getFormDetail(formId); 
-                setForm(data);
-                setTitle(data.title);
-                setDescription(data.description);
-                setDeadline(data.deadline || '');
-                setQuestions(data.questions);
-                setSettings(data.settings);
-            } catch (err) {
-                console.error("Не удалось загрузить форму", err);
-                setError("Ошибка при загрузке данных формы");
+    const getFormDetail = useCallback(async () => {
+        if (!slug || typeof slug !== 'string') return;
+
+        setError(null);
+        setLoading(true); 
+
+        try {
+            const data = await apiGetFormDetail(slug);
+            if (!data) {
+                setError("Форма не найдена");
+                return;
             }
+
+            setForm(data);
+            setTitle(data.title);
+            setDescription(data.description);
+            setDeadline(data.deadline || '');
+            setQuestions(data.questions);
+            setSettings(data.settings);
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
+
+            setError("Форма не найдена или недоступна");
+        } finally {
+            setLoading(false);
         }
-        loadForm();
-    }, [formId]);
+    }, [slug]);
+
+    useEffect(() => {
+        getFormDetail();
+    }, [getFormDetail]);
 
     const handleSave = async (status: 'draft' | 'active', isStatusToggle = false, newsImage: File | null = null) => {
+        if (!form?.id) return;
+        
         if (!title.trim()) {
-            setError('Введите название формы');
+            toast.error("Введите название формы");
             return;
         }
 
-        setError(null);
         setSaving(true);
 
         try {
@@ -169,51 +189,59 @@ export default function UpdateForm() {
                 questions: questions
             };
             
-            const success = await updateForm(Number(formId), formData, settings, newsImage);
-            
-            setSaving(success);
-            
-            if (success) {
-                const updatedData = await getFormDetail(formId);
-                setForm(updatedData);
+            await updateForm(form.id, formData, settings, newsImage);
 
-                if (status === 'active' && !isStatusToggle) {
-                    router.push('/profile?tab=kvantoForm');
-                    return;
-                }
-            } else {
-                alert('Ошибка сохранения формы');
+            toast.success("Изменения сохранены");
+
+            await getFormDetail();
+
+            if (status === 'active' && !isStatusToggle) {
+                router.push('/profile?tab=kvantoForm');
+                return;
             }
         } catch (error) {
-            console.error(error);
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+            console.error("Ошибка при загрузке:", error);
         } finally {
             setSaving(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+                <p className="text-gray-400 text-sm">Загрузка...</p>
+            </div>
+        );
+    }
+
+    if (error || !form) {
+        return (
+            <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+                <p className="text-gray-400 text-sm">{error || "Форма не найдена"}</p>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#f4f5f7] p-4 md:p-8">
-            <div className="max-w-[860px] mx-auto flex flex-col gap-6">
+            <div className="max-w-215 mx-auto flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <Link
                         href="#"
                         onClick={() => router.back()}
                         className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <ChevronLeftIcon width="16" height="16"/>
                         Назад
                     </Link>
-                    {error && (
-                        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-                            {error}
-                        </div>
-                    )}
                     <div className="flex gap-2">
                         <button
-                            onClick={() => handleSave('draft')}
+                            onClick={() => handleSave(form?.status === 'active' ? 'draft' : 'active', true)}
+                            disabled={saving}
                             className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                            {saving ? 'Сохранение...' : 'Сохранить'}
+                            {saving ? "Сохранение..." : form?.status === 'active' ? 'Опубликовано' : 'Опубликовать'}
                         </button>
                         <ModelConfirmAddForm onPublish={(file) => handleSave(form?.status === 'active' ? 'draft' : 'active', true, file)} isActive={form?.status === 'active'}>
                             <button
@@ -229,7 +257,7 @@ export default function UpdateForm() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
+                <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200/50 flex flex-col gap-6">
                     <div className="flex gap-6 border-b border-gray-100 -mt-2 mb-2">
                         <button 
                             onClick={() => setActiveTab('content')}

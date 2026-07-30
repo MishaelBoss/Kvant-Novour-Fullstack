@@ -4,16 +4,15 @@ import { IFormItem } from "../types/form.interface";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { EyeIcon, MessageSquareIcon, PencilIcon, Trash2Icon } from "lucide-react";
 
-interface CartFormsProps {
+interface Props {
     form: IFormItem;
+    fetchForms: () => void;
 }
 
-export function CartForms({form}: CartFormsProps) {
+export function CartForms({ form, fetchForms }: Props) {
     const handleDelete = async (id: number) => {
         const success = await deleteForm(id);
-        if (success) {
-            window.dispatchEvent(new Event("fetchFormsList"));
-        };
+        if (success) fetchForms();
     };
 
     function getNoun(number: number, one: string, two: string, five: string) {

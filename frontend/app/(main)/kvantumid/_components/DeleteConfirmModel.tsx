@@ -1,14 +1,14 @@
-'use client'
+"use client";
 import { PAGES } from "@/app/config/pages.config";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
 import { useRouter } from "next/navigation";
 
-interface DeleteConfirmModalProps {
+interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void; 
 }
 
-export function DeleteConfirmModal({open, onOpenChange}: DeleteConfirmModalProps){
+export function DeleteConfirmModal({open, onOpenChange}: Props){
     const router = useRouter();
 
     const onDelete = async () => {

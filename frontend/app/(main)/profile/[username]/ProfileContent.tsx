@@ -8,6 +8,8 @@ import Link from "next/link";
 import { PAGES } from "@/app/config/pages.config";
 import { PublicProfileSkeleton } from "../_components/ProfileSkeleton";
 import { motion } from "framer-motion";
+import { ApiError } from "@/app/lib/errors/ApiError";
+import toast from "react-hot-toast";
 
 const ROLE_LABELS: Record<string, string> = {
     user: 'Пользователь',
@@ -17,27 +19,44 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function ProfileContent(){
     const { username } = useParams();
+    
     const [profile, setProfile] = useState<IPublicProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const getProfile = useCallback(async () => {
-        if(!username) return;
+        if (!username || typeof username !== 'string') return;
+        
+        setError(null);
+        setLoading(true); 
 
-        getPublicProfile(username as string)
-            .then(data => {
-                setProfile(data); 
-                setError(null);
-            }).catch(() => {
-                setError("Пользователь не найден");
-            }).finally(() => {
-                setLoading(false);
-            });
+        try {
+            const data = await getPublicProfile(username);
+
+            setProfile(data);
+        } catch (error) {
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+
+            if (isApiError(error)) {
+                toast.error(error.message);
+                setError(error.message);
+            } else { 
+                toast.error("Не удалось загрузить профиль");
+                setError("Не удалось загрузить профиль");
+            }
+
+            console.error("Ошибка при загрузке:", error);
+
+            setProfile(null);
+        } finally {
+            setLoading(false);
+        }
     }, [username]);
 
     useEffect(() => {
         const handleFetchEvent = async() => await getProfile();
-
         handleFetchEvent();
     }, [getProfile]);
 
@@ -141,7 +160,7 @@ export default function ProfileContent(){
 
                 <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-10">
                     <h2 className="text-[20px] font-bold mb-6">Достижения</h2>
-                    <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center">
+                    <div className="flex flex-col items-center justify-center min-h-75 gap-4 text-center">
                         <Image 
                             src="/Achievement-rafiki.svg" 
                             alt="Достижения" 

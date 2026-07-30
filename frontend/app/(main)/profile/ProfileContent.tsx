@@ -3,7 +3,7 @@ import { PAGES } from "@/app/config/pages.config";
 import { uploadAvatar } from "@/app/lib/api";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { AchievementsTab } from "./_components/tabs/AchievementsTab";
 import { PersonalDataTab } from "./_components/tabs/PersonalDataTab";
@@ -12,6 +12,8 @@ import { KvantoFormTab } from "./_components/tabs/KvantoFormTab";
 import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { toast } from "react-hot-toast";
+import imageCompression from "browser-image-compression";
+import { ApiError } from "next/dist/server/api-utils";
 
 const VALID_MIME_TYPES = {
     'image/jpeg': ['.jpeg', '.jpg'],
@@ -21,8 +23,15 @@ const VALID_MIME_TYPES = {
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
+const OPTIONS = {
+  maxSizeMB: 0.5,
+  maxWidthOrHeight: 1200,
+  useWebWorker: true,
+  fileType: 'image/jpeg'
+};
+
 export default function ProfileContent() {
-    const { user, isLoading: isAuthLoading, isAdmin, isTeacher, countNotifications } = useAuth();
+    const { user, isLoading: isAuthLoading, isAdmin, isTeacher, countNotifications, updateUser, refreshAuth } = useAuth();
     const searchParams = useSearchParams();
     const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'kvantoForm';
     const activeTab = tabFromUrl || 'personal';
@@ -31,6 +40,7 @@ export default function ProfileContent() {
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
         if (!file) {
             toast.error('Файл не поддерживается или не выбран.');
             return;
@@ -47,13 +57,42 @@ export default function ProfileContent() {
         }
 
         try {
-            await uploadAvatar(file);
-            toast.success('Аватар обновлён');
+            const compressedBlob = await imageCompression(file, OPTIONS);
+            const originalExtension = file.name.split('.').pop() || 'jpg';
+            const tempName = `temp_avatar.${originalExtension}`;
+            const compressedFile = new File([compressedBlob], tempName, {
+                type: file.type,
+                lastModified: Date.now()
+            });
+
+            const updatedData = await uploadAvatar(compressedFile);
+            const newAvatarUrl = updatedData?.user?.avatar;
+
+            if (newAvatarUrl) {
+                toast.success('Аватар обновлён');
+                const cleanUrl = newAvatarUrl.replace('http://localhost:8000', '').replace('http://localhost', '');
+                updateUser({ avatar: cleanUrl });
+            } else {
+                await refreshAuth();
+                toast.success('Аватар обновлён');
+            }
+
+            if (e.target) e.target.value = ''; 
         } catch (error) {
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+            
+            if (isApiError(error)) toast.error(error.message);
+            else toast.error("Пожалуйста, выберите изображение в формате JPEG, PNG и не должен превышать 5 МБ.");
+
             console.error('Ошибка при загрузке аватара:', error);
-            toast.error('Пожалуйста, выберите изображение в формате JPEG, PNG и не должен превышать 5 МБ.');
         }
     };
+
+    const currentAvatar = (user?.avatar && typeof user.avatar === 'string') 
+        ? user.avatar.replace('http://localhost:8000', '').replace('http://localhost', '') 
+        : '/default-avatar.png';
 
     const setActiveTab = (tab: string) => {
         router.push(`?tab=${tab}`, { scroll: false });
@@ -70,7 +109,7 @@ export default function ProfileContent() {
                     <div className="flex items-center gap-3 mb-6 px-2">
                         <div onClick={() => fileInputRef.current?.click()} className="relative w-20 h-20 aspect-square shrink-0 rounded-full overflow-hidden bg-blue-500 cursor-pointer group">
                             <Image 
-                                src={user?.avatar?.replace('http://localhost', '') || '/undraw_finance-guy-avatar_vhop.svg'}
+                                src={currentAvatar}
                                 loading="eager" 
                                 fill 
                                 priority

@@ -12,10 +12,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "react-hot-toast";
 import CreatableSelect from 'react-select/creatable';
 import { MultiValue } from "react-select";
+import { ApiError } from "next/dist/server/api-utils";
 
-interface CreateNewsModalProps {
+interface Props {
     children: React.ReactNode;
     news: INews | null;
+    fetch: () => Promise<void>;
 }
 
 interface NewsFormValues extends Omit<INews, 'categories'> {
@@ -30,9 +32,7 @@ const VALID_MIME_TYPES = {
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
-const GENERATE_UNIQUE_ID = (): number => Date.now();
-
-export function CreateNewsModal({children, news}: CreateNewsModalProps){
+export function CreateNewsModal({ children, news, fetch }: Props){
     const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedOption, setSelectedOption] = useState<MultiValue<ICategory>>([]);
     const [open, setOpen] = useState(false);
@@ -88,7 +88,6 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
                 image: news.image,
                 categories: news?.categories || []
             });
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPreview(typeof news.image === 'string' ? news.image : null);
         }
     }, [news, methods]);
@@ -128,37 +127,52 @@ export function CreateNewsModal({children, news}: CreateNewsModalProps){
         const createdIds: number[] = [];
         if (data.categories.length == 0) {
             try {
-                const res = await createCategory({ 
-                    label: 'Новости',
-                    value: GENERATE_UNIQUE_ID()
-                })
-                const catId = res?.data?.value || res?.value;
+                const res = await createCategory('Новости');
+
+                const catId = res?.value;
                 if (catId) createdIds.push(catId);
-            } catch {
-                toast.error('Ошибка при создании дефолтной категории "Новости"');
+            } catch (error) {
+                if (error instanceof ApiError) toast.error(error.message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
+                
+                console.error("Ошибка при создании категории", error);
                 return;
             }
         } else {
             for (const cat of newCats) {
                 try {
-                    const result = await createCategory(cat);
-                    createdIds.push(result.data.value);
-                } catch {
-                    toast.error(`Ошибка при создании категории "${cat.label}"`);
+                    const result = await createCategory(cat.label);
+
+                    if (result?.value) createdIds.push(result.value);
+                } catch (error) {
+                    if (error instanceof ApiError) toast.error(error.message);
+                    else toast.error("Произошла непредвиденная ошибка на клиенте");
+                
+                    console.error(`Ошибка при создании категории "${cat.label}"`, error);
                     return;
                 }
             }
         }
 
         const payload: INewsCreateInput = {
+            id: data.id,
             title: data.title,
             content: data.content,
             image: data.image,
             category_ids: [...knownIds, ...createdIds],
         };
 
-        const isSuccess = await createNews(payload);
-        if (isSuccess) setOpen(false);
+        try {
+            await createNews(payload);
+            
+            setOpen(false);
+            fetch();
+        } catch (error) {
+            if (error instanceof ApiError) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+        
+            console.error("Ошибка при создании:", error);
+        }
     };
 
     const handleCreate = (inputValue: string) => {

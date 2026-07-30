@@ -2,21 +2,21 @@
 import { Dialog, Button, Flex, Text, TextField, Box, Callout } from "@radix-ui/themes";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { login, register as registerApi } from "@/app/lib/api";
-import { useRouter } from "next/navigation";
-import { PAGES } from "@/app/config/pages.config";
 import { IUserRegister, IUserLogin } from "@/app/types/user.interface";
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from "@/app/context/AuthContext";
+import { ApiError } from "next/dist/server/api-utils";
+import toast from "react-hot-toast";
 
 export function AuthModal({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false); 
     const [mode, setMode] = useState<'login' | 'register'>('login');
     const [showPass, setShowPass] = useState(false);
     const isLogin = mode === 'login';
-    const router = useRouter();
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const { login, register: registerUser } = useAuth();
 
     const { register, handleSubmit, trigger, formState: { errors }, reset, clearErrors } = useForm<IUserRegister>({
         mode: 'onBlur',
@@ -33,25 +33,23 @@ export function AuthModal({ children }: { children: React.ReactNode }) {
             if (isLogin) {
                 await login(data as IUserLogin);
             } else {
-                await registerApi(data as IUserRegister);
+                await registerUser(data as IUserRegister);
             }
-
-            setIsLoading(false);
-            router.push(PAGES.MY_PROFILE());
         } catch(error: unknown) {
-            let errorMessage = 'Произошла ошибка. Попробуйте снова.';
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
 
-            const axiosError = error as { response?: { data?: Record<string, string> } };
-            const responseData = axiosError?.response?.data;
-            
-            if (responseData) {
-                if (responseData.username?.[0]) errorMessage = responseData.username[0];
-                else if (responseData.email?.[0]) errorMessage = responseData.email[0];
-                else if (responseData.password?.[0]) errorMessage = responseData.password[0];
-                else if (responseData.non_field_errors?.[0]) errorMessage = responseData.non_field_errors[0];
+            if (isApiError(error)) {
+                toast.error(error.message);
+                setError(error.message);
+            } else { 
+                toast.error("Произошла непредвиденная ошибка на клиенте");
+                setError("Не удалось сохранить изменения");
             }
             
-            setError(errorMessage);
+            console.error("Ошибка авторизации:", error);
+        } finally {
             setIsLoading(false);
         }
     };

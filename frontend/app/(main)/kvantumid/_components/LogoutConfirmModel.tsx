@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { useAuth } from "@/app/context/AuthContext";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
 import { useState } from "react";

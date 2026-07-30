@@ -17,9 +17,13 @@ class Category(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            latin_name = translit(self.name, 'ru', reversed=True)
-            self.slug = slugify(latin_name)
+        if not self.slug and self.name:
+            try:
+                latin_name = translit(self.name, 'ru', reversed=True)
+                self.slug = slugify(latin_name)
+            except: 
+                self.slug = slugify(self.name)
+                
         super().save(*args, **kwargs)
 
 class News(models.Model):

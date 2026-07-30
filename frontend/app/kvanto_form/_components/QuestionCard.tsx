@@ -1,6 +1,6 @@
 "use client";
 import { IQuestion, QuestionType } from "@/app/types/form.interface";
-import { MediaType } from "@/app/types/global.intefrace";
+import { MediaType } from "@/app/types/global.interface";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { DropdownMenu } from "@radix-ui/themes";
