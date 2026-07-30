@@ -8,7 +8,7 @@ interface DeleteConfirmModalProps {
     children: React.ReactNode;
     title: string | undefined;
     onConfirm: () => Promise<void> | void;
-    fetch: () => Promise<void>;
+    fetch?: () => Promise<void>;
 }
 
 export function DeleteConfirmModal({ children, title, onConfirm, fetch }: DeleteConfirmModalProps){
@@ -17,8 +17,9 @@ export function DeleteConfirmModal({ children, title, onConfirm, fetch }: Delete
     const onDelete = async () => {
         try{
             await onConfirm();
+            toast.success("Успешно удалена");
 
-            fetch();
+            if (fetch) await fetch();
             setOpen(false);
         } catch (error) {
             if (error instanceof ApiError) toast.error(error.message);

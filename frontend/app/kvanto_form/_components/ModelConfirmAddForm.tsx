@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "react-hot-toast";
+import imageCompression from "browser-image-compression";
 
 interface Props {
     children: React.ReactNode;
@@ -20,12 +21,19 @@ const VALID_MIME_TYPES = {
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
+const OPTIONS = {
+  maxSizeMB: 0.5,
+  maxWidthOrHeight: 1200,
+  useWebWorker: true,
+  fileType: 'image/jpeg'
+};
+
 export function ModelConfirmAddForm({ children, onPublish, isActive }: Props) {
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
 
-    const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
+    const onDrop = useCallback(async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
         if (fileRejections.length > 0) {
             const error = fileRejections[0].errors[0];
 
@@ -41,13 +49,26 @@ export function ModelConfirmAddForm({ children, onPublish, isActive }: Props) {
             return;
         }
 
-        setImageFile(file);
-        const url = URL.createObjectURL(file);
+        try {
+            const compressedBlob = await imageCompression(file, OPTIONS);
+            const originalExtension = file.name.split('.').pop() || 'jpg';
+            const tempName = `temp_avatar.${originalExtension}`;
+            const compressedFile = new File([compressedBlob], tempName, {
+                type: file.type,
+                lastModified: Date.now()
+            });
+            
+            setImageFile(compressedFile);
+            const url = URL.createObjectURL(compressedFile);
 
-        setPreview((prevPreview) => {
-            if (prevPreview?.startsWith('blob:')) URL.revokeObjectURL(prevPreview);
-            return url;
-        });
+            setPreview((prevPreview) => {
+                if (prevPreview?.startsWith('blob:')) URL.revokeObjectURL(prevPreview);
+                return url;
+            });
+        } catch (error) {
+            console.error("Ошибка при сжатии изображения:", error);
+            toast.error("Не удалось обработать изображение.");
+        }
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

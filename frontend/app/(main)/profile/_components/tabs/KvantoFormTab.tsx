@@ -19,7 +19,14 @@ export function KvantoFormTab(){
             setForms(res.results);
             setCountForm(res.count); 
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+            
+            if (isApiError(error)) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка авторизации:", error);
             
             setForms([]);
             setCountForm(0);
@@ -84,7 +91,7 @@ export function KvantoFormTab(){
 
             <div className="flex flex-col gap-4">
                 {forms.map((form) => (
-                    <CartForms key={form.id} form={form} fetchForms={async () => await fetchForms()}/>
+                    <CartForms key={form.id} form={form} fetch={async () => await fetchForms()}/>
                 ))}
             </div>
         </main>

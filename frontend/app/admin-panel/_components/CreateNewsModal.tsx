@@ -13,6 +13,7 @@ import { toast } from "react-hot-toast";
 import CreatableSelect from 'react-select/creatable';
 import { MultiValue } from "react-select";
 import { ApiError } from "next/dist/server/api-utils";
+import imageCompression from "browser-image-compression";
 
 interface Props {
     children: React.ReactNode;
@@ -32,6 +33,13 @@ const VALID_MIME_TYPES = {
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
+const OPTIONS = {
+  maxSizeMB: 0.5,
+  maxWidthOrHeight: 1200,
+  useWebWorker: true,
+  fileType: 'image/jpeg'
+};
+
 export function CreateNewsModal({ children, news, fetch }: Props){
     const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedOption, setSelectedOption] = useState<MultiValue<ICategory>>([]);
@@ -47,7 +55,7 @@ export function CreateNewsModal({ children, news, fetch }: Props){
         }
     }); 
 
-    const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
+    const onDrop = useCallback(async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
         if (fileRejections.length > 0) {
             const error = fileRejections[0].errors[0];
 
@@ -63,13 +71,26 @@ export function CreateNewsModal({ children, news, fetch }: Props){
             return;
         }
 
-        methods.setValue('image', file);
-        const url = URL.createObjectURL(file);
+        try {
+            const compressedBlob = await imageCompression(file, OPTIONS);
+            const originalExtension = file.name.split('.').pop() || 'jpg';
+            const tempName = `temp_avatar.${originalExtension}`;
+            const compressedFile = new File([compressedBlob], tempName, {
+                type: file.type,
+                lastModified: Date.now()
+            });        
 
-        setPreview((prevPreview) => {
-            if (prevPreview?.startsWith('blob:')) URL.revokeObjectURL(prevPreview);
-            return url;
-        });
+            methods.setValue('image', compressedFile);
+            const url = URL.createObjectURL(compressedFile);
+
+            setPreview((prevPreview) => {
+                if (prevPreview?.startsWith('blob:')) URL.revokeObjectURL(prevPreview);
+                return url;
+            });   
+        } catch (error) {
+            console.error("Ошибка при сжатии изображения:", error);
+            toast.error("Не удалось обработать изображение.");
+        }
     }, [methods]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

@@ -3,16 +3,29 @@ import { deleteForm } from "../lib/api";
 import { IFormItem } from "../types/form.interface";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { EyeIcon, MessageSquareIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import toast from "react-hot-toast";
+import { ApiError } from "next/dist/server/api-utils";
 
 interface Props {
     form: IFormItem;
-    fetchForms: () => void;
+    fetch: () => Promise<void>;
 }
 
-export function CartForms({ form, fetchForms }: Props) {
+export function CartForms({ form, fetch }: Props) {
     const handleDelete = async (id: number) => {
-        const success = await deleteForm(id);
-        if (success) fetchForms();
+        try {
+            await deleteForm(id);
+            await fetch();
+        } catch (error) {
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+
+            if (isApiError(error)) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка авторизации:", error);
+        }
     };
 
     function getNoun(number: number, one: string, two: string, five: string) {

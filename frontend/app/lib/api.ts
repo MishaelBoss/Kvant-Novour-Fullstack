@@ -234,9 +234,8 @@ export async function submitFormResponse(slug: string, session: IQuizSession): P
     return res.data.results || res.data;
 }
 
-export const deleteForm = async (id: number): Promise<boolean> => {
+export const deleteForm = async (id: number): Promise<void> => {
     await apiClient.delete(`/form/${id}/delete/`);
-    return true;
 };
 
 export const getFormResponses = async (slug: string): Promise<IFormResponseSummary[]> => {
