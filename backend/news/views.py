@@ -73,8 +73,7 @@ class DeleteNews(APIView):
     permission_classes = [IsAdminRole]
     def delete(self, request, id):
         try:
-            news = get_object_or_404(News, id=id)
-            news.delete()
+            get_object_or_404(News, id=id).delete()
             return Response(
                 {'message': 'Пост успешно удален'}, 
                 status=status.HTTP_200_OK

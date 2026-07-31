@@ -1,56 +1,53 @@
 import { useCallback, useEffect, useState } from "react";
-import { CreateNewsModal } from "../CreateNewsModal"
-import { getListNews } from "@/app/lib/api";
+import { deleteStudyGroup, getListNews, getListStudyGroup } from "@/app/lib/api";
 import Link from "next/link";
 import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { IGroup } from "@/app/types/group.interface";
 import toast from "react-hot-toast";
 import { ApiError } from "next/dist/server/api-utils";
+import CreateStudyGroupModal from "../CreateStudyGroupModal";
 
 export function GroupsTab() {
-    const [news, setNews] = useState<IGroup[]>([]);
+    const [group, setGroup] = useState<IGroup[]>([]);
     const [count, setCountNews] = useState(0);
 
-    const fetchNews = useCallback(async () => {
+    const fetchGroup = useCallback(async () => {
         try {
-            const res = await getListNews();
+            const res = await getListStudyGroup();
 
-            setNews(res.results);
+            setGroup(res.results);
             setCountNews(res.count);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
+            const isApiError = (err: any): err is ApiError => {
+                return err instanceof ApiError || (err && err.isApiError === true);
+            };
+
+            if (isApiError(error))toast.error(error.message);
             else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка авторизации:", error);
 
-            console.error("Ошибка при загрузке:", error);
-
-            setNews([]);
+            setGroup([]);
             setCountNews(0);
         }
     }, []);
 
     useEffect(() => {
-        const handleFetchEvent = async() => await fetchNews();
-
+        const handleFetchEvent = async() => await fetchGroup();
         handleFetchEvent();
+    }, [fetchGroup]);
 
-        window.addEventListener("fetchListNews", handleFetchEvent);
-
-        return () => {
-            window.removeEventListener("fetchListNews", handleFetchEvent);
-        };
-    }, [fetchNews]);
-
-    if (news.length == 0) {
+    if (group.length == 0) {
         return (
             <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-bold">Всего новостей: {count}</h1>
-                    <CreateNewsModal news={null}>
+                    <h1 className="text-xl font-bold">Всего групп: {count}</h1>
+                    <CreateStudyGroupModal fetch={async () => await fetchGroup()}>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                             Добавить
                         </button>
-                    </CreateNewsModal>
+                    </CreateStudyGroupModal>
                 </div>
 
                 <div className="flex flex-col items-center justify-center h-full min-h-100 gap-4 text-center">
@@ -71,11 +68,11 @@ export function GroupsTab() {
                         </p>
                     </div>
 
-                    <CreateNewsModal news={null}>
+                    <CreateStudyGroupModal fetch={async () => await fetchGroup()}>
                         <button className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                            Создать новость
+                            Создать новую группу
                         </button>
-                    </CreateNewsModal>
+                    </CreateStudyGroupModal>
                 </div>
             </main>
         )
@@ -85,15 +82,15 @@ export function GroupsTab() {
         <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Всего групп: {count}</h1>
-                <CreateNewsModal news={null}>
+                <CreateStudyGroupModal fetch={async () => await fetchGroup()}>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                         Добавить
                     </button>
-                </CreateNewsModal>
+                </CreateStudyGroupModal>
             </div>
 
             <div className="flex flex-col gap-4">
-                {news?.map((item) => (
+                {group?.map((item) => (
                     <div 
                         key={item.id} 
                         className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-shadow gap-4"
@@ -125,7 +122,7 @@ export function GroupsTab() {
                                 <PencilIcon className="w-5 h-5"/>
                             </button>
                             
-                            <DeleteConfirmModal title={item.name} id={item.id} fetchNews={async () => await fetchNews()}>
+                            <DeleteConfirmModal title={item.name} onConfirm={async () => await deleteStudyGroup(item.id)} fetch={async () => await fetchGroup()}>
                                 <button 
                                     type="button" 
                                     title="Удалить" 

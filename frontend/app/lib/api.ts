@@ -2,7 +2,7 @@ import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]
 import { IAvatarResponse, IEditProfile, IUser, IUserLogin, IUserRegister, IUserResponse } from "../types/user.interface";
 import { ICategory, ICategoryResponse, INewsCreateInput, INewsResponse } from "../types/news.interface";
 import { IFormCreate, IFormDetail, IFormItemResponse, IFormResponseSummary, IFormSettings, IQuizSession } from "../types/form.interface";
-import { IGroup } from "../types/group.interface";
+import { IGroup, IStudyGroupResponse } from "../types/group.interface";
 import { IAttendanceResponse } from "../types/attendance.interface";
 import { apiClient } from "./client";
 import { ISession } from "../types/session.interface";
@@ -303,3 +303,25 @@ export const getGroupList = async (): Promise<IGroup[]> => {
     const res = await apiClient.get<IGroup[]>('/group/');
     return res.data;
 };
+
+export const createStudyGroup = async (data: IGroup): Promise<void> => {
+    const formData = new FormData();
+    if (data.name) formData.append('name', data.name);
+    if (data.teacher) formData.append('teacher', data.teacher);
+    if (Array.isArray(data.students)) {
+        data.students.forEach((id) => {
+            formData.append('students_ids', id.toString());
+        });
+    }
+
+    await apiClient.post<IGroup>('/create-study-group/', formData);
+};
+
+export const deleteStudyGroup = async (id: number): Promise<void> => {
+    await apiClient.delete<{id: number}>(`/delete-study-group/${id}/`);
+}
+
+export const getListStudyGroup = async (): Promise<IStudyGroupResponse> => {
+    const res = await apiClient.get<IStudyGroupResponse>('/list-study-group/');
+    return res.data;
+}

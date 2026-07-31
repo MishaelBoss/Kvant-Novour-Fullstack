@@ -204,9 +204,27 @@ class UserCreateSerializer(serializers.ModelSerializer):
     
 
 class StudyGroupSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+    teacher_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(userprofile__role='teacher'), write_only=True, required=True)
+    students_ids = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True, source='students', write_only=True, required=False)
+    teacher = serializers.CharField(source='teacher.username', read_only=True)
+
     class Meta:
         model = StudyGroup
-        fields = '__all__'
+        fields = [
+            'id', 'name', 'created_at', 'teacher', 
+            'teacher_id', 'students_ids'
+        ]
+
+    def create(self, validated_data):
+        students = validated_data.pop('students', [])
+
+        group = StudyGroup.objects.create(**validated_data)
+
+        if students:
+            group.students.set(students)
+
+        return group
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

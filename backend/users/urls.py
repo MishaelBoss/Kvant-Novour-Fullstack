@@ -16,5 +16,8 @@ urlpatterns = [
     path('sessions-delete/<int:pk>/', SessionsDeleteView.as_view(), name='delete_session'),
     path('sessions-delete-all/', SessionsDeleteAllView.as_view(), name='delete_all_sessions'),
     path('upload-avatar/', UploadAvatarView.as_view(), name='upload-avatar'),
-    path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh')
+    path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
+    path('create-study-group/', CreateStudyGroupView.as_view(), name="create-study-group"),
+    path('delete-study-group/<int:id>/', DeleteStudyGroupView.as_view(), name="delete-study-group"),
+    path('list-study-group/', ListStudyGroupView.as_view(), name="list-study-group")
 ]

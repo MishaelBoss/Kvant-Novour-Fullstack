@@ -10,7 +10,7 @@ from .authentication import *
 from .models import *
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsAdminRole
+from .permissions import IsAdminRole, IsAdminOrTeacher
 from notifications.models import *
 from django_user_agents.utils import get_user_agent
 from users.services import GeolocationService, SessionService
@@ -384,4 +384,48 @@ class CookieTokenRefreshView(TokenRefreshView):
             )
 
         return response
-    
+
+
+class CreateStudyGroupView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def post(self, request):
+        serializer = StudyGroup.objects.filter(user=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Новость успешно создана", "data": serializer.data}, 
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteStudyGroupView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def delete(self, request, pk):
+        try:
+            get_object_or_404(StudyGroup, id=pk).delete()
+            return Response(
+                {'message': 'Группа успешно удален'}, 
+                status=status.HTTP_200_OK
+            )
+        except News.DoesNotExist: 
+            return Response(
+                {'Ошибка': 'Группа не найдена'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class ListStudyGroupView(APIView):
+    permission_classes = [IsAdminOrTeacher]
+
+    def get(self, request):
+        groups = StudyGroup.objects.all().order_by('-created_at')
+
+        serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
+
+        return Response({
+            'count': groups.count(),
+            'results': serializer.data
+        })
