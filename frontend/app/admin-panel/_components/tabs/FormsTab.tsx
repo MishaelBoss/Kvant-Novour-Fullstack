@@ -18,12 +18,11 @@ export function FormsTab() {
             setForms(res.results);
             setCountForm(res.count); 
         } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
+            const isApiError = (err: any): err is ApiError =>
+                err instanceof ApiError || (err && err.isApiError === true);
 
             if (isApiError(error)) toast.error(error.message);
-            toast.error("Произошла непредвиденная ошибка на клиенте");
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
             
             console.error("Ошибка авторизации:", error);
             

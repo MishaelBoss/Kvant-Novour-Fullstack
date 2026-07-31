@@ -295,7 +295,7 @@ export const uploadAvatar = async (file: File): Promise<IAvatarResponse> => {
 };
 
 export const getAttendanceList = async (): Promise<IAttendanceResponse> => {
-    const res = await apiClient.get<IAttendanceResponse>('/attendance/');
+    const res = await apiClient.get<IAttendanceResponse>('/attendance-list/');
     return res.data;
 };
 
@@ -307,12 +307,8 @@ export const getGroupList = async (): Promise<IGroup[]> => {
 export const createStudyGroup = async (data: IGroup): Promise<void> => {
     const formData = new FormData();
     if (data.name) formData.append('name', data.name);
-    if (data.teacher) formData.append('teacher', data.teacher);
-    if (Array.isArray(data.students)) {
-        data.students.forEach((id) => {
-            formData.append('students_ids', id.toString());
-        });
-    }
+    if (data.teacher_id) formData.append('teacher_id', data.teacher_id.toString());
+    if (data.students_ids && data.students_ids.length) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
     await apiClient.post<IGroup>('/create-study-group/', formData);
 };

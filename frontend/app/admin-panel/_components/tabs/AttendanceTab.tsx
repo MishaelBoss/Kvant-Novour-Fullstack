@@ -20,10 +20,12 @@ export function AttendanceTab() {
                 
             setRecords(data);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            const isApiError = (err: any): err is ApiError =>
+                err instanceof ApiError || (err && err.isApiError === true);
 
-            console.error("Ошибка при загрузке:", error);
+            if (isApiError(error)) toast.error(error.message);
+            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
             setRecords([]);
         } finally {
             setLoading(false); 

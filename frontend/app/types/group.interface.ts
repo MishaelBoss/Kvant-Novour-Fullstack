@@ -2,8 +2,9 @@ export interface IGroup{
     id: number;
     name: string;
     teacher: string;
-    students: string;
     created_at?: string;
+    teacher_id?: number;
+    students_ids?: number[];
 }
 
 export interface IStudyGroupResponse {

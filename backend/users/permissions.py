@@ -36,6 +36,12 @@ class IsAdminOrTeacher(permissions.BasePermission):
 
         if not request.user or not request.user.is_authenticated:
             return False
+
+        if request.user.is_superuser or request.user.is_staff:
+            return True
         
         profile = getattr(request.user, 'userprofile', None)
-        return profile and profile.role in ('admin', 'teacher')
+        if profile and profile.role in ('admin', 'teacher'):
+            return True
+
+        return False

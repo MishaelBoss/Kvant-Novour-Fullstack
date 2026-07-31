@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { deleteStudyGroup, getListNews, getListStudyGroup } from "@/app/lib/api";
+import { deleteStudyGroup, getListStudyGroup } from "@/app/lib/api";
 import Link from "next/link";
 import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { PencilIcon, Trash2Icon } from "lucide-react";

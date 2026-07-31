@@ -23,7 +23,10 @@ export function UsersTab() {
             setUsers(res.results);
             setCountNews(res.count);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
+            const isApiError = (err: any): err is ApiError =>
+                err instanceof ApiError || (err && err.isApiError === true);
+
+            if (isApiError(error)) toast.error(error.message);
             else toast.error("Произошла непредвиденная ошибка на клиенте");
 
             console.error("Ошибка при загрузке:", error);

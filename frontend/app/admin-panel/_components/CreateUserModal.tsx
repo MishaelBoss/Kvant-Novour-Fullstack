@@ -21,7 +21,7 @@ const ROLES = [
     { value: 'admin', label: 'Администратор' },
 ];
 
-export function CreateUserModal({children, user}: Props){
+export function CreateUserModal({ children, user, fetch }: Props){
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
     const [saving, setSaving] = useState(false);
@@ -58,8 +58,12 @@ export function CreateUserModal({children, user}: Props){
             setOpen(false);
             setStep(1);
             methods.reset();
+            fetch();
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
+            const isApiError = (err: any): err is ApiError =>
+                    err instanceof ApiError || (err && err.isApiError === true);
+
+            if (isApiError(error)) toast.error(error.message);
             else toast.error("Произошла непредвиденная ошибка на клиенте");
 
             console.error("Ошибка при загрузке:", error);

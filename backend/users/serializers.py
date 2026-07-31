@@ -205,8 +205,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class StudyGroupSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
-    teacher_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(userprofile__role='teacher'), write_only=True, required=True)
-    students_ids = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True, source='students', write_only=True, required=False)
+    teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', queryset=User.objects.filter(userprofile__role='teacher'), write_only=True, required=True)
+    students_ids = serializers.PrimaryKeyRelatedField(source='students', queryset=User.objects.filter(userprofile__role='user'), many=True, write_only=True, required=False)
     teacher = serializers.CharField(source='teacher.username', read_only=True)
 
     class Meta:

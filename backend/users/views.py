@@ -390,11 +390,11 @@ class CreateStudyGroupView(APIView):
     permission_classes = [IsAdminRole]
 
     def post(self, request):
-        serializer = StudyGroup.objects.filter(user=request.data)
+        serializer = StudyGroupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "Новость успешно создана", "data": serializer.data}, 
+                {"message": "Группа успешно создана", "data": serializer.data}, 
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -407,7 +407,7 @@ class DeleteStudyGroupView(APIView):
         try:
             get_object_or_404(StudyGroup, id=pk).delete()
             return Response(
-                {'message': 'Группа успешно удален'}, 
+                {'message': 'Группа успешно удалена'}, 
                 status=status.HTTP_200_OK
             )
         except News.DoesNotExist: 
@@ -422,7 +422,6 @@ class ListStudyGroupView(APIView):
 
     def get(self, request):
         groups = StudyGroup.objects.all().order_by('-created_at')
-
         serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
 
         return Response({

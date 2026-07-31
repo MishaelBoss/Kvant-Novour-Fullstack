@@ -34,10 +34,10 @@ const VALID_MIME_TYPES = {
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 const OPTIONS = {
-  maxSizeMB: 0.5,
-  maxWidthOrHeight: 1200,
-  useWebWorker: true,
-  fileType: 'image/jpeg'
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1200,
+    useWebWorker: true,
+    fileType: 'image/jpeg'
 };
 
 export function CreateNewsModal({ children, news, fetch }: Props){
@@ -189,7 +189,10 @@ export function CreateNewsModal({ children, news, fetch }: Props){
             setOpen(false);
             fetch();
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
+            const isApiError = (err: any): err is ApiError =>
+                err instanceof ApiError || (err && err.isApiError === true);
+
+            if (isApiError(error)) toast.error(error.message);
             else toast.error("Произошла непредвиденная ошибка на клиенте");
         
             console.error("Ошибка при создании:", error);
