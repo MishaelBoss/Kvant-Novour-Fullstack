@@ -1,8 +1,8 @@
 "use client";
 import { Dialog, Button, Flex } from "@radix-ui/themes";
-import { ApiError } from "next/dist/server/api-utils";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { IApiError } from "../types/api-error.interface";
 
 interface DeleteConfirmModalProps {
     children: React.ReactNode;
@@ -22,10 +22,15 @@ export function DeleteConfirmModal({ children, title, onConfirm, fetch }: Delete
             if (fetch) await fetch();
             setOpen(false);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         }
     };
 

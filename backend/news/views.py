@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import NewsSerializer, CategorySerializer
+from .serializers import NewsSerializer, CategorySerializer, ViewNewsSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from users.permissions import IsAdminRole
@@ -34,8 +34,28 @@ class CreateNewsCommandView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
+
+class ViewNewsView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, slug, *args, **kwargs):
+        news_instance = get_object_or_404(News, slug=slug)
+
+        serializer = ViewNewsSerializer(news_instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message": "Пользователь успешно посмотрел новость", 
+                    "views": serializer.data.get('views')
+                }, 
+                status=status.HTTP_200_OK  # 200 OK архитектурно лучше для обновления данных
+            )
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
 class CategoriesListView(APIView):
     permission_classes = [AllowAny]
     

@@ -1,8 +1,8 @@
 import { CartForms } from "@/app/components/CartForms";
 import { PAGES } from "@/app/config/pages.config";
 import { getAllFormsList } from "@/app/lib/api";
+import { IApiError } from "@/app/types/api-error.interface";
 import { IFormItem } from "@/app/types/form.interface";
-import { ApiError } from "next/dist/server/api-utils";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -18,13 +18,15 @@ export function FormsTab() {
             setForms(res.results);
             setCountForm(res.count); 
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                err instanceof ApiError || (err && err.isApiError === true);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
             
-            console.error("Ошибка авторизации:", error);
+            console.error("Ошибка при создании категории:", error);
             
             setForms([]);
             setCountForm(0);

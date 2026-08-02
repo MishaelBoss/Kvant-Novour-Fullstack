@@ -7,7 +7,7 @@ import { RadioGroup } from "radix-ui";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { IUser } from "@/app/types/user.interface";
 import toast from "react-hot-toast";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "@/app/types/api-error.interface";
 
 interface Props {
     children: React.ReactNode;
@@ -60,13 +60,15 @@ export function CreateUserModal({ children, user, fetch }: Props){
             methods.reset();
             fetch();
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                    err instanceof ApiError || (err && err.isApiError === true);
-
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         }
     };
 

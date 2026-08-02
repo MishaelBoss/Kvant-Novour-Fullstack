@@ -5,8 +5,8 @@ import Link from "next/link";
 import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { INews } from "@/app/types/news.interface";
 import { PencilIcon, Trash2Icon } from "lucide-react";
-import { ApiError } from "next/dist/server/api-utils";
 import toast from "react-hot-toast";
+import { IApiError } from "@/app/types/api-error.interface";
 
 export function NewsTab() {
     const [news, setNews] = useState<INews[]>([]);
@@ -19,13 +19,15 @@ export function NewsTab() {
             setNews(res.results);
             setCountNews(res.count);
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                err instanceof ApiError || (err && err.isApiError === true);
-
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
 
             setNews([]);
             setCountNews(0);

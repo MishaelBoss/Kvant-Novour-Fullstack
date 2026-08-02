@@ -3,12 +3,12 @@ import { InputWithClear } from "@/app/components/InputWithClear";
 import { createStudyGroup, getListUsers } from "@/app/lib/api";
 import { IUser } from "@/app/types/user.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
 import Select, { MultiValue, SingleValue } from "react-select";
 import { Users } from "lucide-react";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "@/app/types/api-error.interface";
+import toast from "react-hot-toast";
 
 interface Props {
     children: React.ReactNode;
@@ -54,13 +54,15 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                 setTeachers(res.results.filter((u) => u.role === 'teacher'));
                 setStudents(res.results.filter((u) => u.role === 'user'));
             } catch (error) {
-                const isApiError = (err: any): err is ApiError =>
-                    err instanceof ApiError || (err && err.isApiError === true);
-
-                if (isApiError(error)) toast.error(error.message);
-                else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-                console.error("Ошибка при загрузке пользователей:", error);
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                            
+                if (hasApiMarker) {
+                    const apiError = error as IApiError;
+                    
+                    toast.error(apiError.message);
+                } else toast.error("Произошла непредвиденная ошибка на клиенте");
+                            
+                console.error("Ошибка", error);
             }
         };
         loadUsers();
@@ -113,13 +115,15 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
             methods.reset();
             await fetch();
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                err instanceof ApiError || (err && err.isApiError === true);
-
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при создании группы:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         } finally {
             setSaving(false);
         }

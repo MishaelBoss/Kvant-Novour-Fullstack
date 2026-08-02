@@ -11,13 +11,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^l=c^blbtb5i7q07b+c(r+0qg9gh%p=@j8p%l=f%^s1@pd1h!f'
+SECRET_KEY = 'DJANGO_SECRET_KEY'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ['8326-46-28-64-177.ngrok-free.app', 'localhost', '127.0.0.1', '0.0.0.0']
-CSRF_TRUSTED_ORIGINS = ['https://ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+
 
 ASGI_APPLICATION = 'core.asgi.application'
 
@@ -56,13 +58,26 @@ MIDDLEWARE = [
     'users.middleware.GeolocationMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = False
+# SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+
 
 CORS_ALLOW_CREDENTIALS = True 
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = False
+
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
 
 ROOT_URLCONF = 'core.urls'
 
@@ -109,11 +124,11 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'kvantum_db',
-        'USER': 'postgres',
-        'PASSWORD': 'cr2032',
-        'HOST': 'db',
-        'PORT': '5432',
+        'NAME': os.getenv("DB_NAME", "kvantum_db"),
+        'USER': os.getenv("DB_USER", "postgres"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST", "db"),
+        'PORT': os.getenv("DB_LOCAL_PORT", "5432"),
     }
 }
 
@@ -180,11 +195,14 @@ SIMPLE_JWT = {
     'TOKEN_OBTAIN_SERIALIZER': 'users.serializers.MyTokenObtainPairSerializer',
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'CHECK_REVOCATION_TOKEN': True,
 }
 
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/0'
 CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:6379/0'
+
+CELERY_BROKER_CONNECTION_TIMEOUT = 5
+CELERY_BROKER_CHANNEL_ERROR_RETRY = True
+CELERY_REDIS_MAX_CONNECTIONS = 20
 
 # Синхронизация часового пояса Celery с основным часовым поясом Django (переменная TIME_ZONE).
 # Это нужно, чтобы задачи по расписанию (например, ночная очистка) выполнялись по вашему времени.
@@ -198,9 +216,17 @@ CELERY_TASK_TRACK_STARTED = True
 # Если задача зависнет (например, из-за бесконечного цикла), Celery принудительно убьет её, чтобы спасти сервер.
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+
 CELERY_BEAT_SCHEDULE = {
     'cleanup-old-notifications': {
         'task': 'notifications.tasks.cleanup_old_notifications',
         'schedule': crontab(hour=3, minute=0),
     },
 }
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024  # 2 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000

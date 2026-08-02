@@ -13,7 +13,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { toast } from "react-hot-toast";
 import imageCompression from "browser-image-compression";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "@/app/types/api-error.interface";
 
 const VALID_MIME_TYPES = {
     'image/jpeg': ['.jpeg', '.jpg'],
@@ -79,14 +79,15 @@ export default function ProfileContent() {
 
             if (e.target) e.target.value = ''; 
         } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
             
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Пожалуйста, выберите изображение в формате JPEG, PNG и не должен превышать 5 МБ.");
-
-            console.error('Ошибка при загрузке аватара:', error);
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         }
     };
 

@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -30,13 +31,36 @@ class News(models.Model):
     title = models.CharField(max_length=200, unique=True)
     content = models.TextField()
     categories = models.ManyToManyField(Category)
+    views = models.IntegerField(default=0)
     image = models.ImageField(upload_to=news_image_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='news', null=True, blank=True)
-    form_slug = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField(max_length=100, blank=True)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+
+        if self.form and self.slug:
+            self.slug = self.form.slug
+
+        if not self.slug and self.title:
+            try:
+                latin_title = translit(self.title, 'ru', reversed=True)
+                base_slug = slugify(latin_title)
+            except Exception:
+                base_slug = slugify(self.title)
+            
+            base_slug = base_slug[:240] 
+            
+            slug = base_slug
+            while News.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+            
+            self.slug = slug
+            
+        super().save(*args, **kwargs)
 
     def get_average_rating(self):
         return self.ratings.aggregate(models.Avg('value'))['value__avg'] or 0

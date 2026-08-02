@@ -1,16 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ICategory } from "../types/news.interface";
+import { PAGES } from "../config/pages.config";
+import { EyeIcon } from "lucide-react";
 
 interface Props {
     slug: string;
     image?: string | null;
     title: string;
     content: string;
+    views: number;
     categories?: ICategory[];
 }
 
-export function CartNews({slug, image, title, content, categories}: Props){
+export function CartNews({slug, image, title, content, views, categories}: Props){
     const truncateText = (text: string, limit = 150) => {
         return text.length > limit ? text.substring(0, limit) + "..." : text;
     };
@@ -38,9 +41,17 @@ export function CartNews({slug, image, title, content, categories}: Props){
                             {item.label}
                         </span>
                     ))}
+
+                    <span 
+                        className="flex items-center justify-center gap-1 badge-custom px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm border border-white/30">
+                        <EyeIcon
+                            height={16}
+                            width={16}/>
+                        {views}
+                    </span>
                 </div>
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent pointer-events-none" />
             </div>
             
             <div className="p-6 flex flex-col flex-1">
@@ -52,8 +63,8 @@ export function CartNews({slug, image, title, content, categories}: Props){
                 </p>
                 
                 <div className="mt-auto">
-                    <Link 
-                        href={isQuiz ? `/kvanto_form/${slug}` : `/news/${slug}`}
+                    <Link
+                        href={isQuiz ? `/kvanto_form/${slug}` : PAGES.DETAIL_NEWS(slug)}
                         className="block w-full text-center bg-[#106ceb] hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-[0.98] text-sm">
                         {isQuiz ? 'Принять участие' : 'Подробнее'}
                     </Link>

@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { getFormResponses } from "@/app/lib/api";
 import { format } from "date-fns";
@@ -7,14 +6,17 @@ import { ru } from "date-fns/locale";
 import { IFormResponseSummary } from "@/app/types/form.interface";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { IApiError } from "@/app/types/api-error.interface";
+import toast from "react-hot-toast";
 
 export default function ResponsesList() {
-    const [responses, setResponses] = useState<IFormResponseSummary[]>([]);
-    const { user, isLoading: isAuthLoading } = useAuth();
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
     const params = useParams();
     const slug = params?.slug;
+
+    const [responses, setResponses] = useState<IFormResponseSummary[]>([]);
+    const { user, isLoading: isAuthLoading } = useAuth();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!isAuthLoading) {
@@ -35,8 +37,16 @@ export default function ResponsesList() {
             try {
                 const data = await getFormResponses(slug as string);
                 setResponses(data);
-            } catch (err) {
-                console.error("Ошибка загрузки результатов:", err);
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+                if (hasApiMarker) {
+                    const apiError = error as IApiError;
+                    
+                    toast.error(apiError.message);
+                } else toast.error("Произошла непредвиденная ошибка на клиенте");
+                
+                console.error("Ошибка", error);
             } finally {
                 setLoading(false);
             }

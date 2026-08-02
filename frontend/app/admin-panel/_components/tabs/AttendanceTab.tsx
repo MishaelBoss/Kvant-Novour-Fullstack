@@ -2,8 +2,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { IAttendance } from "@/app/types/attendance.interface";
 import { getAttendanceList } from "@/app/lib/api";
-import { ApiError } from "next/dist/server/api-utils";
 import toast from "react-hot-toast";
+import { IApiError } from "@/app/types/api-error.interface";
 
 export function AttendanceTab() {
     const [records, setRecords] = useState<IAttendance[]>([]);
@@ -20,11 +20,15 @@ export function AttendanceTab() {
                 
             setRecords(data);
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                err instanceof ApiError || (err && err.isApiError === true);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка:", error);
             
             setRecords([]);
         } finally {
@@ -34,9 +38,8 @@ export function AttendanceTab() {
 
     useEffect(() => {
         const handleFetchEvent = async() => await fetchAttendance();
-
         handleFetchEvent();
-    }, []);
+    }, [fetchAttendance]);
 
     if (loading) {
         return (

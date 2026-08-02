@@ -8,8 +8,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { IUser } from "@/app/types/user.interface";
 import { EditUserModel } from "../EditUserModel";
 import { PencilIcon, Trash2Icon } from "lucide-react";
-import { ApiError } from "next/dist/server/api-utils";
 import toast from "react-hot-toast";
+import { IApiError } from "@/app/types/api-error.interface";
 
 export function UsersTab() {
     const [users, setUsers] = useState<IUser[]>([]);
@@ -23,13 +23,15 @@ export function UsersTab() {
             setUsers(res.results);
             setCountNews(res.count);
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                err instanceof ApiError || (err && err.isApiError === true);
-
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
 
             setUsers([]);
             setCountNews(0);

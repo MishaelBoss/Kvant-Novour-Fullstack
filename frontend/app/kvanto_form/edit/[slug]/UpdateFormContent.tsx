@@ -9,8 +9,8 @@ import { Content } from "../../_components/Content";
 import { Settings } from "../../_components/Settings";
 import { QuestionCard } from "../../_components/QuestionCard";
 import toast from "react-hot-toast";
-import { ApiError } from "next/dist/server/api-utils";
 import { ChevronLeftIcon } from "lucide-react";
+import { IApiError } from "@/app/types/api-error.interface";
 
 function generateId() {
     return Math.random().toString(36).slice(2, 9);
@@ -153,10 +153,15 @@ export default function UpdateFormContent() {
             setQuestions(data.questions);
             setSettings(data.settings);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
 
             setError("Форма не найдена или недоступна");
         } finally {
@@ -165,7 +170,8 @@ export default function UpdateFormContent() {
     }, [slug]);
 
     useEffect(() => {
-        getFormDetail();
+        const init = async () => await getFormDetail();
+        init();
     }, [getFormDetail]);
 
     const handleSave = async (status: 'draft' | 'active', isStatusToggle = false, newsImage: File | null = null) => {
@@ -200,10 +206,15 @@ export default function UpdateFormContent() {
                 return;
             }
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         } finally {
             setSaving(false);
         }

@@ -5,8 +5,8 @@ import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { IGroup } from "@/app/types/group.interface";
 import toast from "react-hot-toast";
-import { ApiError } from "next/dist/server/api-utils";
 import CreateStudyGroupModal from "../CreateStudyGroupModal";
+import { IApiError } from "@/app/types/api-error.interface";
 
 export function GroupsTab() {
     const [group, setGroup] = useState<IGroup[]>([]);
@@ -19,14 +19,15 @@ export function GroupsTab() {
             setGroup(res.results);
             setCountNews(res.count);
         } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
-
-            if (isApiError(error))toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
             
-            console.error("Ошибка авторизации:", error);
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
 
             setGroup([]);
             setCountNews(0);

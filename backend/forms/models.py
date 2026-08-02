@@ -1,5 +1,9 @@
+import uuid
 from django.db import models
 from django.conf import settings
+from transliterate import translit
+from pytils.translit import slugify
+
 
 class Form(models.Model):
     STATUS = [
@@ -12,7 +16,7 @@ class Form(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS, default='draft')
-    slug = models.SlugField(max_length=200, unique=True, verbose_name="Слаг для URL")
+    slug = models.SlugField(max_length=200, unique=True, blank=True, verbose_name="Слаг для URL")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deadline = models.DateTimeField(null=True, blank=True)
@@ -23,8 +27,28 @@ class Form(models.Model):
     require_profile = models.BooleanField(default=True)
     survey_for_authorized_users = models.BooleanField(default=False)
     one_time_participation_survey = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.title} {self.id}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title:
+            try:
+                latin_title = translit(self.title, 'ru', reversed=True)
+                base_slug = slugify(latin_title)
+            except Exception:
+                base_slug = slugify(self.title)
+
+            base_slug = base_slug[:190]
+            slug = base_slug
+
+            while Form.objects.filter(slug=slug).exclude(id=self.id).exists():
+                slug = f"{base_slug[:180]}-{uuid.uuid4().hex[:6]}"
+            
+            self.slug = slug
+
+        super().save(*args, **kwargs)
+        
     
 class Question(models.Model):
     TYPE = [

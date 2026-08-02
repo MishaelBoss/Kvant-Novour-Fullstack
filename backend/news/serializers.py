@@ -4,6 +4,7 @@ from rest_framework import serializers
 from PIL import Image, ImageOps
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.db.models import F
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,7 +24,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class NewsSerializer(serializers.ModelSerializer):
-    form_slug = serializers.CharField(read_only=True)
+    slug = serializers.CharField(read_only=True)
     form_id = serializers.PrimaryKeyRelatedField(source='form', read_only=True)
     categories = CategorySerializer(many=True, read_only=True) 
     category_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
@@ -33,7 +34,8 @@ class NewsSerializer(serializers.ModelSerializer):
         model = News
         fields = [
             'id', 'title', 'content', 'image', 'created_at',
-            'categories', 'category_ids', 'form_slug', 'form_id'
+            'categories', 'category_ids', 'slug', 'form_id',
+            'views'
         ]
 
     def validate_image(self, value):
@@ -82,6 +84,7 @@ class NewsSerializer(serializers.ModelSerializer):
 
         news = News.objects.create(**validated_data)
         news.categories.set(category_ids)
+        news.views = 0
         return news
 
     def update(self, validated_data, instance):
@@ -109,4 +112,18 @@ class NewsSerializer(serializers.ModelSerializer):
                 default_category, _ = Category.objects.get_or_create(name="Новости")
                 category_ids = [default_category.id]
             instance.categories.set(category_ids)
+        return instance
+
+
+class ViewNewsSerializer(serializers.ModelSerializer):
+    views = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = News
+        fields = ['views']
+
+    def update(self, instance, validated_data):
+        News.objects.filter(pk=instance.pk).update(views=F('views') + 1)
+        
+        instance.refresh_from_db()
         return instance

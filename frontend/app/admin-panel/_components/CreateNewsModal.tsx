@@ -12,8 +12,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "react-hot-toast";
 import CreatableSelect from 'react-select/creatable';
 import { MultiValue } from "react-select";
-import { ApiError } from "next/dist/server/api-utils";
 import imageCompression from "browser-image-compression";
+import { IApiError } from "@/app/types/api-error.interface";
 
 interface Props {
     children: React.ReactNode;
@@ -109,22 +109,37 @@ export function CreateNewsModal({ children, news, fetch }: Props){
                 image: news.image,
                 categories: news?.categories || []
             });
-            setPreview(typeof news.image === 'string' ? news.image : null);
         }
     }, [news, methods]);
 
-    useEffect(() => {
-        const loadCats = async () => {
+    const loadCategories = useCallback(async () => {
+        try {
             const data = await getCategories();
 
             setCategories(data.results);
-        };
-        loadCats();
+        } catch (error) {
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка авторизации:", error);
+
+            setCategories([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        const init = async () => loadCategories();
+        init();
 
         return () => {
             if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
         }
-    }, [preview]);
+    }, [preview, loadCategories]);
 
     const removeImage = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -153,10 +168,15 @@ export function CreateNewsModal({ children, news, fetch }: Props){
                 const catId = res?.value;
                 if (catId) createdIds.push(catId);
             } catch (error) {
-                if (error instanceof ApiError) toast.error(error.message);
-                else toast.error("Произошла непредвиденная ошибка на клиенте");
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+
+                if (hasApiMarker) {
+                    const apiError = error as IApiError;
+                    
+                    toast.error(apiError.message);
+                } else toast.error("Произошла непредвиденная ошибка на клиенте");
                 
-                console.error("Ошибка при создании категории", error);
+                console.error("Ошибка при создании категории:", error);
                 return;
             }
         } else {
@@ -166,9 +186,14 @@ export function CreateNewsModal({ children, news, fetch }: Props){
 
                     if (result?.value) createdIds.push(result.value);
                 } catch (error) {
-                    if (error instanceof ApiError) toast.error(error.message);
-                    else toast.error("Произошла непредвиденная ошибка на клиенте");
-                
+                    const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+
+                    if (hasApiMarker) {
+                        const apiError = error as IApiError;
+                        
+                        toast.error(apiError.message);
+                    } else toast.error("Произошла непредвиденная ошибка на клиенте");
+                    
                     console.error(`Ошибка при создании категории "${cat.label}"`, error);
                     return;
                 }
@@ -189,12 +214,14 @@ export function CreateNewsModal({ children, news, fetch }: Props){
             setOpen(false);
             fetch();
         } catch (error) {
-            const isApiError = (err: any): err is ApiError =>
-                err instanceof ApiError || (err && err.isApiError === true);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-        
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
             console.error("Ошибка при создании:", error);
         }
     };

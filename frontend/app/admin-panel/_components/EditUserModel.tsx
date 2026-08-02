@@ -7,8 +7,8 @@ import { Mail, Phone, User, ShieldCheck } from "lucide-react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { RadioGroup } from "radix-ui";
 import { useEffect, useState } from "react";
-import { ApiError } from "next/dist/server/api-utils";
 import toast from "react-hot-toast";
+import { IApiError } from "@/app/types/api-error.interface";
 
 interface Props {
     children: React.ReactNode;
@@ -66,19 +66,19 @@ export function EditUserModel({ children, user, fetch }: Props) {
             fetch();
             toast.success("Данные пользователя успешно обновлены!"); 
         } catch (error: unknown) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
-
-            if (isApiError(error)) {
-                toast.error(error.message);
-                setError(error.message);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+                setError(apiError.message);
             } else { 
                 toast.error("Произошла непредвиденная ошибка на клиенте");
                 setError("Не удалось сохранить изменения");
             }
-    
-            console.error("Ошибка при загрузке:", error);
+            
+            console.error("Ошибка", error);
         } finally {
             setIsLoading(false);
         }

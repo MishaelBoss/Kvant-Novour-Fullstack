@@ -20,6 +20,9 @@ export const PAGES = new class PageConfig{
     NEWS() {
         return "/news/"
     }
+    DETAIL_NEWS(slug: string) {
+        return `/news/${slug}/`
+    }
     QUANTS() {
         return "/quants/"
     }

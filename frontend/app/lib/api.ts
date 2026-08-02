@@ -248,9 +248,8 @@ export const getResponseDetail = async (id: number): Promise<FullResponseDetail>
     return res.data;
 };
 
-export const gradeAnswer = async (answerId: number, score: number): Promise<boolean> => {    
+export const gradeAnswer = async (answerId: number, score: number): Promise<void> => {    
     await apiClient.patch(`/answers/${answerId}/grade/`, { manual_score: score });
-    return true;
 };
 
 export const getNotificationsList = async (): Promise<INotificationsResponse> => {
@@ -320,4 +319,8 @@ export const deleteStudyGroup = async (id: number): Promise<void> => {
 export const getListStudyGroup = async (): Promise<IStudyGroupResponse> => {
     const res = await apiClient.get<IStudyGroupResponse>('/list-study-group/');
     return res.data;
+}
+
+export const viewNews = async (slug: string): Promise<void> => {
+    await apiClient.post<string>(`/view-news/${slug}/`);
 }

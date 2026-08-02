@@ -17,7 +17,7 @@ import { DeleteSessionModel } from './_components/DeleteSessionModel';
 import { DeleteAllSessionModel } from './_components/DeleteAllSessionModel';
 import { ISession } from '@/app/types/session.interface';
 import toast from 'react-hot-toast';
-import { ApiError } from 'next/dist/server/api-utils';
+import { IApiError } from '@/app/types/api-error.interface';
 
 export default function KvantumIdContent() {
     const { user, isLoading: isAuthLoading } = useAuth();
@@ -37,10 +37,17 @@ export default function KvantumIdContent() {
 
             setSessions(uniqueSessions);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
 
-            console.error("Ошибка при загрузке:", error);
+            setSessions([]);
         }
     }, []);
 

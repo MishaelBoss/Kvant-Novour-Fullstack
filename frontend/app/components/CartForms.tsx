@@ -4,7 +4,7 @@ import { IFormItem } from "../types/form.interface";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { EyeIcon, MessageSquareIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import toast from "react-hot-toast";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "../types/api-error.interface";
 
 interface Props {
     form: IFormItem;
@@ -17,14 +17,15 @@ export function CartForms({ form, fetch }: Props) {
             await deleteForm(id);
             await fetch();
         } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
-
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
             
-            console.error("Ошибка авторизации:", error);
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         }
     };
 

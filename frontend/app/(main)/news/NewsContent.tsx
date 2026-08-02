@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion"
 import toast from "react-hot-toast";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "@/app/types/api-error.interface";
 
 const variants = {
     initial: { opacity: 0},
@@ -53,10 +53,15 @@ export default function NewsContent() {
             setNews(resListNews.results);
             setCategories(resCategories.results);
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
             
             setNews([]);
             setCategories([]);
@@ -124,9 +129,11 @@ export default function NewsContent() {
                                 <CartNews 
                                     key={item.id} 
                                     image={item.image?.toString().replace('http://localhost', '')} 
-                                    title={item.title!} content={item.content!} 
+                                    title={item.title!} 
+                                    content={item.content!} 
                                     categories={item.categories} 
-                                    slug={item.form_slug}
+                                    slug={item.slug}
+                                    views={item.views}
                                 />
                             ))}
                             </>

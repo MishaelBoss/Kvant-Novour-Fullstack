@@ -10,6 +10,7 @@ import { PublicProfileSkeleton } from "../_components/ProfileSkeleton";
 import { motion } from "framer-motion";
 import { ApiError } from "@/app/lib/errors/ApiError";
 import toast from "react-hot-toast";
+import { IApiError } from "@/app/types/api-error.interface";
 
 const ROLE_LABELS: Record<string, string> = {
     user: 'Пользователь',
@@ -35,19 +36,15 @@ export default function ProfileContent(){
 
             setProfile(data);
         } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
-
-            if (isApiError(error)) {
-                toast.error(error.message);
-                setError(error.message);
-            } else { 
-                toast.error("Не удалось загрузить профиль");
-                setError("Не удалось загрузить профиль");
-            }
-
-            console.error("Ошибка при загрузке:", error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
 
             setProfile(null);
         } finally {

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getResponseDetail, gradeAnswer } from "@/app/lib/api";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { IApiError } from "@/app/types/api-error.interface";
+import toast from "react-hot-toast";
 
 export interface AnswerDetail {
     id: number;
@@ -36,10 +38,11 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ResponseDetailPage() {
-    const { responseId} = useParams();
+    const responseId = useParams();
+    const router = useRouter();
+
     const [data, setData] = useState<FullResponseDetail | null>(null);
     const [saving, setSaving] = useState<number | null>(null);
-    const router = useRouter();
 
     useEffect(() => {
         if (responseId) getResponseDetail(Number(responseId)).then(setData);
@@ -48,8 +51,10 @@ export default function ResponseDetailPage() {
     const handleSaveGrade = async (ansId: number, score: number, maxPoints: number) => {
         const clamped = Math.min(Math.max(0, score), maxPoints);
         setSaving(ansId);
-        const success = await gradeAnswer(ansId, clamped);
-        if (success) {
+
+        try {
+            await gradeAnswer(ansId, clamped);
+
             setData(prev => {
                 if (!prev) return null;
                 const newAnswers = prev.answers.map(a =>
@@ -58,8 +63,20 @@ export default function ResponseDetailPage() {
                 const newTotal = newAnswers.reduce((sum, a) => sum + (a.manual_score || 0), 0);
                 return { ...prev, answers: newAnswers, total_score: newTotal };
             });
+        } catch (error) {
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
+
+            setSaving(null);
+            setData(null);
         }
-        setSaving(null);
     };
 
     if (!data) return (

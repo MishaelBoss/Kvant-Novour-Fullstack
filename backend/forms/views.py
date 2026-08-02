@@ -34,18 +34,10 @@ class CreateFormView(APIView):
         try:
             with transaction.atomic():
                 title_val = request.data.get('title', 'Без названия')
-                base_slug = slugify(title_val)[:190]
-                generated_slug = base_slug
-                counter = 1
-                while Form.objects.filter(slug=generated_slug).exists():
-                    suffix = f"-{counter}"
-                    generated_slug = f"{base_slug[:190 - len(suffix)]}{suffix}"
-                    counter += 1
 
                 form = Form.objects.create(
                     owner=request.user,
                     title=title_val,
-                    slug=generated_slug,
                     description=request.data.get('description', ''),
                     deadline=request.data.get('deadline') or None,
                     status=status_val,
@@ -85,7 +77,7 @@ class CreateFormView(APIView):
                             defaults={
                                 'title': f"Новый опрос: {form.title}",
                                 'content': form.description or "Пройдите наш новый опрос!",
-                                'form_slug': generated_slug,
+                                'slug': form.slug,
                                 'image': news_image,
                             }
                         )
@@ -95,7 +87,7 @@ class CreateFormView(APIView):
                             defaults={
                                 'title': f"Новый опрос #{form.id}: {form.title}",
                                 'content': form.description or "Пройдите наш новый опрос!",
-                                'form_slug': generated_slug,
+                                'slug': form.slug,
                                 'image': news_image,
                             }
                         )
@@ -165,15 +157,11 @@ class UpdateFormView(APIView):
 
         try:
             with transaction.atomic():
-                title_val = request.data.get('title', 'Без названия')
-                generated_slug = slugify(title_val)
-
                 new_status = request.data.get('status')
                 form.title = request.data.get('title', form.title)
                 form.status = new_status
                 form.description = request.data.get('description', form.description)
                 form.deadline = request.data.get('deadline') or None
-                form.slug = slugify(form.title)
 
                 for key, value in settings_data.items():
                     setattr(form, key, value)
@@ -183,17 +171,16 @@ class UpdateFormView(APIView):
                 if new_status == 'active':
                     news_image = request.FILES.get('news_image')
 
-                    News.objects.update_or_create(
+                    news_post, _ = News.objects.update_or_create(
                         form_id=form.id,
                         defaults={
                             'title': f"Новый опрос: {form.title}",
                             'content': form.description or "Пройдите наш новый опрос!",
-                            'form_slug': generated_slug,
+                            'slug': form.slug,
                             'image': news_image
                         }
                     )
 
-                    news_post = News.objects.get(form_id=form.id)
                     category, _ = Category.objects.get_or_create(name="Опросы")
                     news_post.categories.add(category)
 

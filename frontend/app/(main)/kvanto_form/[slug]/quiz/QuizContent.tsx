@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@/app/context/AuthContext";
 import { getFormDetail as apiGetFormDetail, submitFormResponse } from "@/app/lib/api";
+import { IApiError } from "@/app/types/api-error.interface";
 import { IFormDetail, IQuestion, IQuestionAnswer } from "@/app/types/form.interface";
 import { ApiError } from "next/dist/server/api-utils";
 import Image from "next/image";
@@ -72,21 +73,22 @@ export default function QuizContent() {
                 selected_choice_ids: [],
             })));
         } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
-
-            if (isApiError(error)) {
-                toast.error(error.message);
-                setError(error.message);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+                setError(apiError.message);
             } else { 
                 toast.error("Произошла непредвиденная ошибка на клиенте");
                 setError("Не удалось сохранить изменения");
             }
-    
-            console.error("Ошибка при загрузке:", error);
+            
+            console.error("Ошибка", error);
     
             setError("Форма не найдена или недоступна");
+            setForm(null);
         } finally {
             setLoading(false);
         }

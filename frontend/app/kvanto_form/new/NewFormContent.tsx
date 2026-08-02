@@ -12,7 +12,7 @@ import { toast } from "react-hot-toast";
 import { ChevronLeftIcon, PlusIcon } from "lucide-react";
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "@/app/types/api-error.interface";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -166,10 +166,15 @@ export default function NewFormContent() {
             
             if (status === 'active') router.push('/profile?tab=kvantoForm');
         } catch (error) {
-            if (error instanceof ApiError) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
             
-            console.error("Ошибка при загрузке:", error);
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         } finally {
             setSaving(false);
         }

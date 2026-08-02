@@ -11,6 +11,7 @@ import { PlusIcon } from "lucide-react";
 import { Settings } from "../_components/Settings";
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { IApiError } from "@/app/types/api-error.interface";
 
 function GENERATE_ID() {
     return Math.random().toString(36).slice(2, 9);
@@ -88,7 +89,15 @@ export default function NewNewsContent() {
 
         try {
         } catch (error) {
-            console.error(error);
+            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+            
+            if (hasApiMarker) {
+                const apiError = error as IApiError;
+                
+                toast.error(apiError.message);
+            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+            
+            console.error("Ошибка", error);
         } finally {
             setSaving(false);
         }
