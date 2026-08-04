@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from pytils.translit import slugify
 from forms.models import * 
@@ -65,6 +66,18 @@ class News(models.Model):
     def get_average_rating(self):
         return self.ratings.aggregate(models.Avg('value'))['value__avg'] or 0
     
+
+class NewsView(models.Model):
+    news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='views_records')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='news_views')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('news', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.news.title}"
+
 
 class Comment(models.Model):
     news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='comments')

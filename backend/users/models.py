@@ -53,6 +53,7 @@ class UserProfile(models.Model):
 
 class StudyGroup(models.Model):
     name = models.CharField(max_length=255)
+    course = models.CharField(max_length=100, blank=True, default='', verbose_name="Курс (слаг направления)")
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='teaching_groups', limit_choices_to={'userprofile__role': 'teacher'} )
     students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='study_groups', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

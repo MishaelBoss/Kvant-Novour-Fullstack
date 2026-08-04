@@ -41,6 +41,7 @@ export interface INews {
     created_at?: string;
     slug: string;
     views: number;
+    is_viewed?: boolean;
     form_id: number;
 }
 

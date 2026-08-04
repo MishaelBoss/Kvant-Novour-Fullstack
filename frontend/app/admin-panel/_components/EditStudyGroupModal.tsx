@@ -1,7 +1,8 @@
 "use client";
 import { InputWithClear } from "@/app/components/InputWithClear";
-import { createStudyGroup, getListUsers } from "@/app/lib/api";
+import { getListUsers, getStudyGroup, updateStudyGroup } from "@/app/lib/api";
 import { IUser } from "@/app/types/user.interface";
+import { IGroup } from "@/app/types/group.interface";
 import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -22,19 +23,13 @@ const COURSE_OPTIONS = [
 ];
 
 interface Props {
+    group: IGroup;
     children: React.ReactNode;
     fetch: () => Promise<void>;
 }
 
-interface TeacherOption {
-    value: number;
-    label: string;
-}
-
-interface StudentOption {
-    value: number;
-    label: string;
-}
+interface TeacherOption { value: number; label: string; }
+interface StudentOption { value: number; label: string; }
 
 interface GroupFormValues {
     name: string;
@@ -43,18 +38,18 @@ interface GroupFormValues {
     students_ids: number[];
 }
 
-export default function CreateStudyGroupModal({ children, fetch }: Props) {
+export default function EditStudyGroupModal({ group, children, fetch }: Props) {
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [teachers, setTeachers] = useState<IUser[]>([]);
     const [students, setStudents] = useState<IUser[]>([]);
-    
+
     const methods = useForm<GroupFormValues>({
         defaultValues: {
-            name: '',
-            course: '',
-            teacher_id: null,
-            students_ids: [],
+            name: group.name,
+            course: group.course ?? '',
+            teacher_id: group.teacher_id ?? null,
+            students_ids: group.students_ids ?? [],
         }
     });
 
@@ -63,32 +58,36 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
 
         const loadUsers = async () => {
             try {
-                const res = await getListUsers();
+                const [res, detail] = await Promise.all([
+                    getListUsers(),
+                    getStudyGroup(group.id),
+                ]);
                 setTeachers(res.results.filter((u) => u.role === 'teacher'));
                 setStudents(res.results.filter((u) => u.role === 'user'));
+
+                methods.reset({
+                    name: detail.name,
+                    course: detail.course ?? '',
+                    teacher_id: detail.teacher_id ?? null,
+                    students_ids: detail.students_ids ?? [],
+                });
             } catch (error) {
                 const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-                            
+
                 if (hasApiMarker) {
                     const apiError = error as IApiError;
-                    
                     toast.error(apiError.message);
                 } else toast.error("Произошла непредвиденная ошибка на клиенте");
-                            
+
                 console.error("Ошибка", error);
             }
         };
         loadUsers();
-    }, [open]);
+    }, [open, group.id, methods]);
 
-    const onOpenChange = (value: boolean) => {
-        setOpen(value);
-        if (!value) {
-            methods.reset();
-        }
-    };
+    const onOpenChange = (value: boolean) => setOpen(value);
 
-        const teacherOptions: TeacherOption[] = teachers.map((t) => ({
+    const teacherOptions: TeacherOption[] = teachers.map((t) => ({
         value: t.id,
         label: `${t.last_name || ''} ${t.first_name || ''} ${t.middle_name || ''}`.trim() || (t.username || `Пользователь #${t.id}`),
     }));
@@ -115,42 +114,39 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
 
         setSaving(true);
         try {
-            await createStudyGroup({
-                id: 0,
+            await updateStudyGroup(group.id, {
                 name: data.name,
                 course: data.course,
-                teacher: '',
                 teacher_id: data.teacher_id,
                 students_ids: data.students_ids,
             });
 
-            toast.success("Группа успешно создана");
+            toast.success("Группа успешно обновлена");
             setOpen(false);
             methods.reset();
             await fetch();
         } catch (error) {
             const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
+
             if (hasApiMarker) {
                 const apiError = error as IApiError;
-                
                 toast.error(apiError.message);
             } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
+
             console.error("Ошибка", error);
         } finally {
             setSaving(false);
         }
     };
-    
+
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Trigger>{children}</Dialog.Trigger>
 
             <Dialog.Content maxWidth="420px" style={{ borderRadius: '24px', padding: '28px' }}>
-                <Dialog.Title size="6" mb="1">Создать группу</Dialog.Title>
+                <Dialog.Title size="6" mb="1">Редактировать группу</Dialog.Title>
                 <Dialog.Description size="2" mb="5" color="gray">
-                    Новая учебная группа для занятий
+                    Изменение учебной группы
                 </Dialog.Description>
 
                 <FormProvider {...methods}>
@@ -190,13 +186,13 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                                             <BookOpen
                                                 size={16}
                                                 style={{
-                                position: 'absolute',
-                                right: '10px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                pointerEvents: 'none',
-                                color: 'var(--gray-9)',
-                            }}
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    pointerEvents: 'none',
+                                                    color: 'var(--gray-9)',
+                                                }}
                                             />
                                         </Box>
                                     )}
@@ -265,7 +261,7 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                                 disabled={saving}
                                 style={{ cursor: 'pointer', borderRadius: '12px', flex: 1, fontWeight: '600' }}
                             >
-                                {saving ? "Создание..." : "Создать"}
+                                {saving ? "Сохранение..." : "Сохранить"}
                             </Button>
                         </Flex>
                     </form>

@@ -306,6 +306,7 @@ export const getGroupList = async (): Promise<IGroup[]> => {
 export const createStudyGroup = async (data: IGroup): Promise<void> => {
     const formData = new FormData();
     if (data.name) formData.append('name', data.name);
+    if (data.course) formData.append('course', data.course);
     if (data.teacher_id) formData.append('teacher_id', data.teacher_id.toString());
     if (data.students_ids && data.students_ids.length) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
@@ -316,11 +317,43 @@ export const deleteStudyGroup = async (id: number): Promise<void> => {
     await apiClient.delete<{id: number}>(`/delete-study-group/${id}/`);
 }
 
+export const getStudyGroup = async (id: number): Promise<IGroup> => {
+    const res = await apiClient.get<IGroup>(`/study-group/${id}/`);
+    return res.data;
+}
+
+export const updateStudyGroup = async (id: number, data: Partial<IGroup>): Promise<void> => {
+    const formData = new FormData();
+    if (data.name !== undefined) formData.append('name', data.name);
+    if (data.course !== undefined) formData.append('course', data.course);
+    if (data.teacher_id !== undefined) formData.append('teacher_id', data.teacher_id.toString());
+    if (data.students_ids) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
+
+    await apiClient.patch<IGroup>(`/update-study-group/${id}/`, formData);
+}
+
 export const getListStudyGroup = async (): Promise<IStudyGroupResponse> => {
     const res = await apiClient.get<IStudyGroupResponse>('/list-study-group/');
     return res.data;
 }
 
-export const viewNews = async (slug: string): Promise<void> => {
-    await apiClient.post<string>(`/view-news/${slug}/`);
+export const viewNews = async (slug: string): Promise<number> => {
+    const res = await apiClient.post<{ views: number }>(`/view-news/${slug}/`);
+    return res.data?.views ?? 0;
+}
+
+export const viewForm = async (slug: string): Promise<void> => {
+    await apiClient.post<any>(`/form/${slug}/view/`);
+}
+
+export const getCourseGroups = async (course?: string): Promise<IStudyGroupResponse> => {
+    const res = await apiClient.get<IStudyGroupResponse>('/course-groups/', {
+        params: course ? { course } : {}
+    });
+    return res.data;
+}
+
+export const getMyGroups = async (): Promise<IStudyGroupResponse> => {
+    const res = await apiClient.get<IStudyGroupResponse>('/my-groups/');
+    return res.data;
 }

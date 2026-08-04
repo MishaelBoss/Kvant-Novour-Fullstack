@@ -56,6 +56,15 @@ export const Header: React.FC<Props> = () => {
                             <span className="text-[13px] font-normal leading-4 text-[#001a34] whitespace-nowrap transition-colors duration-200 group-hover:text-[#005bff]">Новости</span>
                         </Link>
 
+                        <Link href={PAGES.GROUPS()} className="group flex min-w-17.5 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-transparent px-3 py-2 text-center no-underline outline-none transition-all duration-200 hover:bg-[#001a34]/5">
+                            <div className="relative flex h-7 w-7 items-center justify-center">
+                                <svg className="h-6 w-6 text-[#001a34]/40 transition-colors duration-200 group-hover:text-[#005bff]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                                </svg>
+                            </div>
+                            <span className="text-[13px] font-normal leading-4 text-[#001a34] whitespace-nowrap transition-colors duration-200 group-hover:text-[#005bff]">Группы</span>
+                        </Link>
+
                         <HoverDropdown
                             trigger={
                                 <Link href={PAGES.QUANTS()} className="group flex min-w-17.5 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-transparent px-3 py-2 text-center no-underline outline-none transition-all duration-200 hover:bg-[#001a34]/5">

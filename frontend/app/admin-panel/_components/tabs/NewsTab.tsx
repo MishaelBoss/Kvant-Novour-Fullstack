@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { CreateNewsModal } from "../CreateNewsModal"
-import { deleteNews, getListNews } from "@/app/lib/api";
-import Link from "next/link";
-import { DeleteConfirmModal } from "../../../components/DeleteConfirmModal";
+import { getListNews } from "@/app/lib/api";
 import { INews } from "@/app/types/news.interface";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { NewsCard } from "../NewsCard";
 import toast from "react-hot-toast";
 import { IApiError } from "@/app/types/api-error.interface";
 
@@ -92,47 +90,7 @@ export function NewsTab() {
 
             <div className="flex flex-col gap-4">
                 {news?.map((item) => (
-                    <div 
-                        key={item.id} 
-                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-shadow gap-4"
-                    >
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-1">
-                                <h3 className="text-lg font-semibold text-gray-900 truncate">
-                                    {item.title}
-                                </h3>
-                                <span className="text-xs text-[#656d78] shrink-0">
-                                    {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Нет даты'}
-                                </span>
-                            </div>
-                            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                                {item.content}
-                            </p>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
-                            <Link 
-                                href={`/news/${item.id}`}
-                                className="flex-1 md:flex-none text-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
-                            >
-                                Открыть
-                            </Link>
-                            
-                            <button title="Редактировать"
-                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
-                                <PencilIcon className="w-5 h-5"/>
-                            </button>
-                            
-                            <DeleteConfirmModal title={item.title} onConfirm={async () => await deleteNews(item.id)} fetch={async () => await fetchNews()}>
-                                <button 
-                                    type="button" 
-                                    title="Удалить" 
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
-                                    <Trash2Icon className="w-5 h-5"/>
-                                </button>
-                            </DeleteConfirmModal>
-                        </div>
-                    </div>
+                    <NewsCard key={item.id} news={item} fetch={async () => await fetchNews()} />
                 ))}
             </div>
         </main>

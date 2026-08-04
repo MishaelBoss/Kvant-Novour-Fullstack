@@ -10,6 +10,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { ViewTracker } from "@/app/components/ViewTracker";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
@@ -131,7 +132,19 @@ export default function QuizStartContent() {
 
     return (
         <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
+            <ViewTracker
+                slug={typeof slug === 'string' ? slug : ''}
+                kind="form"
+                delay={3000}
+            />
+
             <div className="w-full max-w-130 flex flex-col gap-6">
+                {form.has_user_viewed && (
+                    <p className="text-center text-[12px] font-medium text-gray-400">
+                        Вы уже открывали этот опрос ранее
+                    </p>
+                )}
+
                 <div className="text-center flex flex-col gap-1">
                     <h1 className="text-2xl font-bold text-gray-800">Перед началом</h1>
                 </div>

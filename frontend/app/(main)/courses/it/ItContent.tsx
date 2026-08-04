@@ -3,6 +3,7 @@ import { PERSONAL } from "@/app/data/personalData";
 import Link from "next/link";
 import { TeamCard } from "../../team/_components/TeamCard";
 import { Clock, Users, Star, Monitor, ArrowRight, Check, Code2, BadgeCheck, Shield } from "lucide-react";
+import { CourseGroups } from "@/app/components/CourseGroups";
 
 export default function ItContent() {
     const teachers = PERSONAL.filter(p => p.courses.includes('it'));
@@ -164,6 +165,15 @@ export default function ItContent() {
                     </div>
                 </section>
             )}
+
+            <section id="groups" className="max-w-300 mx-auto px-4 py-16">
+                <div className="mb-10">
+                    <span className="text-[13px] font-semibold text-blue-600 uppercase tracking-wider">Группы</span>
+                    <h2 className="text-[28px] font-bold text-gray-900 mt-2 mb-3">Наши группы</h2>
+                    <p className="text-[15px] text-gray-500 max-w-2xl">Каждая группа — это свой уровень и состав учеников. Нажмите, чтобы посмотреть участников.</p>
+                </div>
+                <CourseGroups course="it" />
+            </section>
 
             <section className="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700">
                 <div className="max-w-300 mx-auto px-4 py-16 md:py-20 text-center">

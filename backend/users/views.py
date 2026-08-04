@@ -417,11 +417,72 @@ class DeleteStudyGroupView(APIView):
             )
 
 
+class StudyGroupDetailView(APIView):
+    permission_classes = [IsAdminOrTeacher]
+
+    def get(self, request, pk):
+        group = get_object_or_404(StudyGroup, id=pk)
+        serializer = StudyGroupSerializer(group, context={'request': request})
+        return Response(serializer.data)
+
+
+class UpdateStudyGroupView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def patch(self, request, pk):
+        group = get_object_or_404(StudyGroup, id=pk)
+        serializer = StudyGroupSerializer(group, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Группа успешно обновлена", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ListStudyGroupView(APIView):
     permission_classes = [IsAdminOrTeacher]
 
     def get(self, request):
         groups = StudyGroup.objects.all().order_by('-created_at')
+        course = request.query_params.get('course')
+        if course:
+            groups = groups.filter(course=course)
+
+        serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
+
+        return Response({
+            'count': groups.count(),
+            'results': serializer.data
+        })
+
+
+class PublicCourseGroupsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        course = request.query_params.get('course', '').strip()
+        groups = StudyGroup.objects.all().order_by('name')
+        if course:
+            groups = groups.filter(course=course)
+
+        serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
+
+        return Response({
+            'count': groups.count(),
+            'results': serializer.data
+        })
+
+
+class MyGroupsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        groups = StudyGroup.objects.filter(
+            models.Q(students=request.user) | models.Q(teacher=request.user)
+        ).distinct().order_by('name')
+
         serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
 
         return Response({

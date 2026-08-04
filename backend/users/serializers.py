@@ -205,15 +205,29 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class StudyGroupSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
-    teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', queryset=User.objects.filter(userprofile__role='teacher'), write_only=True, required=True)
-    students_ids = serializers.PrimaryKeyRelatedField(source='students', queryset=User.objects.filter(userprofile__role='user'), many=True, write_only=True, required=False)
+    course = serializers.CharField(required=False, allow_blank=True)
+    teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', queryset=User.objects.filter(userprofile__role='teacher'), required=True)
+    students_ids = serializers.PrimaryKeyRelatedField(source='students', queryset=User.objects.filter(userprofile__role='user'), many=True, required=False)
     teacher = serializers.CharField(source='teacher.username', read_only=True)
+    students_count = serializers.IntegerField(source='students.count', read_only=True)
+    students = serializers.SerializerMethodField()
 
     class Meta:
         model = StudyGroup
         fields = [
-            'id', 'name', 'created_at', 'teacher', 
-            'teacher_id', 'students_ids'
+            'id', 'name', 'course', 'created_at', 'teacher',
+            'teacher_id', 'students_ids', 'students_count', 'students'
+        ]
+
+    def get_students(self, obj):
+        students = obj.students.select_related('userprofile').all()
+        return [
+            {
+                'id': s.id,
+                'username': s.username,
+                'full_name': ' '.join(filter(None, [s.last_name, s.first_name, getattr(s, 'userprofile', None).middle_name if getattr(s, 'userprofile', None) else None])) or s.username,
+            }
+            for s in students
         ]
 
     def create(self, validated_data):
@@ -225,6 +239,19 @@ class StudyGroupSerializer(serializers.ModelSerializer):
             group.students.set(students)
 
         return group
+
+    def update(self, instance, validated_data):
+        students = validated_data.pop('students', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if students is not None:
+            instance.students.set(students)
+
+        return instance
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

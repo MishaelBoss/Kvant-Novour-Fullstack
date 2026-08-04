@@ -290,8 +290,10 @@ class FormDetailView(APIView):
             })
 
         has_user_participated = False
+        has_user_viewed = False
         if request.user.is_authenticated:
             has_user_participated = FormResponse.objects.filter(form=form, user=request.user).exists()
+            has_user_viewed = FormView.objects.filter(form=form, user=request.user).exists()
 
         return Response({
             'id': str(form.id),
@@ -308,8 +310,37 @@ class FormDetailView(APIView):
                 'one_time_participation_survey': form.one_time_participation_survey,
             },
             'has_user_participated': has_user_participated,
+            'has_user_viewed': has_user_viewed,
             'questions': questions
         })
+    
+
+class FormViewTrackView(APIView):
+    permission_classes = []
+
+    def post(self, request, slug):
+        lookup = {'id': slug} if slug.isdigit() else {'slug': slug}
+        try:
+            form = Form.objects.get(**lookup)
+        except Form.DoesNotExist:
+            return Response({"error": "Форма не найдена"}, status=404)
+
+        user = request.user if getattr(request.user, 'is_authenticated', False) else None
+
+        is_viewed = False
+        first_view = False
+
+        if user is not None:
+            _, created = FormView.objects.get_or_create(form=form, user=user)
+            is_viewed = not created
+            first_view = created
+
+        return Response({
+            "message": "Просмотр опроса учтён",
+            "slug": form.slug,
+            "is_viewed": is_viewed,
+            "first_view": first_view,
+        }, status=200)
     
 
 class SubmitResponseView(APIView):

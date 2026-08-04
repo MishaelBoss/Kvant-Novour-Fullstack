@@ -9,6 +9,7 @@ import { AchievementsTab } from "./_components/tabs/AchievementsTab";
 import { PersonalDataTab } from "./_components/tabs/PersonalDataTab";
 import { NotificationsTab } from "./_components/tabs/NotificationsTab";
 import { KvantoFormTab } from "./_components/tabs/KvantoFormTab";
+import { MyGroupsTab } from "./_components/tabs/MyGroupsTab";
 import { useAuth } from "@/app/context/AuthContext";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { toast } from "react-hot-toast";
@@ -33,7 +34,7 @@ const OPTIONS = {
 export default function ProfileContent() {
     const { user, isLoading: isAuthLoading, isAdmin, isTeacher, countNotifications, updateUser, refreshAuth } = useAuth();
     const searchParams = useSearchParams();
-    const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'kvantoForm';
+    const tabFromUrl = searchParams.get('tab') as 'personal' | 'achievements' | 'notifications' | 'groups' | 'kvantoForm';
     const activeTab = tabFromUrl || 'personal';
     const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
@@ -165,6 +166,10 @@ export default function ProfileContent() {
                             )}
                         </button>
 
+                        <button onClick={() => setActiveTab('groups')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'groups' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                            Мои группы
+                        </button>
+
                         {(isTeacher || isAdmin) && 
                             <button onClick={() => setActiveTab('kvantoForm')} className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer ${activeTab === 'kvantoForm' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
                                 Кванто форм (beta)
@@ -185,6 +190,7 @@ export default function ProfileContent() {
                 {activeTab === 'personal' && <PersonalDataTab user={user} />}
                 {activeTab === 'achievements' && <AchievementsTab/>}
                 {activeTab === 'notifications' && <NotificationsTab/>}
+                {activeTab === 'groups' && <MyGroupsTab/>}
                 {activeTab === 'kvantoForm' && (isTeacher || isAdmin) && <KvantoFormTab/>}
             </div>
         </div>

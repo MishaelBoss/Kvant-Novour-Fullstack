@@ -1,11 +1,12 @@
 from rest_framework.views import APIView
-from .serializers import NewsSerializer, CategorySerializer, ViewNewsSerializer
+from .serializers import NewsSerializer, CategorySerializer
 from rest_framework.response import Response
 from rest_framework import status
 from users.permissions import IsAdminRole
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
-from .models import Category, News
+from django.db.models import F
+from .models import Category, News, NewsView
 
 
 class CreateCategoriesView(APIView):
@@ -41,19 +42,26 @@ class ViewNewsView(APIView):
 
     def post(self, request, slug, *args, **kwargs):
         news_instance = get_object_or_404(News, slug=slug)
+        user = request.user if getattr(request.user, 'is_authenticated', False) else None
 
-        serializer = ViewNewsSerializer(news_instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {
-                    "message": "Пользователь успешно посмотрел новость", 
-                    "views": serializer.data.get('views')
-                }, 
-                status=status.HTTP_200_OK  # 200 OK архитектурно лучше для обновления данных
-            )
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        is_viewed = False
+
+        if user is not None:
+            _, created = NewsView.objects.get_or_create(news=news_instance, user=user)
+            is_viewed = not created
+
+        News.objects.filter(pk=news_instance.pk).update(views=F('views') + 1)
+        news_instance.refresh_from_db()
+
+        return Response(
+            {
+                "message": "Пользователь успешно посмотрел новость",
+                "views": news_instance.views,
+                "is_viewed": is_viewed,
+                "first_view": True,
+            },
+            status=status.HTTP_200_OK
+        )
 
     
 class CategoriesListView(APIView):

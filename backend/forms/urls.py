@@ -8,6 +8,7 @@ urlpatterns = [
     path('all-forms-list/', AllFormsList.as_view(), name='all-forms-list'),
     path('form/<slug:slug>/responses/', FormResponsesListView.as_view(), name='form-responses'),
     path('form/<slug:slug>/', FormDetailView.as_view(), name='form-detail'),
+    path('form/<slug:slug>/view/', FormViewTrackView.as_view(), name='form-view'),
     path('form/<slug:slug>/submit/', SubmitResponseView.as_view(), name='submit-response'),
     path('form/<int:pk>/delete/', FormDeleteView.as_view(), name='form-delete'),
     path('answers/<int:pk>/grade/', GradeAnswerView.as_view(), name='answers'),

@@ -18,6 +18,10 @@ urlpatterns = [
     path('upload-avatar/', UploadAvatarView.as_view(), name='upload-avatar'),
     path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('create-study-group/', CreateStudyGroupView.as_view(), name="create-study-group"),
+    path('study-group/<int:pk>/', StudyGroupDetailView.as_view(), name="study-group-detail"),
+    path('update-study-group/<int:pk>/', UpdateStudyGroupView.as_view(), name="update-study-group"),
     path('delete-study-group/<int:pk>/', DeleteStudyGroupView.as_view(), name="delete-study-group"),
-    path('list-study-group/', ListStudyGroupView.as_view(), name="list-study-group")
+    path('list-study-group/', ListStudyGroupView.as_view(), name="list-study-group"),
+    path('course-groups/', PublicCourseGroupsView.as_view(), name="course-groups"),
+    path('my-groups/', MyGroupsView.as_view(), name="my-groups"),
 ]

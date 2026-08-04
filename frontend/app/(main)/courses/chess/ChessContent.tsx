@@ -3,6 +3,7 @@ import { PERSONAL } from "@/app/data/personalData";
 import Link from "next/link";
 import { TeamCard } from "../../team/_components/TeamCard";
 import { Clock, Users, Star, Monitor, ArrowRight, Check, Code2, BadgeCheck, Shield, ChessKnight } from "lucide-react";
+import { CourseGroups } from "@/app/components/CourseGroups";
 
 export default function ChessContent() {
     const teachers = PERSONAL.filter(p => p.courses.includes('chess'));
@@ -158,6 +159,15 @@ export default function ChessContent() {
                     </div>
                 </section>
             )}
+
+            <section id="groups" className="max-w-300 mx-auto px-4 py-16">
+                <div className="mb-10">
+                    <span className="text-[13px] font-semibold text-emerald-600 uppercase tracking-wider">Группы</span>
+                    <h2 className="text-[28px] font-bold text-gray-900 mt-2 mb-3">Наши группы</h2>
+                    <p className="text-[15px] text-gray-500 max-w-2xl">Каждая группа — это свой уровень и состав учеников. Нажмите, чтобы посмотреть участников.</p>
+                </div>
+                <CourseGroups course="chess" />
+            </section>
 
             <section className="bg-gradient-to-br from-emerald-600 via-emerald-500 to-green-600">
                 <div className="max-w-300 mx-auto px-4 py-16 md:py-20 text-center">

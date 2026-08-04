@@ -29,14 +29,22 @@ class NewsSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True) 
     category_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     image = serializers.ImageField(required=True, allow_null=True)
+    is_viewed = serializers.SerializerMethodField()
 
     class Meta:
         model = News
         fields = [
             'id', 'title', 'content', 'image', 'created_at',
             'categories', 'category_ids', 'slug', 'form_id',
-            'views'
+            'views', 'is_viewed'
         ]
+
+    def get_is_viewed(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user and getattr(user, 'is_authenticated', False):
+            return obj.views_records.filter(user=user).exists()
+        return False
 
     def validate_image(self, value):
             if value:

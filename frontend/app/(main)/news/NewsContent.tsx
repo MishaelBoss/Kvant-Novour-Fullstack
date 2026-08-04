@@ -134,6 +134,7 @@ export default function NewsContent() {
                                     categories={item.categories} 
                                     slug={item.slug}
                                     views={item.views}
+                                    is_viewed={item.is_viewed}
                                 />
                             ))}
                             </>

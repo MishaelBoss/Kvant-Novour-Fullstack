@@ -112,3 +112,15 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Ответ на: {self.question.text}"
+
+
+class FormView(models.Model):
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='views_records')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='form_views')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('form', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.form.title}"
