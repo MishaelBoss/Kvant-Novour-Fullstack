@@ -190,6 +190,9 @@ class PublicProfileViewView(APIView):
             user = User.objects.get(username=username)
             profile = get_object_or_404(UserProfile, user=user)
 
+            if not profile.is_public and request.user != user:
+                return Response({"error": "Пользователь не найден"}, status=404)
+
             avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
             
             return Response({
@@ -410,7 +413,7 @@ class DeleteStudyGroupView(APIView):
                 {'message': 'Группа успешно удалена'}, 
                 status=status.HTTP_200_OK
             )
-        except News.DoesNotExist: 
+        except StudyGroup.DoesNotExist: 
             return Response(
                 {'Ошибка': 'Группа не найдена'}, 
                 status=status.HTTP_404_NOT_FOUND

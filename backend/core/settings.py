@@ -11,12 +11,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'DJANGO_SECRET_KEY'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-dev-only-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",") if h.strip()]
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
@@ -69,10 +69,17 @@ SECURE_SSL_REDIRECT = False
 CORS_ALLOW_CREDENTIALS = True 
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
-SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = False
+
+# Включаются автоматически при HTTPS (DJANGO_SECURE_COOKIES=1)
+SECURE_COOKIES = os.getenv("DJANGO_SECURE_COOKIES", "False").lower() in ("1", "true", "yes")
+SESSION_COOKIE_SECURE = SECURE_COOKIES
+CSRF_COOKIE_SECURE = SECURE_COOKIES
+SECURE_SSL_REDIRECT = SECURE_COOKIES
+SECURE_HSTS_SECONDS = 31536000 if SECURE_COOKIES else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_COOKIES
+SECURE_HSTS_PRELOAD = SECURE_COOKIES
 
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
