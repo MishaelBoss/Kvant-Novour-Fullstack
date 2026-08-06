@@ -11,10 +11,16 @@ interface Props {
     onTracked?: (data: unknown) => void;
 }
 
+const sentViews = new Set<string>();
+
 export function trackView(slug: string, kind: ViewKind = "news"): Promise<unknown> {
     if (!slug || typeof slug !== "string" || slug === "undefined") {
         return Promise.resolve(undefined);
     }
+
+    const key = `${kind}:${slug}`;
+    if (sentViews.has(key)) return Promise.resolve(undefined);
+    sentViews.add(key);
 
     const request = kind === "form" ? viewForm(slug) : viewNews(slug);
 

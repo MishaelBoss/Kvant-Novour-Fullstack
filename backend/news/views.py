@@ -22,6 +22,7 @@ class CreateCategoriesView(APIView):
             )
         print(f"Ошибки валидации: {serializer.errors}") 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class CreateNewsCommandView(APIView):
     permission_classes = [IsAdminRole]
@@ -45,20 +46,25 @@ class ViewNewsView(APIView):
         user = request.user if getattr(request.user, 'is_authenticated', False) else None
 
         is_viewed = False
+        first_view = False
 
         if user is not None:
             _, created = NewsView.objects.get_or_create(news=news_instance, user=user)
             is_viewed = not created
+            first_view = created
+        else:
+            first_view = True
 
-        News.objects.filter(pk=news_instance.pk).update(views=F('views') + 1)
-        news_instance.refresh_from_db()
+        if first_view:
+            News.objects.filter(pk=news_instance.pk).update(views=F('views') + 1)
+            news_instance.refresh_from_db()
 
         return Response(
             {
                 "message": "Пользователь успешно посмотрел новость",
                 "views": news_instance.views,
                 "is_viewed": is_viewed,
-                "first_view": True,
+                "first_view": first_view,
             },
             status=status.HTTP_200_OK
         )

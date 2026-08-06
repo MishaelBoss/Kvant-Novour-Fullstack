@@ -10,11 +10,10 @@ interface Props {
     title: string;
     content: string;
     views: number;
-    is_viewed?: boolean;
     categories?: ICategory[];
 }
 
-export function CartNews({slug, image, title, content, views, is_viewed, categories}: Props){
+export function CartNews({slug, image, title, content, views, categories}: Props){
     const truncateText = (text: string, limit = 150) => {
         return text.length > limit ? text.substring(0, limit) + "..." : text;
     };

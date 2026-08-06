@@ -53,7 +53,8 @@ export function DetailNewsContent() {
     }, [slug]);
 
     useEffect(() => {
-        if (slug && slug !== "undefined") fetchNews();
+        const init = async() => await fetchNews();
+        if (slug && slug !== "undefined") init();
     }, [slug, fetchNews]);
 
     if (loading) {

@@ -45,7 +45,7 @@ export default function NewsContent() {
         setIsLoading(true); 
 
         try {
-             const [resListNews, resCategories] = await Promise.all([
+            const [resListNews, resCategories] = await Promise.all([
                 getListNews(),
                 getCategories()
             ]);
@@ -134,7 +134,6 @@ export default function NewsContent() {
                                     categories={item.categories} 
                                     slug={item.slug}
                                     views={item.views}
-                                    is_viewed={item.is_viewed}
                                 />
                             ))}
                             </>

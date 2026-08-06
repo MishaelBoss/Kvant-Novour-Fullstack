@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal";
-import { PencilIcon, Trash2Icon, ChevronDown, BookOpen, Users } from "lucide-react";
+import { PencilIcon, Trash2Icon, ChevronDown, Users } from "lucide-react";
 import { IGroup } from "@/app/types/group.interface";
 import { deleteStudyGroup } from "@/app/lib/api";
 import EditStudyGroupModal from "./EditStudyGroupModal";
@@ -43,8 +43,7 @@ export function StudyGroupCard({ group, fetch }: Props) {
                         </span>
                     </div>
 
-                    <p className="text-sm text-gray-600 flex items-center gap-1.5 leading-relaxed">
-                        <BookOpen size={14} className="text-blue-500" />
+                    <p className="text-sm text-gray-600">
                         Руководитель: <span className="font-medium text-gray-700">{group.teacher}</span>
                     </p>
 

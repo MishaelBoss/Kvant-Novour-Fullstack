@@ -4,7 +4,7 @@ import { getCourseGroups } from "@/app/lib/api";
 import { IApiError } from "@/app/types/api-error.interface";
 import { IGroup } from "@/app/types/group.interface";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown, Users, GraduationCap } from "lucide-react";
+import { ChevronDown, Users } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function GroupsContent() {
@@ -39,7 +39,8 @@ export default function GroupsContent() {
     }, [courseFilter]);
 
     useEffect(() => {
-        fetchGroups();
+        const init = async () => fetchGroups();
+        init();
     }, [fetchGroups]);
 
     const toggle = (id: number) => setExpanded(s => ({ ...s, [id]: !s[id] }));
@@ -55,7 +56,6 @@ export default function GroupsContent() {
                 <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-                            <GraduationCap size={28} className="text-blue-600" />
                             Группы
                         </h1>
                         <p className="text-gray-500 text-sm">Список учебных групп со всеми участниками</p>
