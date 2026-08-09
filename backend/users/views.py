@@ -452,6 +452,9 @@ class ListStudyGroupView(APIView):
         course = request.query_params.get('course')
         if course:
             groups = groups.filter(course=course)
+        module = request.query_params.get('module')
+        if module:
+            groups = groups.filter(module_type=module)
 
         serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
 
@@ -469,6 +472,9 @@ class PublicCourseGroupsView(APIView):
         groups = StudyGroup.objects.all().order_by('name')
         if course:
             groups = groups.filter(course=course)
+        module = request.query_params.get('module', '').strip()
+        if module:
+            groups = groups.filter(module_type=module)
 
         serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
 

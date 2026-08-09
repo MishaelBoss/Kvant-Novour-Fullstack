@@ -2,7 +2,7 @@
 import { InputWithClear } from "@/app/components/InputWithClear";
 import { createStudyGroup, getListUsers } from "@/app/lib/api";
 import { IUser } from "@/app/types/user.interface";
-import { Dialog, Button, Flex, Box, Text } from "@radix-ui/themes";
+import { Dialog, Button, Flex, Box, Text, TextField } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import Select, { MultiValue, SingleValue } from "react-select";
@@ -19,6 +19,13 @@ const COURSE_OPTIONS = [
     { value: 'mathematics', label: 'Mathematics' },
     { value: 'prom', label: 'Prom' },
     { value: 'vr-ar', label: 'VR/AR' },
+];
+
+const MODULE_OPTIONS = [
+    { value: '', label: 'Без модуля' },
+    { value: 'intro', label: 'Вводный модуль' },
+    { value: 'advanced', label: 'Углублённый модуль' },
+    { value: 'project', label: 'Проектный модуль' },
 ];
 
 interface Props {
@@ -39,8 +46,10 @@ interface StudentOption {
 interface GroupFormValues {
     name: string;
     course: string;
+    module_type: string;
     teacher_id: number | null;
     students_ids: number[];
+    max_students: number | null;
 }
 
 export default function CreateStudyGroupModal({ children, fetch }: Props) {
@@ -53,8 +62,10 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
         defaultValues: {
             name: '',
             course: '',
+            module_type: '',
             teacher_id: null,
             students_ids: [],
+            max_students: 10,
         }
     });
 
@@ -119,9 +130,11 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                 id: 0,
                 name: data.name,
                 course: data.course,
+                module_type: data.module_type,
                 teacher: '',
                 teacher_id: data.teacher_id,
                 students_ids: data.students_ids,
+                max_students: data.max_students ?? null,
             });
 
             toast.success("Группа успешно создана");
@@ -204,6 +217,45 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                             </Box>
 
                             <Box>
+                                <Text as="div" size="2" mb="2" weight="bold">Тип модуля</Text>
+                                <Controller
+                                    name="module_type"
+                                    control={methods.control}
+                                    render={({ field }) => (
+                                        <Box
+                                            style={{
+                                                position: 'relative',
+                                                borderRadius: '12px',
+                                                border: '1px solid var(--gray-6)',
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            <select
+                                                value={field.value}
+                                                onChange={(e) => field.onChange(e.target.value)}
+                                                className="w-full px-3 py-2.5 text-sm bg-transparent cursor-pointer outline-none appearance-none"
+                                            >
+                                                {MODULE_OPTIONS.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                            </select>
+                                            <BookOpen
+                                                size={16}
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    pointerEvents: 'none',
+                                                    color: 'var(--gray-9)',
+                                                }}
+                                            />
+                                        </Box>
+                                    )}
+                                />
+                            </Box>
+
+                            <Box>
                                 <Text as="div" size="2" mb="2" weight="bold">Преподаватель</Text>
                                 <Controller
                                     name="teacher_id"
@@ -242,6 +294,31 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                                         />
                                     )}
                                 />
+                            </Box>
+
+                            <Box>
+                                <Text as="div" size="2" mb="1" weight="bold">Максимум участников</Text>
+                                <Controller
+                                    name="max_students"
+                                    control={methods.control}
+                                    rules={{ min: { value: 0, message: "Не может быть отрицательным" } }}
+                                    render={({ field }) => (
+                                        <TextField.Root
+                                            type="number"
+                                            size="3"
+                                            placeholder="Например: 10"
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                                        >
+                                            <TextField.Slot>
+                                                <Users size={16} />
+                                            </TextField.Slot>
+                                        </TextField.Root>
+                                    )}
+                                />
+                                <Text as="div" size="1" color="gray" mt="1">
+                                    0 — без лимита. Всем будет видно заполненность группы (например, 2/10).
+                                </Text>
                             </Box>
                         </Flex>
 

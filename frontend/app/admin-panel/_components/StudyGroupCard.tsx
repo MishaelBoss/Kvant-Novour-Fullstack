@@ -12,6 +12,12 @@ const COURSE_LABELS: Record<string, string> = {
     mathematics: 'Mathematics', prom: 'Prom', 'vr-ar': 'VR/AR',
 };
 
+const MODULE_LABELS: Record<string, string> = {
+    intro: 'Вводный модуль',
+    advanced: 'Углублённый модуль',
+    project: 'Проектный модуль',
+};
+
 interface Props {
     group: IGroup;
     fetch: () => Promise<void>;
@@ -20,6 +26,8 @@ interface Props {
 export function StudyGroupCard({ group, fetch }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const members = group.students ?? [];
+    const count = group.students_count ?? members.length;
+    const isFull = !!group.max_students && count >= group.max_students;
 
     return (
         <div className="p-5 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-shadow gap-4">
@@ -37,9 +45,14 @@ export function StudyGroupCard({ group, fetch }: Props) {
                                 {COURSE_LABELS[group.course] ?? group.course}
                             </span>
                         )}
-                        <span className="flex items-center gap-1 text-[12px] font-medium text-gray-500 bg-gray-100 rounded-full px-3 py-1 shrink-0">
+                        {group.module_type && (
+                            <span className="text-[11px] font-medium text-violet-600 bg-violet-50 rounded-full px-3 py-1">
+                                {MODULE_LABELS[group.module_type] ?? group.module_type}
+                            </span>
+                        )}
+                        <span className={`flex items-center gap-1 text-[12px] font-medium rounded-full px-3 py-1 shrink-0 ${isFull ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-100'}`}>
                             <Users size={13} />
-                            {group.students_count ?? members.length}
+                            {group.max_students ? `${count}/${group.max_students}` : count}
                         </span>
                     </div>
 

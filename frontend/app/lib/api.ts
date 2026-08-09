@@ -346,9 +346,12 @@ export const viewForm = async (slug: string): Promise<void> => {
     await apiClient.post<any>(`/form/${slug}/view/`);
 }
 
-export const getCourseGroups = async (course?: string): Promise<IStudyGroupResponse> => {
+export const getCourseGroups = async (course?: string, moduleType?: string): Promise<IStudyGroupResponse> => {
     const res = await apiClient.get<IStudyGroupResponse>('/course-groups/', {
-        params: course ? { course } : {}
+        params: {
+            ...(course ? { course } : {}),
+            ...(moduleType ? { module: moduleType } : {}),
+        }
     });
     return res.data;
 }

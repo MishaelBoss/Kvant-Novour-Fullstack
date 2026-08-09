@@ -68,20 +68,32 @@ export function CourseGroups({ course }: Props) {
             {groups.map((group) => {
                 const members = group.students ?? [];
                 const isOpen = !!expanded[group.id];
+                const count = group.students_count ?? members.length;
+                const isFull = !!group.max_students && count >= group.max_students;
 
                 return (
                     <div key={group.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col">
                         <div className="flex items-start justify-between gap-3 mb-2">
                             <h3 className="text-[17px] font-bold text-gray-900 leading-snug">{group.name}</h3>
-                            <span className="flex items-center gap-1 text-[12px] font-medium text-gray-500 bg-gray-100 rounded-full px-3 py-1 shrink-0">
+                            <span className={`flex items-center gap-1 text-[12px] font-medium rounded-full px-3 py-1 shrink-0 ${isFull ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-100'}`}>
                                 <Users size={13} />
-                                {group.students_count ?? members.length}
+                                {group.max_students ? `${count}/${group.max_students}` : count}
                             </span>
                         </div>
 
                         <p className="text-[13px] text-gray-500 mb-4">
                             Руководитель: <span className="font-medium text-gray-700">{group.teacher}</span>
                         </p>
+
+                        {group.module_type && (
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                <span className="text-[11px] font-medium text-violet-600 bg-violet-50 rounded-full px-3 py-1 w-fit">
+                                    {group.module_type === 'intro' ? 'Вводный модуль' :
+                                     group.module_type === 'advanced' ? 'Углублённый модуль' :
+                                     group.module_type === 'project' ? 'Проектный модуль' : group.module_type}
+                                </span>
+                            </div>
+                        )}
 
                         <div className="mt-auto">
                             <button

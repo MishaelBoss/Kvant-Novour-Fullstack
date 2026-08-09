@@ -52,10 +52,18 @@ class UserProfile(models.Model):
     
 
 class StudyGroup(models.Model):
+    MODULE_CHOICES = [
+        ('intro', 'Вводный модуль'),
+        ('advanced', 'Углублённый модуль'),
+        ('project', 'Проектный модуль'),
+    ]
+
     name = models.CharField(max_length=255)
     course = models.CharField(max_length=100, blank=True, default='', verbose_name="Курс (слаг направления)")
+    module_type = models.CharField(max_length=20, choices=MODULE_CHOICES, blank=True, default='', verbose_name="Тип модуля")
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='teaching_groups', limit_choices_to={'userprofile__role': 'teacher'} )
     students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='study_groups', blank=True)
+    max_students = models.PositiveIntegerField(null=True, blank=True, default=10, verbose_name="Максимум участников (0 — без лимита)")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

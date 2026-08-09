@@ -206,18 +206,37 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class StudyGroupSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
     course = serializers.CharField(required=False, allow_blank=True)
+    module_type = serializers.CharField(required=False, allow_blank=True)
     teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', queryset=User.objects.filter(userprofile__role='teacher'), required=True)
     students_ids = serializers.PrimaryKeyRelatedField(source='students', queryset=User.objects.filter(userprofile__role='user'), many=True, required=False)
     teacher = serializers.CharField(source='teacher.username', read_only=True)
     students_count = serializers.IntegerField(source='students.count', read_only=True)
     students = serializers.SerializerMethodField()
+    max_students = serializers.IntegerField(required=False, allow_null=True, min_value=0)
 
     class Meta:
         model = StudyGroup
         fields = [
-            'id', 'name', 'course', 'created_at', 'teacher',
-            'teacher_id', 'students_ids', 'students_count', 'students'
+            'id', 'name', 'course', 'module_type', 'created_at', 'teacher',
+            'teacher_id', 'students_ids', 'students_count', 'students',
+            'max_students'
         ]
+
+    def validate_max_students(self, value):
+        if value == 0:
+            return None
+        return value
+
+    def validate(self, attrs):
+        max_students = attrs.get('max_students')
+        students = attrs.get('students')
+
+        if max_students and students is not None and len(students) > max_students:
+            raise serializers.ValidationError(
+                {"students_ids": f"Количество учеников ({len(students)}) превышает максимум ({max_students})"}
+            )
+
+        return attrs
 
     def get_students(self, obj):
         students = obj.students.select_related('userprofile').all()
