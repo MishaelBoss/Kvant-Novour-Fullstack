@@ -14,6 +14,7 @@ import CreatableSelect from 'react-select/creatable';
 import { MultiValue } from "react-select";
 import imageCompression from "browser-image-compression";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
     children: React.ReactNode;
@@ -41,7 +42,6 @@ const OPTIONS = {
 };
 
 export function CreateNewsModal({ children, news, fetch }: Props){
-    const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedOption, setSelectedOption] = useState<MultiValue<ICategory>>([]);
     const [open, setOpen] = useState(false);
     const [preview, setPreview] = useState<string | null>(typeof news?.image === 'string' ? news.image : null);
@@ -112,34 +112,32 @@ export function CreateNewsModal({ children, news, fetch }: Props){
         }
     }, [news, methods]);
 
-    const loadCategories = useCallback(async () => {
-        try {
-            const data = await getCategories();
+    const { data: queryData } = useQuery({
+        queryKey: ['news-categories'],
+        queryFn: async () => {
+            try {
+                const data = await getCategories();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-            setCategories(data.results);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка авторизации:", error);
+                console.error("Ошибка авторизации:", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-            setCategories([]);
-        }
-    }, []);
+    const categories = queryData?.results ?? [];
 
     useEffect(() => {
-        const init = async () => loadCategories();
-        init();
-
         return () => {
             if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
         }
-    }, [preview, loadCategories]);
+    }, [preview]);
 
     const removeImage = (e: React.MouseEvent) => {
         e.preventDefault();

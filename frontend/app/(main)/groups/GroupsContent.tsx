@@ -1,12 +1,13 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { getCourseGroups } from "@/app/lib/api";
 import { IApiError } from "@/app/types/api-error.interface";
-import { IGroup } from "@/app/types/group.interface";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown, Users } from "lucide-react";
+import { Users, ArrowRight, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 
 const variants = {
     initial: { opacity: 0 },
@@ -26,11 +27,8 @@ export default function GroupsContent() {
     const searchParams = useSearchParams();
     const presetCourse = searchParams.get('course') ?? '';
 
-    const [groups, setGroups] = useState<IGroup[]>([]);
     const [courseFilter, setCourseFilter] = useState(presetCourse);
     const [moduleFilter, setModuleFilter] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
     const courses = ['it', 'chess', 'hi-tech', 'english', 'mathematics', 'prom', 'vr-ar'];
 
@@ -40,32 +38,26 @@ export default function GroupsContent() {
         { value: 'project', label: 'Проектный модуль' },
     ];
 
-    const fetchGroups = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await getCourseGroups(courseFilter || undefined, moduleFilter || undefined);
-            setGroups(res.results);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+    const { data: queryData, isLoading } = useQuery({
+        queryKey: ['groups', courseFilter, moduleFilter],
+        queryFn: async () => {
+            try {
+                const data = await getCourseGroups(courseFilter || undefined, moduleFilter || undefined);
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            console.error("Ошибка", error);
-            setGroups([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [courseFilter, moduleFilter]);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-    useEffect(() => {
-        const init = async () => fetchGroups();
-        init();
-    }, [fetchGroups]);
-
-    const toggle = (id: number) => setExpanded(s => ({ ...s, [id]: !s[id] }));
+    const groups = queryData?.results ?? [];
 
     const courseLabels: Record<string, string> = {
         it: 'IT', chess: 'Шахматы', 'hi-tech': 'Hi-Tech', english: 'English',
@@ -131,7 +123,7 @@ export default function GroupsContent() {
 
                 <main className="flex-1">
                     <motion.div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 items-start" variants={{...variants, enter: { opacity: 1, x: 0, transition: { delay: 0.4 } }}} initial="initial" animate="enter" exit="exit">
-                        {loading ? (
+                        {isLoading ? (
                         <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 items-start">
                             {Array.from({ length: 6 }).map((_, i) => (
                                 <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 animate-pulse">
@@ -149,9 +141,7 @@ export default function GroupsContent() {
                     ) : (
                         <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 items-start">
                             {groups.map((group) => {
-                                const members = group.students ?? [];
-                                const isOpen = !!expanded[group.id];
-                                const count = group.students_count ?? members.length;
+                                const count = group.students_count ?? (group.students ?? []).length;
                                 const isFull = !!group.max_students && count >= group.max_students;
 
                                 return (
@@ -168,7 +158,7 @@ export default function GroupsContent() {
                                             Руководитель: <span className="font-medium text-gray-700">{group.teacher}</span>
                                         </p>
                                         {(group.course || group.module_type) && (
-                                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                            <div className="flex flex-wrap items-center gap-2 mb-6">
                                                 {group.course && (
                                                     <span className="text-[11px] font-medium text-blue-600 bg-blue-50 rounded-full px-3 py-1 w-fit">
                                                         {courseLabels[group.course] ?? group.course}
@@ -183,26 +173,13 @@ export default function GroupsContent() {
                                         )}
 
                                         <div className="mt-auto">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggle(group.id)}
-                                                className="flex items-center gap-1.5 text-[13px] font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+                                            <Link
+                                                href={`/groups/${group.slug}/`}
+                                                className="flex items-center justify-center gap-1.5 w-full text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl px-4 py-2.5 transition-colors"
                                             >
-                                                {isOpen ? 'Скрыть состав' : 'Состав группы'}
-                                                <ChevronDown size={15} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                                            </button>
-
-                                            {isOpen && (
-                                                <ul className="mt-3 grid grid-cols-1 gap-1.5 max-h-48 overflow-y-auto">
-                                                    {members.length ? members.map((m) => (
-                                                        <li key={m.id} className="text-[13px] text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
-                                                            {m.full_name}
-                                                        </li>
-                                                    )) : (
-                                                        <li className="text-[13px] text-gray-400">Состав пока не заполнен</li>
-                                                    )}
-                                                </ul>
-                                            )}
+                                                Смотреть группу
+                                                <ArrowRight size={15} />
+                                            </Link>
                                         </div>
                                     </div>
                                 );

@@ -6,6 +6,7 @@ import { Theme } from "@radix-ui/themes";
 import { AuthProvider } from "./context/AuthContext";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import { Toaster } from "react-hot-toast";
+import { QueryProvider } from "./components/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,12 +41,14 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Theme appearance="light" hasBackground={false} suppressHydrationWarning>
-          <AuthProvider>
-            <WebSocketProvider>
-              <Toaster position="bottom-right" />
-              {children}
-            </WebSocketProvider>
-          </AuthProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <WebSocketProvider>
+                <Toaster position="bottom-right" />
+                {children}
+              </WebSocketProvider>
+            </AuthProvider>
+          </QueryProvider>
         </Theme>
       </body>
     </html>

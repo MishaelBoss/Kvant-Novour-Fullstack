@@ -1,16 +1,14 @@
 "use client";
 import { getPublicProfile } from "@/app/lib/api";
-import { IPublicProfileData } from "@/app/types/profile.interface";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PAGES } from "@/app/config/pages.config";
 import { PublicProfileSkeleton } from "../_components/ProfileSkeleton";
 import { motion } from "framer-motion";
-import { ApiError } from "@/app/lib/errors/ApiError";
 import toast from "react-hot-toast";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 const ROLE_LABELS: Record<string, string> = {
     user: 'Пользователь',
@@ -18,50 +16,55 @@ const ROLE_LABELS: Record<string, string> = {
     admin: 'Администратор',
 };
 
+const MODULE_LABELS: Record<string, string> = {
+    intro: 'Вводный модуль',
+    advanced: 'Углублённый модуль',
+    project: 'Проектный модуль',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+    active: 'Активен',
+    completed: 'Прошёл модуль',
+    left: 'Покинул',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+    active: 'text-green-600 bg-green-50',
+    completed: 'text-blue-600 bg-blue-50',
+    left: 'text-gray-500 bg-gray-100',
+};
+
 export default function ProfileContent(){
     const { username } = useParams();
-    
-    const [profile, setProfile] = useState<IPublicProfileData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    const getProfile = useCallback(async () => {
-        if (!username || typeof username !== 'string') return;
-        
-        setError(null);
-        setLoading(true); 
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['profile', username],
+        queryFn: async () => {
+            try {
+                const data = await getPublicProfile(username as string);
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                const isNotFound = hasApiMarker && (error as IApiError).status === 404;
 
-        try {
-            const data = await getPublicProfile(username);
+                if (!isNotFound) {
+                    if (hasApiMarker) toast.error((error as IApiError).message);
+                    else toast.error("Произошла непредвиденная ошибка на клиенте");
+                }
 
-            setProfile(data);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка", error);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+        enabled: !!username && typeof username === 'string',
+    });
 
-            setProfile(null);
-        } finally {
-            setLoading(false);
-        }
-    }, [username]);
-
-    useEffect(() => {
-        const handleFetchEvent = async() => await getProfile();
-        handleFetchEvent();
-    }, [getProfile]);
-
-    if (loading) {
+    if (isLoading) {
         return <PublicProfileSkeleton/>;
     }
 
-    if (error || !profile) {
+    if (!profile) {
         return (
             <div className="min-h-screen bg-white font-sans text-[#2B2E33] flex items-center justify-center">
                 <div className="text-center max-w-sm">
@@ -154,6 +157,61 @@ export default function ProfileContent(){
                         </div>
                     </div>
                 </div>
+
+                {(profile.current_groups?.length ?? 0) > 0 || (profile.group_history?.length ?? 0) > 0 ? (
+                    <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-10">
+                        <h2 className="text-[20px] font-bold mb-6">Группы и курсы</h2>
+
+                        {profile.current_groups && profile.current_groups.length > 0 && (
+                            <>
+                                <h3 className="text-[13px] font-semibold uppercase text-gray-400 tracking-wider mb-3">
+                                    Состоит в группах
+                                </h3>
+                                <div className="flex flex-col gap-3 mb-8">
+                                    {profile.current_groups.map((m) => (
+                                        <div key={m.id} className="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-gray-900 truncate">{m.group_name}</p>
+                                                <p className="text-[13px] text-gray-500 mt-0.5">
+                                                    {MODULE_LABELS[m.module_type ?? ''] ?? m.module_type}
+                                                    {m.joined_at ? ` · с ${new Date(m.joined_at).toLocaleDateString('ru-RU')}` : ''}
+                                                </p>
+                                            </div>
+                                            <span className="shrink-0 text-[12px] font-medium text-green-600 bg-green-50 rounded-full px-3 py-1">
+                                                Активен
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+
+                        {profile.group_history && profile.group_history.length > 0 && (
+                            <>
+                                <h3 className="text-[13px] font-semibold uppercase text-gray-400 tracking-wider mb-3">
+                                    История групп
+                                </h3>
+                                <div className="flex flex-col gap-3">
+                                    {profile.group_history.map((m) => (
+                                        <div key={m.id} className="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-gray-900 truncate">{m.group_name}</p>
+                                                <p className="text-[13px] text-gray-500 mt-0.5">
+                                                    {MODULE_LABELS[m.module_type ?? ''] ?? m.module_type}
+                                                    {m.joined_at ? ` · с ${new Date(m.joined_at).toLocaleDateString('ru-RU')}` : ''}
+                                                    {m.completed_at ? ` · до ${new Date(m.completed_at).toLocaleDateString('ru-RU')}` : ''}
+                                                </p>
+                                            </div>
+                                            <span className={`shrink-0 text-[12px] font-medium rounded-full px-3 py-1 ${STATUS_COLORS[m.status] ?? 'text-gray-500 bg-gray-100'}`}>
+                                                {STATUS_LABELS[m.status] ?? m.status}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                ) : null}
 
                 <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-10">
                     <h2 className="text-[20px] font-bold mb-6">Достижения</h2>

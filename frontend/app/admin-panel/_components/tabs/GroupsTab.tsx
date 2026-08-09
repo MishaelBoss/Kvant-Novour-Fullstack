@@ -1,48 +1,39 @@
-import { useCallback, useEffect, useState } from "react";
 import { getListStudyGroup } from "@/app/lib/api";
-import { IGroup } from "@/app/types/group.interface";
 import toast from "react-hot-toast";
 import CreateStudyGroupModal from "../CreateStudyGroupModal";
 import { StudyGroupCard } from "../StudyGroupCard";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 export function GroupsTab() {
-    const [group, setGroup] = useState<IGroup[]>([]);
-    const [count, setCountNews] = useState(0);
+    const { data: queryData, refetch } = useQuery({
+        queryKey: ['admin-groups'],
+        queryFn: async () => {
+            try {
+                const data = await getListStudyGroup();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-    const fetchGroup = useCallback(async () => {
-        try {
-            const res = await getListStudyGroup();
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setGroup(res.results);
-            setCountNews(res.count);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка", error);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-            setGroup([]);
-            setCountNews(0);
-        }
-    }, []);
-
-    useEffect(() => {
-        const handleFetchEvent = async() => await fetchGroup();
-        handleFetchEvent();
-    }, [fetchGroup]);
+    const group = queryData?.results ?? [];
+    const count = queryData?.count ?? 0;
 
     if (group.length == 0) {
         return (
             <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-xl font-bold">Всего групп: {count}</h1>
-                    <CreateStudyGroupModal fetch={async () => await fetchGroup()}>
+                    <CreateStudyGroupModal fetch={() => refetch().then(() => {})}>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                             Добавить
                         </button>
@@ -67,7 +58,7 @@ export function GroupsTab() {
                         </p>
                     </div>
 
-                    <CreateStudyGroupModal fetch={async () => await fetchGroup()}>
+                    <CreateStudyGroupModal fetch={() => refetch().then(() => {})}>
                         <button className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             Создать новую группу
                         </button>
@@ -81,7 +72,7 @@ export function GroupsTab() {
         <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Всего групп: {count}</h1>
-                <CreateStudyGroupModal fetch={async () => await fetchGroup()}>
+                <CreateStudyGroupModal fetch={() => refetch().then(() => {})}>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                         Добавить
                     </button>
@@ -90,7 +81,7 @@ export function GroupsTab() {
 
             <div className="flex flex-col gap-4">
                 {group?.map((item) => (
-                    <StudyGroupCard key={item.id} group={item} fetch={async () => await fetchGroup()} />
+                    <StudyGroupCard key={item.id} group={item} fetch={() => refetch().then(() => {})} />
                 ))}
             </div>
         </main>

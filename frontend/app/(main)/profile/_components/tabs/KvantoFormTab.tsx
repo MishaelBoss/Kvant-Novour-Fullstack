@@ -2,46 +2,38 @@
 import { CartForms } from "@/app/components/CartForms";
 import { PAGES } from "@/app/config/pages.config";
 import { getMyFormsList } from "@/app/lib/api";
-import { IFormItem } from "@/app/types/form.interface";
-import { ApiError } from "next/dist/server/api-utils";
+import { IApiError } from "@/app/types/api-error.interface";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export function KvantoFormTab(){
-    const [forms, setForms] = useState<IFormItem[]>([]);
-    const [count, setCountForm] = useState(0);
+    const { data: queryData, refetch } = useQuery({
+        queryKey: ['kvanto-form', 'my'],
+        queryFn: async () => {
+            try {
+                const data = await getMyFormsList();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-    const fetchForms = useCallback(async () => {
-        try {
-            const res = await getMyFormsList();
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setForms(res.results);
-            setCountForm(res.count); 
-        } catch (error) {
-            const isApiError = (err: any): err is ApiError => {
-                return err instanceof ApiError || (err && err.isApiError === true);
-            };
-            
-            if (isApiError(error)) toast.error(error.message);
-            else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка авторизации:", error);
-            
-            setForms([]);
-            setCountForm(0);
-        }
-    }, []);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
+
+    const forms = queryData?.results ?? [];
+    const count = queryData?.count ?? 0;
 
     useEffect(() => {
-        const init = async() => {
-            await fetchForms();
-        }
-
-        init();
-
         const handleCustomEvent = () => {
-            fetchForms();
+            refetch();
         };
 
         window.addEventListener("fetchFormsList", handleCustomEvent);
@@ -49,7 +41,7 @@ export function KvantoFormTab(){
         return () => {
             window.removeEventListener("fetchFormsList", handleCustomEvent);
         };
-    }, [fetchForms]);
+    }, [refetch]);
 
     if (forms.length === 0) {
         return (
@@ -91,7 +83,7 @@ export function KvantoFormTab(){
 
             <div className="flex flex-col gap-4">
                 {forms.map((form) => (
-                    <CartForms key={form.id} form={form} fetch={async () => await fetchForms()}/>
+                    <CartForms key={form.id} form={form} fetch={() => refetch().then(() => {})}/>
                 ))}
             </div>
         </main>

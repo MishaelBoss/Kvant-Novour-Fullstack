@@ -24,4 +24,10 @@ urlpatterns = [
     path('list-study-group/', ListStudyGroupView.as_view(), name="list-study-group"),
     path('course-groups/', PublicCourseGroupsView.as_view(), name="course-groups"),
     path('my-groups/', MyGroupsView.as_view(), name="my-groups"),
+    path('my-group-history/', MyGroupHistoryView.as_view(), name="my-group-history"),
+    path('my-teaching-groups/', MyTeachingGroupsView.as_view(), name="my-teaching-groups"),
+    path('group-memberships/<int:pk>/', UpdateGroupMembershipView.as_view(), name="update-group-membership"),
+    path('groups/<slug:slug>/', GroupDetailBySlugView.as_view(), name="group-detail-by-slug"),
+    path('groups/<slug:slug>/add-student/', GroupAddStudentView.as_view(), name="group-add-student"),
+    path('groups/<slug:slug>/remove-student/', GroupRemoveStudentView.as_view(), name="group-remove-student"),
 ]

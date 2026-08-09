@@ -1,8 +1,8 @@
 "use client";
-import { IFormCreate, IFormDetail, IFormSettings, IQuestion } from "@/app/types/form.interface";
+import { IFormCreate, IFormSettings, IQuestion } from "@/app/types/form.interface";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getFormDetail as apiGetFormDetail, updateForm } from "@/app/lib/api";
 import { ModelConfirmAddForm } from "../../_components/ModelConfirmAddForm";
 import { Content } from "../../_components/Content";
@@ -11,6 +11,7 @@ import { QuestionCard } from "../../_components/QuestionCard";
 import toast from "react-hot-toast";
 import { ChevronLeftIcon } from "lucide-react";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 function generateId() {
     return Math.random().toString(36).slice(2, 9);
@@ -22,8 +23,6 @@ export default function UpdateFormContent() {
     const slug = params?.slug;
 
     const [saving, setSaving] = useState(false);
-    const [form, setForm] = useState<IFormDetail | null>(null);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'content' | 'settings'>('content');
     const [title, setTitle] = useState('');
@@ -133,46 +132,37 @@ export default function UpdateFormContent() {
         ));
     };
 
-    const getFormDetail = useCallback(async () => {
-        if (!slug || typeof slug !== 'string') return;
+    const { data: form, refetch, isLoading } = useQuery({
+        queryKey: ['update-form', slug],
+        queryFn: async () => {
+            try {
+                const data = await apiGetFormDetail(slug as string);
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                const isNotFound = hasApiMarker && (error as IApiError).status === 404;
 
-        setError(null);
-        setLoading(true); 
+                if (isNotFound) setError("Форма не найдена или недоступна");
+                else if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-        try {
-            const data = await apiGetFormDetail(slug);
-            if (!data) {
-                setError("Форма не найдена");
-                return;
+                console.error("Ошибка", error);
+                throw error;
             }
-
-            setForm(data);
-            setTitle(data.title);
-            setDescription(data.description);
-            setDeadline(data.deadline || '');
-            setQuestions(data.questions);
-            setSettings(data.settings);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка", error);
-
-            setError("Форма не найдена или недоступна");
-        } finally {
-            setLoading(false);
-        }
-    }, [slug]);
+        },
+        retry: false,
+        enabled: !!slug && typeof slug === 'string',
+    });
 
     useEffect(() => {
-        const init = async () => await getFormDetail();
-        init();
-    }, [getFormDetail]);
+        if (!form) return;
+
+        setTitle(form.title);
+        setDescription(form.description);
+        setDeadline(form.deadline || '');
+        setQuestions(form.questions);
+        setSettings(form.settings);
+    }, [form]);
 
     const handleSave = async (status: 'draft' | 'active', isStatusToggle = false, newsImage: File | null = null) => {
         if (!form?.id) return;
@@ -199,7 +189,7 @@ export default function UpdateFormContent() {
 
             toast.success("Изменения сохранены");
 
-            await getFormDetail();
+            await refetch();
 
             if (status === 'active' && !isStatusToggle) {
                 router.push('/profile?tab=kvantoForm');
@@ -220,7 +210,7 @@ export default function UpdateFormContent() {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
                 <p className="text-gray-400 text-sm">Загрузка...</p>

@@ -1,47 +1,34 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
-import { IAttendance } from "@/app/types/attendance.interface";
 import { getAttendanceList } from "@/app/lib/api";
 import toast from "react-hot-toast";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 export function AttendanceTab() {
-    const [records, setRecords] = useState<IAttendance[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: queryData, isLoading } = useQuery({
+        queryKey: ['admin-attendance'],
+        queryFn: async () => {
+            try {
+                const data = await getAttendanceList();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-    const fetchAttendance = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await getAttendanceList();
-    
-            const data = Array.isArray(res?.results) 
-                ? res.results 
-                : (Array.isArray(res?.data) ? res.data : []);
-                
-            setRecords(data);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка:", error);
-            
-            setRecords([]);
-        } finally {
-            setLoading(false); 
-        }
-    }, []);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-    useEffect(() => {
-        const handleFetchEvent = async() => await fetchAttendance();
-        handleFetchEvent();
-    }, [fetchAttendance]);
+    const records = Array.isArray(queryData?.results)
+        ? queryData.results
+        : (Array.isArray(queryData?.data) ? queryData.data : []);
 
-    if (loading) {
+    if (isLoading) {
         return (
             <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-100 flex items-center justify-center">
                 <div className="text-gray-400">Загрузка...</div>

@@ -15,6 +15,9 @@ from notifications.models import *
 from django_user_agents.utils import get_user_agent
 from users.services import GeolocationService, SessionService
 from django.middleware.csrf import get_token
+from django.utils import timezone
+from collections import defaultdict
+from attendance.models import AttendanceRecord
 
 
 class RegisterView(APIView):
@@ -195,6 +198,8 @@ class PublicProfileViewView(APIView):
 
             avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
             
+            memberships = GroupMembership.objects.filter(student=user).select_related('group').order_by('-joined_at')
+
             return Response({
                 "username": user.username,
                 "first_name": user.first_name,
@@ -202,7 +207,9 @@ class PublicProfileViewView(APIView):
                 "middle_name": profile.middle_name,
                 "date_joined": user.date_joined,
                 "avatar": avatar_url,
-                "role": profile.role
+                "role": profile.role,
+                "current_groups": GroupMembershipSerializer(memberships.filter(status='active'), many=True).data,
+                "group_history": GroupMembershipSerializer(memberships, many=True).data
             })
         except User.DoesNotExist:
             return Response({"error": "Пользователь не найден"}, status=404)
@@ -213,6 +220,12 @@ class ListUsersView(APIView):
     
     def get(self, request):
         users = User.objects.select_related('userprofile').all();
+
+        from collections import defaultdict
+        completed_map = defaultdict(set)
+        for student_id, module_type in GroupMembership.objects.filter(status='completed').values_list('student_id', 'group__module_type'):
+            if module_type:
+                completed_map[student_id].add(module_type)
 
         data = []
 
@@ -231,7 +244,8 @@ class ListUsersView(APIView):
                 'middle_name': p.middle_name,
                 'avatar': avatar_url,
                 'date_joined': u.date_joined,
-                'role': p.role
+                'role': p.role,
+                'completed_modules': sorted(completed_map.get(u.id, []))
             })
         return Response({
             'count': users.count(),
@@ -484,6 +498,111 @@ class PublicCourseGroupsView(APIView):
         })
 
 
+def can_manage_group(request, group):
+    if request.user.is_superuser or request.user.is_staff:
+        return True
+
+    profile = getattr(request.user, 'userprofile', None)
+    if profile and profile.role == 'admin':
+        return True
+
+    if profile and profile.role == 'teacher' and group.teacher_id == request.user.id:
+        return True
+
+    return False
+
+
+class GroupDetailBySlugView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        group = get_object_or_404(
+            StudyGroup.objects.select_related('teacher'),
+            slug=slug
+        )
+
+        serializer = StudyGroupSerializer(group, context={'request': request})
+        data = serializer.data
+
+        records = AttendanceRecord.objects.filter(group=group)
+        attendance_map = defaultdict(list)
+        for r in records:
+            attendance_map[r.student_id].append({
+                'id': r.id,
+                'date': r.date,
+                'status': r.status,
+                'notes': r.notes,
+            })
+
+        for s in data['students']:
+            s['attendance'] = attendance_map.get(s['id'], [])
+
+        data['teacher_id'] = group.teacher_id
+        data['can_manage'] = can_manage_group(request, group)
+        data['is_admin'] = bool(
+            request.user.is_superuser
+            or request.user.is_staff
+            or (getattr(request.user, 'userprofile', None) and request.user.userprofile.role == 'admin')
+        )
+
+        return Response(data)
+
+
+class GroupAddStudentView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def post(self, request, slug):
+        group = get_object_or_404(StudyGroup, slug=slug)
+
+        student_id = request.data.get('student_id')
+        if not student_id:
+            return Response({'error': 'Поле student_id обязательно'}, status=status.HTTP_400_BAD_REQUEST)
+
+        student = get_object_or_404(User, id=student_id)
+
+        if group.max_students and group.students.count() >= group.max_students:
+            return Response({'error': 'Группа заполнена'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if group.students.filter(id=student.id).exists():
+            return Response({'error': 'Ученик уже в составе группы'}, status=status.HTTP_400_BAD_REQUEST)
+
+        group.students.add(student)
+
+        membership, _ = GroupMembership.objects.get_or_create(group=group, student=student)
+        membership.status = 'active'
+        membership.completed_at = None
+        membership.save()
+
+        return Response({
+            'message': 'Ученик добавлен в группу',
+            'membership': GroupMembershipSerializer(membership).data
+        }, status=status.HTTP_201_CREATED)
+
+
+class GroupRemoveStudentView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def post(self, request, slug):
+        group = get_object_or_404(StudyGroup, slug=slug)
+
+        student_id = request.data.get('student_id')
+        if not student_id:
+            return Response({'error': 'Поле student_id обязательно'}, status=status.HTTP_400_BAD_REQUEST)
+
+        student = get_object_or_404(User, id=student_id)
+
+        if not group.students.filter(id=student.id).exists():
+            return Response({'error': 'Ученик не состоит в группе'}, status=status.HTTP_400_BAD_REQUEST)
+
+        group.students.remove(student)
+
+        GroupMembership.objects.filter(
+            group=group, student=student, status='active'
+        ).update(status='left')
+
+        return Response({'message': 'Ученик убран из группы'}, status=status.HTTP_200_OK)
+
+
 class MyGroupsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -498,3 +617,86 @@ class MyGroupsView(APIView):
             'count': groups.count(),
             'results': serializer.data
         })
+
+
+class MyGroupHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        memberships = GroupMembership.objects.filter(student=request.user).select_related('group').order_by('-joined_at')
+
+        serializer = GroupMembershipSerializer(memberships, many=True)
+
+        return Response({'results': serializer.data})
+
+
+class MyTeachingGroupsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        groups = StudyGroup.objects.filter(teacher=request.user).order_by('name')
+
+        serializer = StudyGroupSerializer(groups, many=True, context={'request': request})
+
+        return Response({
+            'count': groups.count(),
+            'results': serializer.data
+        })
+
+
+class UpdateGroupMembershipView(APIView):
+    permission_classes = [IsAdminOrTeacher]
+
+    def can_manage_group(self, request, membership):
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+
+        profile = getattr(request.user, 'userprofile', None)
+        if profile and profile.role == 'admin':
+            return True
+
+        if profile and profile.role == 'teacher' and membership.group.teacher_id == request.user.id:
+            return True
+
+        return False
+
+    def patch(self, request, pk):
+        membership = get_object_or_404(
+            GroupMembership.objects.select_related('group', 'student'),
+            pk=pk
+        )
+
+        if not self.can_manage_group(request, membership):
+            return Response(
+                {'error': 'Нет доступа к этой группе'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        status_value = request.data.get('status')
+
+        if status_value not in {'active', 'completed', 'failed'}:
+            return Response(
+                {'error': 'Недопустимый статус'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if status_value == 'completed':
+            membership.status = 'completed'
+            membership.completed_at = timezone.now()
+            membership.group.students.remove(membership.student)
+        elif status_value == 'failed':
+            membership.status = 'failed'
+            membership.completed_at = None
+            membership.group.students.remove(membership.student)
+        else:
+            membership.status = 'active'
+            membership.completed_at = None
+            if not membership.group.students.filter(id=membership.student_id).exists():
+                membership.group.students.add(membership.student)
+
+        membership.save()
+
+        return Response({
+            'message': 'Статус участника обновлён',
+            'membership': GroupMembershipSerializer(membership).data
+        }, status=status.HTTP_200_OK)

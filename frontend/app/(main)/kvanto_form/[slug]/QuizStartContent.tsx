@@ -3,14 +3,15 @@ import { PAGES } from "@/app/config/pages.config";
 import { useAuth } from "@/app/context/AuthContext";
 import { getFormDetail as apiGetFormDetail } from "@/app/lib/api";
 import { IApiError } from "@/app/types/api-error.interface";
-import { IFormDetail, IParticipantProfile } from "@/app/types/form.interface";
+import { IParticipantProfile } from "@/app/types/form.interface";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { ViewTracker } from "@/app/components/ViewTracker";
+import { useQuery } from "@tanstack/react-query";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const BIRTH_YEARS = Array.from({ length: 30 }, (_, i) => CURRENT_YEAR - 10 - i);
@@ -21,8 +22,6 @@ export default function QuizStartContent() {
     const params = useParams();
     const slug = params?.slug;
     
-    const [form, setForm] = useState<IFormDetail | null>(null);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<IParticipantProfile>({
@@ -35,54 +34,41 @@ export default function QuizStartContent() {
         }
     });
 
-    const getFormDetail = useCallback(async () => {
-        if (!slug || typeof slug !== 'string') return;
+    const { data: form, isLoading } = useQuery({
+        queryKey: ['quiz-start', slug],
+        queryFn: async () => {
+            try {
+                const data = await apiGetFormDetail(slug as string);
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                const isNotFound = hasApiMarker && (error as IApiError).status === 404;
 
-        setError(null);
-        setLoading(true); 
+                if (isNotFound) setError("Форма не найдена или недоступна");
+                else if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-        try {
-            const data = await apiGetFormDetail(slug);
-            if (!data) {
-                setError("Форма не найдена");
-                return;
+                console.error("Ошибка", error);
+                throw error;
             }
-
-            setForm(data);
-
-            if (data.settings?.survey_for_authorized_users && !user) {
-                setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
-                return;
-            }
-
-            if (data.settings?.one_time_participation_survey && data.has_user_participated) {
-                setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
-                return;
-            }
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-                setError(apiError.message);
-            } else { 
-                toast.error("Произошла непредвиденная ошибка на клиенте");
-                setError("Не удалось сохранить изменения");
-            }
-
-            setError("Форма не найдена или недоступна");
-            setForm(null);
-        } finally {
-            setLoading(false);
-        }
-    }, [slug, user]);
+        },
+        retry: false,
+        enabled: !!slug && typeof slug === 'string',
+    });
 
     useEffect(() => {
-        const handleFetchEvent = async () => await getFormDetail();
-        handleFetchEvent();
-    }, [getFormDetail]);
+        if (!form) return;
+
+        if (form.settings?.survey_for_authorized_users && !user) {
+            setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
+            return;
+        }
+
+        if (form.settings?.one_time_participation_survey && form.has_user_participated) {
+            setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
+            return;
+        }
+    }, [form, user]);
 
     useEffect(() => {
         if (user) {
@@ -98,7 +84,7 @@ export default function QuizStartContent() {
         router.push(`/kvanto_form/${slug}/quiz`);
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
                 <p className="text-gray-400 text-sm">Загрузка...</p>

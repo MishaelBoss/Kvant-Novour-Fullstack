@@ -13,6 +13,7 @@ export interface IUser {
     date_joined?: string | undefined;
     is_authenticated: boolean;
     password?: string; 
+    completed_modules?: string[];
 }
 
 export interface IUserResponse {

@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const Header: React.FC<Props> = () => {
-    const { user, isAdmin, countNotifications } = useAuth();
+    const { user, isAdmin, isTeacher, countNotifications } = useAuth();
     const { scrollY } = useScroll()
     const [hidden, setHidden] = useState(false)
 
@@ -132,6 +132,13 @@ export const Header: React.FC<Props> = () => {
                                             </span>
                                         </Link>
                                     </DropdownMenu.Item>
+                                    {isTeacher &&  
+                                        <DropdownMenu.Item className="flex flex-col px-5 py-2.5 text-sm text-[#001a34] cursor-pointer outline-none transition-colors duration-200 data-highlighted:bg-[#f5f7f9]" asChild>
+                                            <Link href={PAGES.GROUPS()}>
+                                                <span className="text-[15px] font-medium">Мои группы</span>
+                                            </Link>
+                                        </DropdownMenu.Item>
+                                    }
                                     {isAdmin &&  
                                         <DropdownMenu.Item className="flex flex-col px-5 py-2.5 text-sm text-[#001a34] cursor-pointer outline-none transition-colors duration-200 data-highlighted:bg-[#f5f7f9]" asChild>
                                             <Link href={PAGES.ADMINPANEL()}>

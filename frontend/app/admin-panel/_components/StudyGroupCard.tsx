@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal";
-import { PencilIcon, Trash2Icon, ChevronDown, Users } from "lucide-react";
+import { PencilIcon, Trash2Icon, Users } from "lucide-react";
 import { IGroup } from "@/app/types/group.interface";
 import { deleteStudyGroup } from "@/app/lib/api";
 import EditStudyGroupModal from "./EditStudyGroupModal";
@@ -24,7 +24,6 @@ interface Props {
 }
 
 export function StudyGroupCard({ group, fetch }: Props) {
-    const [isOpen, setIsOpen] = useState(false);
     const members = group.students ?? [];
     const count = group.students_count ?? members.length;
     const isFull = !!group.max_students && count >= group.max_students;
@@ -60,36 +59,22 @@ export function StudyGroupCard({ group, fetch }: Props) {
                         Руководитель: <span className="font-medium text-gray-700">{group.teacher}</span>
                     </p>
 
-                    <div className="mt-3">
-                        <button
-                            type="button"
-                            onClick={() => setIsOpen(o => !o)}
-                            className="flex items-center gap-1.5 text-[13px] font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
-                        >
-                            {isOpen ? 'Скрыть состав' : 'Состав группы'}
-                            <ChevronDown size={15} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {isOpen && (
-                            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-52 overflow-y-auto">
-                                {members.length ? members.map((m) => (
-                                    <li key={m.id} className="text-[13px] text-gray-700 bg-white border border-gray-100 rounded-lg px-3 py-2">
-                                        {m.full_name}
-                                    </li>
-                                )) : (
-                                    <li className="text-[13px] text-gray-400">Состав пока не заполнен</li>
-                                )}
-                            </ul>
-                        )}
-                    </div>
+                    {(group.start_date || group.end_date) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            Период занятий:{' '}
+                            {group.start_date ? new Date(group.start_date).toLocaleDateString('ru-RU') : '—'}
+                            {' — '}
+                            {group.end_date ? new Date(group.end_date).toLocaleDateString('ru-RU') : '—'}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
                     <Link
-                        href={group.course ? `/courses/${group.course}/` : '/groups/'}
+                        href={group.slug ? `/groups/${group.slug}/` : (group.course ? `/courses/${group.course}/` : '/groups/')}
                         className="flex-1 md:flex-none text-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
                     >
-                        Открыть
+                        Просмотр группы
                     </Link>
 
                     <EditStudyGroupModal group={group} fetch={fetch}>

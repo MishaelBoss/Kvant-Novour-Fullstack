@@ -2,12 +2,12 @@
 import { CartNews } from "@/app/components/CartNews";
 import { CartNewsSkeleton } from "@/app/components/CartNewsSkeleton";
 import { getCategories, getListNews } from "@/app/lib/api";
-import { ICategory, INews } from "@/app/types/news.interface";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion"
 import toast from "react-hot-toast";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 const variants = {
     initial: { opacity: 0},
@@ -24,7 +24,6 @@ const variants = {
 };
 
 export default function NewsContent() {
-    const [categories, setCategories] = useState<ICategory[]>([]); 
     const [selectedValue, setSelectedValue] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const savedValue = localStorage.getItem('myAppSelectValue');
@@ -32,8 +31,6 @@ export default function NewsContent() {
         }
         return 'all';
     });
-    const [news, setNews] = useState<INews[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
     
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newValue = event.target.value;
@@ -41,39 +38,30 @@ export default function NewsContent() {
         localStorage.setItem('myAppSelectValue', newValue);
     };
 
-    const fetchNews = useCallback(async () => {
-        setIsLoading(true); 
+    const { data: queryData, isLoading } = useQuery({
+        queryKey: ['news'],
+        queryFn: async () => {
+            try {
+                const [resListNews, resCategories] = await Promise.all([
+                    getListNews(),
+                    getCategories()
+                ]);
+                return { results: resListNews.results, categories: resCategories.results };
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-        try {
-            const [resListNews, resCategories] = await Promise.all([
-                getListNews(),
-                getCategories()
-            ]);
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setNews(resListNews.results);
-            setCategories(resCategories.results);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка", error);
-            
-            setNews([]);
-            setCategories([]);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-    useEffect(() => {
-        const init = async () => await fetchNews();
-        init();
-    }, [fetchNews])
+    const news = queryData?.results ?? [];
+    const categories = queryData?.categories ?? [];
 
     const filteredNews = selectedValue === 'all' || selectedValue === '' ? news : news.filter(item => 
         item.categories?.some(c => c.value.toString() === selectedValue.toString())

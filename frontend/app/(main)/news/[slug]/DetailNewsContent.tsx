@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ViewTracker } from "@/app/components/ViewTracker";
 import { getListNews } from "@/app/lib/api";
 import { IApiError } from "@/app/types/api-error.interface";
@@ -8,13 +8,13 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { EyeIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export function DetailNewsContent() {
     const params = useParams();
     const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
 
     const [news, setNews] = useState<INews | null>(null);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const handleTracked = useCallback((data: unknown) => {
@@ -26,38 +26,30 @@ export function DetailNewsContent() {
         } : prev);
     }, []);
 
-    const fetchNews = useCallback(async () => {
-        if (!slug || slug === "undefined") return;
+    const { isLoading } = useQuery({
+        queryKey: ['news-detail', slug],
+        queryFn: async () => {
+            try {
+                const res = await getListNews();
+                const item = res.results.find((n) => n.slug === slug) ?? null;
+                setNews(item);
+                if (!item) setError("Новость не найдена");
+                return item;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-        try {
-            const res = await getListNews();
-            const item = res.results.find((n) => n.slug === slug) ?? null;
-            setNews(item);
-            if (!item) setError("Новость не найдена");
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                setError(apiError.message);
-                toast.error(apiError.message);
-            } else {
-                setError("Произошла непредвиденная ошибка на клиенте");
-                toast.error("Произошла непредвиденная ошибка на клиенте");
+                console.error("Ошибка", error);
+                throw error;
             }
+        },
+        retry: false,
+        enabled: !!slug && slug !== "undefined",
+    });
 
-            console.error("Ошибка", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [slug]);
-
-    useEffect(() => {
-        const init = async() => await fetchNews();
-        if (slug && slug !== "undefined") init();
-    }, [slug, fetchNews]);
-
-    if (loading) {
+    if (isLoading) {
         return <div className="w-full p-4 md:p-8 text-gray-400">Загрузка...</div>;
     }
 

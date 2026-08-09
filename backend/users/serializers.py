@@ -203,6 +203,25 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
     
 
+class GroupMembershipSerializer(serializers.ModelSerializer):
+    group_name = serializers.CharField(source='group.name', read_only=True)
+    course = serializers.CharField(source='group.course', read_only=True)
+    module_type = serializers.CharField(source='group.module_type', read_only=True)
+    student_username = serializers.CharField(source='student.username', read_only=True)
+    student_full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GroupMembership
+        fields = [
+            'id', 'status', 'joined_at', 'completed_at',
+            'group_id', 'group_name', 'course', 'module_type',
+            'student_id', 'student_username', 'student_full_name'
+        ]
+
+    def get_student_full_name(self, obj):
+        return ' '.join(filter(None, [obj.student.last_name, obj.student.first_name, getattr(obj.student, 'userprofile', None).middle_name if getattr(obj.student, 'userprofile', None) else None])) or obj.student.username
+
+
 class StudyGroupSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
     course = serializers.CharField(required=False, allow_blank=True)
@@ -213,13 +232,15 @@ class StudyGroupSerializer(serializers.ModelSerializer):
     students_count = serializers.IntegerField(source='students.count', read_only=True)
     students = serializers.SerializerMethodField()
     max_students = serializers.IntegerField(required=False, allow_null=True, min_value=0)
+    start_date = serializers.DateField(required=False, allow_null=True)
+    end_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = StudyGroup
         fields = [
-            'id', 'name', 'course', 'module_type', 'created_at', 'teacher',
+            'id', 'slug', 'name', 'course', 'module_type', 'created_at', 'teacher',
             'teacher_id', 'students_ids', 'students_count', 'students',
-            'max_students'
+            'max_students', 'start_date', 'end_date'
         ]
 
     def validate_max_students(self, value):
@@ -240,11 +261,18 @@ class StudyGroupSerializer(serializers.ModelSerializer):
 
     def get_students(self, obj):
         students = obj.students.select_related('userprofile').all()
+        memberships = {
+            m.student_id: m
+            for m in GroupMembership.objects.filter(group=obj, status='active')
+        }
+
         return [
             {
                 'id': s.id,
                 'username': s.username,
                 'full_name': ' '.join(filter(None, [s.last_name, s.first_name, getattr(s, 'userprofile', None).middle_name if getattr(s, 'userprofile', None) else None])) or s.username,
+                'membership_id': memberships.get(s.id).id if memberships.get(s.id) else None,
+                'membership_status': memberships.get(s.id).status if memberships.get(s.id) else None,
             }
             for s in students
         ]
@@ -256,6 +284,9 @@ class StudyGroupSerializer(serializers.ModelSerializer):
 
         if students:
             group.students.set(students)
+            GroupMembership.objects.bulk_create([
+                GroupMembership(group=group, student=s) for s in students
+            ])
 
         return group
 
@@ -268,7 +299,21 @@ class StudyGroupSerializer(serializers.ModelSerializer):
         instance.save()
 
         if students is not None:
+            old_ids = set(instance.students.values_list('id', flat=True))
+            new_ids = set(s.id for s in students)
+
             instance.students.set(students)
+
+            for sid in new_ids - old_ids:
+                membership, _ = GroupMembership.objects.get_or_create(group=instance, student_id=sid)
+                membership.status = 'active'
+                membership.completed_at = None
+                membership.save()
+
+            for sid in old_ids - new_ids:
+                GroupMembership.objects.filter(
+                    group=instance, student_id=sid, status='active'
+                ).update(status='left')
 
         return instance
 

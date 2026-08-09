@@ -2,41 +2,32 @@ import { CartForms } from "@/app/components/CartForms";
 import { PAGES } from "@/app/config/pages.config";
 import { getAllFormsList } from "@/app/lib/api";
 import { IApiError } from "@/app/types/api-error.interface";
-import { IFormItem } from "@/app/types/form.interface";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export function FormsTab() {
-    const [forms, setForms] = useState<IFormItem[]>([]);
-    const [count, setCountForm] = useState(0);
+    const { data: queryData, refetch } = useQuery({
+        queryKey: ['admin-forms'],
+        queryFn: async () => {
+            try {
+                const data = await getAllFormsList();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-    const fetchForms = useCallback(async () => {
-        try {
-            const res = await getAllFormsList();
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setForms(res.results);
-            setCountForm(res.count); 
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка при создании категории:", error);
-            
-            setForms([]);
-            setCountForm(0);
-        }
-    }, []);
-
-    useEffect(() => {
-        const handleFetchEvent = async() => await fetchForms();
-        handleFetchEvent();
-    }, [fetchForms]);
+    const forms = queryData?.results ?? [];
+    const count = queryData?.count ?? 0;
 
     if (forms.length === 0) {
         return (
@@ -85,7 +76,7 @@ export function FormsTab() {
 
             <div className="flex flex-col gap-4">
                 {forms.map((form) => (
-                    <CartForms key={form.id} form={form} fetch={async () => await fetchForms()}/>
+                    <CartForms key={form.id} form={form} fetch={() => refetch().then(() => {})}/>
                 ))}
             </div>
         </main>

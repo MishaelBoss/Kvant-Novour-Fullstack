@@ -28,6 +28,12 @@ const MODULE_OPTIONS = [
     { value: 'project', label: 'Проектный модуль' },
 ];
 
+const MODULE_LABELS: Record<string, string> = {
+    intro: 'Вводный модуль',
+    advanced: 'Углублённый модуль',
+    project: 'Проектный модуль',
+};
+
 interface Props {
     children: React.ReactNode;
     fetch: () => Promise<void>;
@@ -50,6 +56,8 @@ interface GroupFormValues {
     teacher_id: number | null;
     students_ids: number[];
     max_students: number | null;
+    start_date: string;
+    end_date: string;
 }
 
 export default function CreateStudyGroupModal({ children, fetch }: Props) {
@@ -66,6 +74,8 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
             teacher_id: null,
             students_ids: [],
             max_students: 10,
+            start_date: '',
+            end_date: '',
         }
     });
 
@@ -104,10 +114,17 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
         label: `${t.last_name || ''} ${t.first_name || ''} ${t.middle_name || ''}`.trim() || (t.username || `Пользователь #${t.id}`),
     }));
 
-    const studentOptions: StudentOption[] = students.map((s) => ({
-        value: s.id,
-        label: `${s.last_name || ''} ${s.first_name || ''} ${s.middle_name || ''}`.trim() || (s.username || `Пользователь #${s.id}`),
-    }));
+    const studentOptions: StudentOption[] = students.map((s) => {
+        const base = `${s.last_name || ''} ${s.first_name || ''} ${s.middle_name || ''}`.trim() || (s.username || `Пользователь #${s.id}`);
+        const modules = (s.completed_modules ?? [])
+            .map((m) => MODULE_LABELS[m] ?? m)
+            .join(', ');
+
+        return {
+            value: s.id,
+            label: modules ? `${base} — ✓ ${modules}` : base,
+        };
+    });
 
     const selectStyles = {
         control: (base: any) => ({
@@ -135,6 +152,8 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                 teacher_id: data.teacher_id,
                 students_ids: data.students_ids,
                 max_students: data.max_students ?? null,
+                start_date: data.start_date || null,
+                end_date: data.end_date || null,
             });
 
             toast.success("Группа успешно создана");
@@ -253,6 +272,45 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                                         </Box>
                                     )}
                                 />
+                            </Box>
+
+                            <Box>
+                                <Text as="div" size="2" mb="1" weight="bold">Период занятий</Text>
+                                <Flex direction="row" gap="3">
+                                    <Box style={{ flex: 1 }}>
+                                        <Text as="div" size="1" color="gray" mb="1">Начало</Text>
+                                        <Controller
+                                            name="start_date"
+                                            control={methods.control}
+                                            render={({ field }) => (
+                                                <TextField.Root
+                                                    type="date"
+                                                    size="3"
+                                                    value={field.value}
+                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                />
+                                            )}
+                                        />
+                                    </Box>
+                                    <Box style={{ flex: 1 }}>
+                                        <Text as="div" size="1" color="gray" mb="1">Окончание</Text>
+                                        <Controller
+                                            name="end_date"
+                                            control={methods.control}
+                                            render={({ field }) => (
+                                                <TextField.Root
+                                                    type="date"
+                                                    size="3"
+                                                    value={field.value}
+                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                />
+                                            )}
+                                        />
+                                    </Box>
+                                </Flex>
+                                <Text as="div" size="1" color="gray" mt="1">
+                                    Когда период закончится, участников можно будет отметить как прошедших модуль.
+                                </Text>
                             </Box>
 
                             <Box>

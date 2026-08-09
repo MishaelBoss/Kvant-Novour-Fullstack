@@ -1,48 +1,39 @@
-import { useCallback, useEffect, useState } from "react";
 import { CreateNewsModal } from "../CreateNewsModal"
 import { getListNews } from "@/app/lib/api";
-import { INews } from "@/app/types/news.interface";
 import { NewsCard } from "../NewsCard";
 import toast from "react-hot-toast";
 import { IApiError } from "@/app/types/api-error.interface";
+import { useQuery } from "@tanstack/react-query";
 
 export function NewsTab() {
-    const [news, setNews] = useState<INews[]>([]);
-    const [count, setCountNews] = useState(0);
+    const { data: queryData, refetch } = useQuery({
+        queryKey: ['admin-news'],
+        queryFn: async () => {
+            try {
+                const data = await getListNews();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-    const fetchNews = useCallback(async () => {
-        try {
-            const res = await getListNews();
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setNews(res.results);
-            setCountNews(res.count);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка", error);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-            setNews([]);
-            setCountNews(0);
-        }
-    }, []);
-
-    useEffect(() => {
-        const handleFetchEvent = async() => await fetchNews();
-        handleFetchEvent();
-    }, [fetchNews]);
+    const news = queryData?.results ?? [];
+    const count = queryData?.count ?? 0;
 
     if (news.length == 0) {
         return (
             <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-xl font-bold">Всего новостей: {count}</h1>
-                    <CreateNewsModal news={null} fetch={async () => fetchNews()}>
+                    <CreateNewsModal news={null} fetch={() => refetch().then(() => {})}>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                             Добавить
                         </button>
@@ -67,7 +58,7 @@ export function NewsTab() {
                         </p>
                     </div>
 
-                    <CreateNewsModal news={null} fetch={async () => fetchNews()}>
+                    <CreateNewsModal news={null} fetch={() => refetch().then(() => {})}>
                         <button className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             Создать новость
                         </button>
@@ -81,7 +72,7 @@ export function NewsTab() {
         <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Всего новостей: {count}</h1>
-                <CreateNewsModal news={null} fetch={async () => fetchNews()}>
+                <CreateNewsModal news={null} fetch={() => refetch().then(() => {})}>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                         Добавить
                     </button>
@@ -90,7 +81,7 @@ export function NewsTab() {
 
             <div className="flex flex-col gap-4">
                 {news?.map((item) => (
-                    <NewsCard key={item.id} news={item} fetch={async () => await fetchNews()} />
+                    <NewsCard key={item.id} news={item} fetch={() => refetch().then(() => {})} />
                 ))}
             </div>
         </main>

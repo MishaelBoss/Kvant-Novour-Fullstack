@@ -1,15 +1,18 @@
 import Image from "next/image";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { NotificationSidebar } from "../NotificationSidebar";
 import { SystemNotificationCard } from "../SystemNotificationCard";
 import { ChatNotificationCard } from "../ChatNotificationCard";
 import { getNotificationsList, readAllNotifications, readNotification } from "@/app/lib/api";
 import { INotifications, NotificationsType } from "@/app/types/notifications.interface";
+import { IApiError } from "@/app/types/api-error.interface";
 import { NewsNotificationsCard } from "../NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { useWebSocket, LiveNotification } from "@/app/context/WebSocketContext";
 import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export function NotificationsTab() {
     const { isLoading, setCountNotifications } = useAuth();
@@ -18,32 +21,38 @@ export function NotificationsTab() {
     const [notifications, setNotifications] = useState<INotifications[]>([]);
     const [activeFilter, setActiveFilter] = useState<'system' | 'chat' | 'news'>('system');
 
-    const fetchNotifications = useCallback(async () => {
-        try {
-            const res = await getNotificationsList();
-            if (Array.isArray(res?.results)) {
-                setNotifications((prev: INotifications[]) => {
-                    const apiIds = new Set(res.results.map(item => item.id));
-                    const keptLive = prev.filter(item => !apiIds.has(item.id) && item.id < 0);
-                    return [...keptLive, ...res.results];
-                });
-                
-                if (res.latest_dates) {
-                    setLatestDates(res.latest_dates);
-                }
+    const { data: queryData } = useQuery({
+        queryKey: ['notifications'],
+        queryFn: async () => {
+            try {
+                const data = await getNotificationsList();
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
+
+                console.error("Ошибка", error);
+                throw error;
             }
-        } catch (error) {
-            console.error(error);
-        }
-    }, []);
+        },
+        retry: false,
+    });
 
     useEffect(() => {
-        const init = async () => {
-            await fetchNotifications();
-        }
+        if (!queryData || !Array.isArray(queryData?.results)) return;
 
-        init();
-    }, [fetchNotifications]);
+        setNotifications(prev => {
+            const apiIds = new Set(queryData.results.map(item => item.id));
+            const keptLive = prev.filter(item => !apiIds.has(item.id) && item.id < 0);
+            return [...keptLive, ...queryData.results];
+        });
+
+        if (queryData.latest_dates) {
+            setLatestDates(queryData.latest_dates);
+        }
+    }, [queryData]);
 
     useEffect(() => {
         if (liveNotifications.length === 0) return;

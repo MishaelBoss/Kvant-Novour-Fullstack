@@ -2,7 +2,7 @@ import { FullResponseDetail } from "../kvanto_form/[slug]/responses/[responseId]
 import { IAvatarResponse, IEditProfile, IUser, IUserLogin, IUserRegister, IUserResponse } from "../types/user.interface";
 import { ICategory, ICategoryResponse, INewsCreateInput, INewsResponse } from "../types/news.interface";
 import { IFormCreate, IFormDetail, IFormItemResponse, IFormResponseSummary, IFormSettings, IQuizSession } from "../types/form.interface";
-import { IGroup, IStudyGroupResponse } from "../types/group.interface";
+import { IGroup, IGroupHistoryResponse, IStudyGroupResponse } from "../types/group.interface";
 import { IAttendanceResponse } from "../types/attendance.interface";
 import { apiClient } from "./client";
 import { ISession } from "../types/session.interface";
@@ -326,7 +326,11 @@ export const updateStudyGroup = async (id: number, data: Partial<IGroup>): Promi
     const formData = new FormData();
     if (data.name !== undefined) formData.append('name', data.name);
     if (data.course !== undefined) formData.append('course', data.course);
+    if (data.module_type !== undefined) formData.append('module_type', data.module_type);
     if (data.teacher_id !== undefined) formData.append('teacher_id', data.teacher_id.toString());
+    if (data.max_students !== undefined) formData.append('max_students', data.max_students === null ? '0' : data.max_students.toString());
+    if (data.start_date !== undefined) formData.append('start_date', data.start_date || '');
+    if (data.end_date !== undefined) formData.append('end_date', data.end_date || '');
     if (data.students_ids) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
     await apiClient.patch<IGroup>(`/update-study-group/${id}/`, formData);
@@ -356,7 +360,38 @@ export const getCourseGroups = async (course?: string, moduleType?: string): Pro
     return res.data;
 }
 
+export const getGroupBySlug = async (slug: string): Promise<IGroup> => {
+    const res = await apiClient.get<IGroup>(`/groups/${slug}/`);
+    return res.data;
+}
+
+export const addStudentToGroup = async (slug: string, studentId: number): Promise<void> => {
+    await apiClient.post(`/groups/${slug}/add-student/`, { student_id: studentId });
+}
+
+export const removeStudentFromGroup = async (slug: string, studentId: number): Promise<void> => {
+    await apiClient.post(`/groups/${slug}/remove-student/`, { student_id: studentId });
+}
+
 export const getMyGroups = async (): Promise<IStudyGroupResponse> => {
     const res = await apiClient.get<IStudyGroupResponse>('/my-groups/');
     return res.data;
+}
+
+export const getMyGroupHistory = async (): Promise<IGroupHistoryResponse> => {
+    const res = await apiClient.get<IGroupHistoryResponse>('/my-group-history/');
+    return res.data;
+}
+
+export const getMyTeachingGroups = async (): Promise<IStudyGroupResponse> => {
+    const res = await apiClient.get<IStudyGroupResponse>('/my-teaching-groups/');
+    return res.data;
+}
+
+export const updateGroupMembershipStatus = async (id: number, status: string): Promise<void> => {
+    await apiClient.patch(`/group-memberships/${id}/`, { status });
+}
+
+export const createAttendance = async (data: { student: number; group: number; date: string; status: string; notes?: string }): Promise<void> => {
+    await apiClient.post('/create-attendance/', data);
 }

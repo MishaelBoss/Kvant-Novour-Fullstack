@@ -25,10 +25,10 @@ const VALID_MIME_TYPES = {
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 const OPTIONS = {
-  maxSizeMB: 0.5,
-  maxWidthOrHeight: 1200,
-  useWebWorker: true,
-  fileType: 'image/jpeg'
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1200,
+    useWebWorker: true,
+    fileType: 'image/jpeg'
 };
 
 export default function ProfileContent() {

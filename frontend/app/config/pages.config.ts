@@ -32,6 +32,9 @@ export const PAGES = new class PageConfig{
     GROUPS(course?: string) {
         return course ? `/groups/?course=${course}` : "/groups/"
     }
+    GROUP_DETAIL(slug: string) {
+        return `/groups/${slug}/`
+    }
     KVANTUM_FORM_NEW() {
         return "/kvanto_form/new/"
     }

@@ -1,3 +1,5 @@
+import { IGroupMembership } from "./group.interface";
+
 export interface IPublicProfileData {
     username: string;
     first_name: string;
@@ -6,4 +8,6 @@ export interface IPublicProfileData {
     date_joined: string;
     avatar: string | null;
     role: string;
+    current_groups?: IGroupMembership[];
+    group_history?: IGroupMembership[];
 }

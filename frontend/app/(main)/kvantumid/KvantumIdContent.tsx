@@ -1,7 +1,7 @@
 "use client";
 import { PAGES } from '@/app/config/pages.config';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { EditProfileModal } from './_components/EditProfileModal';
 import Link from 'next/link';
 import { FormatPhoneNumber } from '@/app/utils/FormatPhoneNumber';
@@ -15,46 +15,40 @@ import { Monitor, Laptop, Smartphone, EllipsisVerticalIcon } from 'lucide-react'
 import { getActiveSessions } from '@/app/lib/api';
 import { DeleteSessionModel } from './_components/DeleteSessionModel';
 import { DeleteAllSessionModel } from './_components/DeleteAllSessionModel';
-import { ISession } from '@/app/types/session.interface';
 import toast from 'react-hot-toast';
 import { IApiError } from '@/app/types/api-error.interface';
+import { useQuery } from '@tanstack/react-query';
 
 export default function KvantumIdContent() {
     const { user, isLoading: isAuthLoading } = useAuth();
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const [isDeleteAllSessionsModalOpen, setDeleteAllSessionsModalOpen] = useState(false);
-    const [sessions, setSessions] = useState<ISession[]>([]);
     const [showAllSessions, setShowAllSessions] = useState(false);
 
-    const fetchSessions = useCallback(async () => {
-        try {
-            const res = await getActiveSessions();
-            const data = Array.isArray(res) ? res : [];
+    const { data: queryData, refetch } = useQuery({
+        queryKey: ['sessions'],
+        queryFn: async () => {
+            try {
+                const res = await getActiveSessions();
+                const data = Array.isArray(res) ? res : [];
 
-            const uniqueSessions = data.filter(
-                (session, index, self) => self.findIndex(s => s.id === session.id) === index
-            );
+                return data.filter(
+                    (session, index, self) => self.findIndex(s => s.id === session.id) === index
+                );
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
 
-            setSessions(uniqueSessions);
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-            } else toast.error("Произошла непредвиденная ошибка на клиенте");
-            
-            console.error("Ошибка", error);
+                if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setSessions([]);
-        }
-    }, []);
+                console.error("Ошибка", error);
+                throw error;
+            }
+        },
+        retry: false,
+    });
 
-    useEffect(() => {
-        const handleCustomEvent = async () => await fetchSessions();
-        handleCustomEvent();
-    }, [fetchSessions]);
+    const sessions = queryData ?? [];
 
     const getDeviceIcon = (os: string) => {
         const platform = os.toLowerCase();
@@ -196,7 +190,7 @@ export default function KvantumIdContent() {
                                             </div>
 
                                             {!session.is_current && (
-                                                <DeleteSessionModel session_id={session.id} fetchSessions={async () => { await fetchSessions(); }}>
+                                                <DeleteSessionModel session_id={session.id} fetchSessions={() => refetch().then(() => {})}>
                                                     <button
                                                         type="button"
                                                         className="absolute right-4 opacity-0 group-hover:opacity-100 text-10 font-semibold text-[#005bff] hover:underline bg-white pl-2 transition-opacity duration-150 cursor-pointer focus:outline-none"

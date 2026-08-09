@@ -2,12 +2,13 @@
 import { useAuth } from "@/app/context/AuthContext";
 import { getFormDetail as apiGetFormDetail, submitFormResponse } from "@/app/lib/api";
 import { IApiError } from "@/app/types/api-error.interface";
-import { IFormDetail, IQuestion, IQuestionAnswer } from "@/app/types/form.interface";
+import { IQuestion, IQuestionAnswer } from "@/app/types/form.interface";
 import { ApiError } from "next/dist/server/api-utils";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 
 function FORMAT_TIMER(seconds: number): string {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -20,12 +21,10 @@ export default function QuizContent() {
     const { slug } = useParams();
     const { user } = useAuth();
 
-    const [form, setForm] = useState<IFormDetail | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answers, setAnswers] = useState<IQuestionAnswer[]>([]);
     const [timeLeft, setTimeLeft] = useState(0);
     const [finished, setFinished] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const answersRef = useRef(answers);
@@ -34,70 +33,59 @@ export default function QuizContent() {
         answersRef.current = answers;
     }, [answers]);
 
-    const getFormDetail = useCallback(async () => {
-        if (!slug || typeof slug !== 'string') return;
-    
-        setError(null);
-        setLoading(true); 
-    
-        try {
-            const data = await apiGetFormDetail(slug);
-            // if (!data) {
-            //     setError("Форма не найдена");
-            //     return;
-            // }
+    const { data: form, isLoading } = useQuery({
+        queryKey: ['quiz', slug],
+        queryFn: async () => {
+            try {
+                const data = await apiGetFormDetail(slug as string);
 
-            if (!data || !Array.isArray(data.questions)) {
-                console.error("Структура неверна. Ожидали questions, получили:", data);
-                throw new Error("Неверная структура данных от сервера");
-            }
+                if (!data || !Array.isArray(data.questions)) {
+                    console.error("Структура неверна. Ожидали questions, получили:", data);
+                    throw new Error("Неверная структура данных от сервера");
+                }
 
-    
-            setForm(data);
-    
-            if (data.settings?.survey_for_authorized_users && !user) {
-                setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
-                return;
-            }
-    
-            if (data.settings?.one_time_participation_survey && data.has_user_participated) {
-                setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
-                return;
-            }
+                return data;
+            } catch (error) {
+                const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
+                const isNotFound = hasApiMarker && (error as IApiError).status === 404;
 
-            setTimeLeft(data.settings?.timer_seconds ?? 0);
+                if (isNotFound) setError("Форма не найдена или недоступна");
+                else if (hasApiMarker) toast.error((error as IApiError).message);
+                else toast.error("Произошла непредвиденная ошибка на клиенте");
 
-            setAnswers(data.questions.map((q: IQuestion) => ({
-                question_id: q.id,
-                text_value: '',
-                selected_choice_ids: [],
-            })));
-        } catch (error) {
-            const hasApiMarker = error !== null && typeof error === 'object' && 'isApiError' in error;
-            
-            if (hasApiMarker) {
-                const apiError = error as IApiError;
-                
-                toast.error(apiError.message);
-                setError(apiError.message);
-            } else { 
-                toast.error("Произошла непредвиденная ошибка на клиенте");
-                setError("Не удалось сохранить изменения");
+                console.error("Ошибка", error);
+                throw error;
             }
-            
-            console.error("Ошибка", error);
-    
-            setError("Форма не найдена или недоступна");
-            setForm(null);
-        } finally {
-            setLoading(false);
-        }
-    }, [slug, user]);
+        },
+        retry: false,
+        enabled: !!slug && typeof slug === 'string',
+    });
 
     useEffect(() => {
-        const handleFetchEvent = async () => getFormDetail();
-        handleFetchEvent();
-    }, [slug]);
+        if (!form) return;
+
+        if (form.settings?.survey_for_authorized_users && !user) {
+            setError("Этот опрос доступен только авторизованным пользователям. Пожалуйста, войдите в аккаунт.");
+            return;
+        }
+
+        if (form.settings?.one_time_participation_survey && form.has_user_participated) {
+            setError("Вы уже проходили этот опрос. Повторное участие невозможно.");
+            return;
+        }
+    }, [form, user]);
+
+    useEffect(() => {
+        if (!form || answers.length > 0) return;
+
+        setTimeLeft(form.settings?.timer_seconds ?? 0);
+
+        setAnswers(form.questions.map((q: IQuestion) => ({
+            question_id: q.id,
+            text_value: '',
+            selected_choice_ids: [],
+        })));
+    }, [form, answers.length]);
 
     const updateAnswerById = (qId: string, patch: Partial<IQuestionAnswer>) => {
         setAnswers(prev => prev.map((a) =>
@@ -150,7 +138,7 @@ export default function QuizContent() {
     const isLast = currentIndex === form.questions.length - 1;
     const progress = ((currentIndex + 1) / form.questions.length) * 100;
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-4">
                 <p className="text-gray-400 text-sm">Загрузка...</p>
