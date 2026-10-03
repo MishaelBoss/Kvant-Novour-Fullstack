@@ -99,37 +99,36 @@ export default function Home() {
 
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                     <span className="font-bold text-emerald-800 block mb-0.5">Какие именно бланки нужно искать и заполнить?</span>
-                    <p className="text-emerald-900 text-[11px] leading-tight">
-                      <p className="text-gray-600 mb-2">
-                        Когда вы перейдете на сайт СЮТ, в результатах поиска откройте актуальную статью о приёме (например, «Приём учащихся на новый учебный год»). Внутри неё будут прикреплены следующие документы для скачивания:
-                      </p>
-                                
-                      <ul className="space-y-2 text-gray-700 bg-white p-3 rounded-xl border border-amber-200/60 list-none font-medium">
-                        <li className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                            Заявление на зачисление от имени родителя (законного представителя)
-                            </li>
-                        <li className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                            Согласие на обработку персональных данных ребенка и родителя
-                        </li>
-                        <li className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                            Заявление на учет сертификата дополнительного образования (ПФДО)
-                        </li>
-                      </ul>
-
-                      <div className="pt-2 text-[11px] text-amber-800 italic flex items-start gap-1.5">
-                        <Lightbulb 
-                            size={15} 
-                            strokeWidth={2.5}
-                            className="shrink-0 mt-0.5 text-amber-600"
-                        />
-                        <span>
-                          <strong>Совет:</strong> Если у вас нет принтера, чтобы распечатать бланки дома, не переживайте! Вы можете прийти в 107 кабинет СЮТ, и выдадут чистыебумажные бланки на месте.
-                        </span>
-                      </div>
+                    
+                    <p className="text-gray-600 mb-2">
+                      Когда вы перейдете на сайт СЮТ, в результатах поиска откройте актуальную статью о приёме (например, «Приём учащихся на новый учебный год»). Внутри неё будут прикреплены следующие документы для скачивания:
                     </p>
+                                
+                    <ul className="space-y-2 text-gray-700 bg-white p-3 rounded-xl border border-amber-200/60 list-none font-medium">
+                      <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                          Заявление на зачисление от имени родителя (законного представителя)
+                          </li>
+                      <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                          Согласие на обработку персональных данных ребенка и родителя
+                      </li>
+                      <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                          Заявление на учет сертификата дополнительного образования (ПФДО)
+                      </li>
+                    </ul>
+
+                    <div className="pt-2 text-[11px] text-amber-800 italic flex items-start gap-1.5">
+                      <Lightbulb 
+                          size={15} 
+                          strokeWidth={2.5}
+                          className="shrink-0 mt-0.5 text-amber-600"
+                      />
+                      <span>
+                        <strong>Совет:</strong> Если у вас нет принтера, чтобы распечатать бланки дома, не переживайте! Вы можете прийти в 107 кабинет СЮТ, и выдадут чистыебумажные бланки на месте.
+                      </span>
+                    </div>
                   </div>
                 </div>
 

@@ -7,7 +7,7 @@ import { CookieIcon } from "lucide-react";
 
 export function Cookie() {
     return (
-        <div className="bg-[#2B2828] h-12 w-full rounded-t-xl w-3/4 p-12 fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-center">
+        <div className="bg-[#070707] h-12 w-full rounded-t-xl p-12 fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-center">
             <div className="flex items-center gap-2 px-4 h-full">
                 <CookieIcon className="w-12 h-12 text-white" />
                 <h1 className="text-white text-lg font-semibold w-3/4">
