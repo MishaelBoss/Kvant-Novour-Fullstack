@@ -8,8 +8,9 @@ from forms.models import *
 from transliterate import translit
 
 def news_image_path(instance, filename):
-    ext = filename.split('.')[-1].lower()
-    return f'news/news_{instance.title}.{ext}'
+    ext = filename.split('.')[-1].lower()[:10]
+    ext = ext if ext in ('jpg', 'jpeg', 'png', 'webp', 'gif') else 'jpg'
+    return f'news/{uuid.uuid4().hex}.{ext}'
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)

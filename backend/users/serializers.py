@@ -9,6 +9,8 @@ from io import BytesIO
 from PIL import Image, ImageOps
 from django.core.files.base import ContentFile
 
+Image.MAX_IMAGE_PIXELS = 40_000_000
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -32,8 +34,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
     
     def validate_password(self, value):
-        if len(value) < 8:
-            raise serializers.ValidationError("Пароль должен содержать минимум 8 символов")
+        from django.contrib.auth.password_validation import validate_password as django_validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        try:
+            django_validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages))
         return value
 
     def create(self, validated_data):
@@ -234,13 +241,14 @@ class StudyGroupSerializer(serializers.ModelSerializer):
     max_students = serializers.IntegerField(required=False, allow_null=True, min_value=0)
     start_date = serializers.DateField(required=False, allow_null=True)
     end_date = serializers.DateField(required=False, allow_null=True)
+    start_time = serializers.TimeField(required=False, allow_null=True)
 
     class Meta:
         model = StudyGroup
         fields = [
             'id', 'slug', 'name', 'course', 'module_type', 'created_at', 'teacher',
             'teacher_id', 'students_ids', 'students_count', 'students',
-            'max_students', 'start_date', 'end_date'
+            'max_students', 'start_date', 'end_date', 'start_time'
         ]
 
     def validate_max_students(self, value):

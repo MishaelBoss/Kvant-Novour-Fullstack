@@ -6,6 +6,21 @@ export const config = {
     matcher: ['/admin-panel/:path*', '/profile/:path*', '/kvantumid/:path*', '/kvanto_form/:path*'],
 };
 
+async function verifyToken(accessToken: string): Promise<jose.JWTPayload | null> {
+    const secret = process.env.JWT_SECRET || process.env.DJANGO_SECRET_KEY;
+    if (!secret) {
+        return jose.decodeJwt(accessToken);
+    }
+    try {
+        const { payload } = await jose.jwtVerify(accessToken, new TextEncoder().encode(secret), {
+            algorithms: ['HS256'],
+        });
+        return payload;
+    } catch {
+        return null;
+    }
+}
+
 export async function proxy(request: NextRequest) {
     const accessToken = request.cookies.get('access_token')?.value;
     const { pathname } = request.nextUrl;
@@ -24,15 +39,15 @@ export async function proxy(request: NextRequest) {
                 return NextResponse.redirect(homeUrl);
             }
             
-            try {
-                const payload = jose.decodeJwt(accessToken);
-                const isAdmin = payload.is_admin === true;
-                const isTeacher = payload.is_teacher === true;
-                
-                if (!isAdmin && !isTeacher) {
-                    return NextResponse.redirect(homeUrl);
-                }
-            } catch (error) {
+            const payload = await verifyToken(accessToken);
+            if (!payload) {
+                return NextResponse.redirect(homeUrl);
+            }
+
+            const isAdmin = payload.is_admin === true;
+            const isTeacher = payload.is_teacher === true;
+            
+            if (!isAdmin && !isTeacher) {
                 return NextResponse.redirect(homeUrl);
             }
         }
@@ -44,14 +59,14 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(homeUrl);
     }
 
-    try {
-        const payload = jose.decodeJwt(accessToken);
-        const isAdmin = payload.is_admin === true;
+    const payload = await verifyToken(accessToken);
+    if (!payload) {
+        return NextResponse.redirect(homeUrl);
+    }
 
-        if (pathname.startsWith('/admin-panel') && !isAdmin) {
-            return NextResponse.redirect(homeUrl);
-        }
-    } catch (error) {
+    const isAdmin = payload.is_admin === true;
+
+    if (pathname.startsWith('/admin-panel') && !isAdmin) {
         return NextResponse.redirect(homeUrl);
     }
 

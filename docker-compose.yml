@@ -46,6 +46,7 @@ services:
       - "3000"
     environment:
       - NEXT_PUBLIC_API_URL=/api
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
     depends_on:
       - backend
 

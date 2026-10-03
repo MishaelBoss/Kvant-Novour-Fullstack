@@ -58,6 +58,7 @@ interface GroupFormValues {
     max_students: number | null;
     start_date: string;
     end_date: string;
+    start_time: string;
 }
 
 export default function CreateStudyGroupModal({ children, fetch }: Props) {
@@ -76,6 +77,7 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
             max_students: 10,
             start_date: '',
             end_date: '',
+            start_time: '',
         }
     });
 
@@ -154,6 +156,7 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                 max_students: data.max_students ?? null,
                 start_date: data.start_date || null,
                 end_date: data.end_date || null,
+                start_time: data.start_time || null,
             });
 
             toast.success("Группа успешно создана");
@@ -310,6 +313,25 @@ export default function CreateStudyGroupModal({ children, fetch }: Props) {
                                 </Flex>
                                 <Text as="div" size="1" color="gray" mt="1">
                                     Когда период закончится, участников можно будет отметить как прошедших модуль.
+                                </Text>
+                            </Box>
+
+                            <Box>
+                                <Text as="div" size="2" mb="1" weight="bold">Время начала занятий</Text>
+                                <Controller
+                                    name="start_time"
+                                    control={methods.control}
+                                    render={({ field }) => (
+                                        <TextField.Root
+                                            type="time"
+                                            size="3"
+                                            value={field.value}
+                                            onChange={(e) => field.onChange(e.target.value)}
+                                        />
+                                    )}
+                                />
+                                <Text as="div" size="1" color="gray" mt="1">
+                                    Например, 15:00 — во сколько начинаются занятия группы.
                                 </Text>
                             </Box>
 

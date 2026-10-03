@@ -45,6 +45,9 @@ class CreateAttendanceView(APIView):
         status_value = request.data.get('status', 'present')
         notes = request.data.get('notes')
 
+        if not group.students.filter(id=student.id).exists():
+            return Response({'error': 'Студент не состоит в этой группе'}, status=status.HTTP_400_BAD_REQUEST)
+
         if not date:
             return Response({'error': 'Поле date обязательно'}, status=status.HTTP_400_BAD_REQUEST)
 

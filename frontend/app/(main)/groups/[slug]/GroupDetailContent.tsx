@@ -8,7 +8,7 @@ import { IUser } from "@/app/types/user.interface";
 import { ModuleStatusConfirmModal } from "@/app/components/ModuleStatusConfirmModal";
 import { DeleteConfirmModal } from "@/app/components/DeleteConfirmModal";
 import EditStudyGroupModal from "@/app/admin-panel/_components/EditStudyGroupModal";
-import { ChevronLeft, Users, UserPlus, UserMinus, CheckCircle2, XCircle, CalendarDays, GraduationCap } from "lucide-react";
+import { ChevronLeft, Users, UserPlus, UserMinus, CheckCircle2, XCircle, CalendarDays, Clock, GraduationCap } from "lucide-react";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -177,7 +177,7 @@ export default function GroupDetailContent({ slug }: { slug: string }) {
         if (!group) return;
         await deleteStudyGroup(group.id);
         toast.success("Группа удалена");
-        router.push('/groups/');
+        window.location.href = '/groups/';
     };
 
     const userName = (u: IUser) => `${u.last_name || ''} ${u.first_name || ''} ${u.middle_name || ''}`.trim() || u.username || `Пользователь #${u.id}`;
@@ -258,6 +258,13 @@ export default function GroupDetailContent({ slug }: { slug: string }) {
                                     {group.start_date ? new Date(group.start_date).toLocaleDateString('ru-RU') : '—'}
                                     {' — '}
                                     {group.end_date ? new Date(group.end_date).toLocaleDateString('ru-RU') : '—'}
+                                </p>
+                            )}
+
+                            {group.start_time && (
+                                <p className="text-[13px] text-gray-500 mt-1 flex items-center gap-1.5">
+                                    <Clock size={14} className="text-gray-400" />
+                                    {new Date(`1970-01-01T${group.start_time}`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             )}
                         </div>

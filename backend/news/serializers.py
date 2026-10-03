@@ -6,6 +6,8 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.db.models import F
 
+Image.MAX_IMAGE_PIXELS = 40_000_000
+
 
 class CategorySerializer(serializers.ModelSerializer):
     value = serializers.IntegerField(source='id', read_only=True)
@@ -104,16 +106,19 @@ class NewsSerializer(serializers.ModelSerializer):
             category_ids = [default_category.id]
         
         if image:
-            if instance.image and os.path.isfile(instance.image.path):
-                try:
-                    os.remove(instance.image.path)
-                except Exception as ex:
-                    print(f"Не удалось удалить старый файл: {ex}")
-            instance.image = self._process_image(image)
+            new_image = self._convert_image(image)
+            old_path = instance.image.path if instance.image and os.path.isfile(instance.image.path) else None
+            instance.image = new_image
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+
+        if image and old_path:
+            try:
+                os.remove(old_path)
+            except Exception as ex:
+                print(f"Не удалось удалить старый файл: {ex}")
 
         if category_ids is not None:
             if not category_ids:

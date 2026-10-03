@@ -3,10 +3,11 @@ import toast from "react-hot-toast";
 import CreateStudyGroupModal from "../CreateStudyGroupModal";
 import { StudyGroupCard } from "../StudyGroupCard";
 import { IApiError } from "@/app/types/api-error.interface";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function GroupsTab() {
-    const { data: queryData, refetch } = useQuery({
+    const queryClient = useQueryClient();
+    const { data: queryData } = useQuery({
         queryKey: ['admin-groups'],
         queryFn: async () => {
             try {
@@ -23,7 +24,10 @@ export function GroupsTab() {
             }
         },
         retry: false,
+        refetchOnMount: 'always',
     });
+
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin-groups'] });
 
     const group = queryData?.results ?? [];
     const count = queryData?.count ?? 0;
@@ -33,7 +37,7 @@ export function GroupsTab() {
             <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-xl font-bold">Всего групп: {count}</h1>
-                    <CreateStudyGroupModal fetch={() => refetch().then(() => {})}>
+                    <CreateStudyGroupModal fetch={invalidate}>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                             Добавить
                         </button>
@@ -58,7 +62,7 @@ export function GroupsTab() {
                         </p>
                     </div>
 
-                    <CreateStudyGroupModal fetch={() => refetch().then(() => {})}>
+                    <CreateStudyGroupModal fetch={invalidate}>
                         <button className="mt-1 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             Создать новую группу
                         </button>
@@ -72,7 +76,7 @@ export function GroupsTab() {
         <main className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-gray-200/50">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Всего групп: {count}</h1>
-                <CreateStudyGroupModal fetch={() => refetch().then(() => {})}>
+                <CreateStudyGroupModal fetch={invalidate}>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                         Добавить
                     </button>
@@ -81,7 +85,7 @@ export function GroupsTab() {
 
             <div className="flex flex-col gap-4">
                 {group?.map((item) => (
-                    <StudyGroupCard key={item.id} group={item} fetch={() => refetch().then(() => {})} />
+                    <StudyGroupCard key={item.id} group={item} fetch={invalidate} />
                 ))}
             </div>
         </main>

@@ -21,7 +21,7 @@ class IsTeacherRole(permissions.BasePermission):
         if not (request.user and request.user.is_authenticated):
             return False
         
-        if request.user.is_superuser and request.user.is_staff:
+        if request.user.is_superuser or request.user.is_staff:
             return True
         
         profile = getattr(request.user, 'userprofile', None)

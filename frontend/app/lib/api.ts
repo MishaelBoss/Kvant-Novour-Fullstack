@@ -307,7 +307,12 @@ export const createStudyGroup = async (data: IGroup): Promise<void> => {
     const formData = new FormData();
     if (data.name) formData.append('name', data.name);
     if (data.course) formData.append('course', data.course);
+    if (data.module_type) formData.append('module_type', data.module_type);
     if (data.teacher_id) formData.append('teacher_id', data.teacher_id.toString());
+    if (data.max_students !== undefined) formData.append('max_students', data.max_students === null ? '0' : data.max_students.toString());
+    if (data.start_date) formData.append('start_date', data.start_date);
+    if (data.end_date) formData.append('end_date', data.end_date);
+    if (data.start_time) formData.append('start_time', data.start_time);
     if (data.students_ids && data.students_ids.length) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
     await apiClient.post<IGroup>('/create-study-group/', formData);
@@ -331,6 +336,7 @@ export const updateStudyGroup = async (id: number, data: Partial<IGroup>): Promi
     if (data.max_students !== undefined) formData.append('max_students', data.max_students === null ? '0' : data.max_students.toString());
     if (data.start_date !== undefined) formData.append('start_date', data.start_date || '');
     if (data.end_date !== undefined) formData.append('end_date', data.end_date || '');
+    if (data.start_time !== undefined) formData.append('start_time', data.start_time || '');
     if (data.students_ids) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
     await apiClient.patch<IGroup>(`/update-study-group/${id}/`, formData);

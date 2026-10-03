@@ -43,6 +43,7 @@ export interface IGroup{
     max_students?: number | null;
     start_date?: string | null;
     end_date?: string | null;
+    start_time?: string | null;
     can_manage?: boolean;
     is_admin?: boolean;
 }

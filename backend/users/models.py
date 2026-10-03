@@ -68,6 +68,7 @@ class StudyGroup(models.Model):
     max_students = models.PositiveIntegerField(null=True, blank=True, default=10, verbose_name="Максимум участников (0 — без лимита)")
     start_date = models.DateField(null=True, blank=True, verbose_name="Дата начала занятий")
     end_date = models.DateField(null=True, blank=True, verbose_name="Дата окончания занятий")
+    start_time = models.TimeField(null=True, blank=True, verbose_name="Время начала занятий")
     created_at = models.DateTimeField(auto_now_add=True)
 
     @staticmethod

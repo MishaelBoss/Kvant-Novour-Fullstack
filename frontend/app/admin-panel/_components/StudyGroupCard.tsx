@@ -67,6 +67,13 @@ export function StudyGroupCard({ group, fetch }: Props) {
                             {group.end_date ? new Date(group.end_date).toLocaleDateString('ru-RU') : '—'}
                         </p>
                     )}
+
+                    {group.start_time && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            Время начала занятий:{' '}
+                            {new Date(`1970-01-01T${group.start_time}`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">

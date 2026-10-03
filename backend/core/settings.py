@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from celery.schedules import crontab
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,7 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-dev-only-key")
+_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not _SECRET_KEY or _SECRET_KEY == "django-insecure-dev-only-key":
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set and must not be the insecure default")
+SECRET_KEY = _SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")

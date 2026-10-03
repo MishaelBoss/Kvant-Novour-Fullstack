@@ -18,6 +18,7 @@ from django.middleware.csrf import get_token
 from django.utils import timezone
 from collections import defaultdict
 from attendance.models import AttendanceRecord
+from datetime import datetime
 
 
 class RegisterView(APIView):
@@ -133,22 +134,47 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        raw_token = request.COOKIES.get('access_token')
-        if raw_token:
+        from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+        from rest_framework_simplejwt.exceptions import TokenError
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+
+        raw_access = request.COOKIES.get('access_token')
+        raw_refresh = request.COOKIES.get('refresh_token')
+
+        if raw_refresh:
             try:
-                authenticator = JWTAuthentication()
-                validated_token = authenticator.get_validated_token(raw_token)
-                current_jti = validated_token.get('jti')
-                
-                UserSession.objects.filter(user=request.user, jti=current_jti).delete()
+                RefreshToken(raw_refresh).blacklist()
+            except (TokenError, Exception):
+                pass
+
+        if raw_access:
+            try:
+                token = AccessToken(raw_access)
+                jti = token['jti']
+                exp = token['exp']
+                outstanding, _ = OutstandingToken.objects.get_or_create(
+                    jti=jti,
+                    defaults={
+                        'user': request.user,
+                        'created_at': token.current_time,
+                        'token': str(token),
+                        'expires_at': datetime.fromtimestamp(exp, tz=timezone.utc),
+                    }
+                )
+                BlacklistedToken.objects.get_or_create(token=outstanding)
+            except (TokenError, Exception):
+                pass
+
+            try:
+                UserSession.objects.filter(user=request.user, jti=jti).delete()
             except Exception:
                 pass
 
         response = Response({"message": "Вы успешно вышли из системы"}, status=status.HTTP_200_OK)
-        
+
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
-        
+
         return response
     
 

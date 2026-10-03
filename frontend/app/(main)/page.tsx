@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Header } from "../components/Header";
-import { ArrowRight, Sparkles, GraduationCap, Phone, MoveUpRight } from "lucide-react";
+import { ArrowRight, Sparkles, GraduationCap, Phone, MoveUpRight, Lightbulb } from "lucide-react";
 import Image from "next/image";
 import { PAGES } from "../config/pages.config";
 import { QUANTUMS } from "../data/quantumsData";
@@ -91,23 +91,44 @@ export default function Home() {
 
                 <div className="space-y-2 text-xs">
                   <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                    <span className="font-bold text-blue-800 block mb-0.5">1. Через Госуслуги</span>
+                    <span className="font-bold text-blue-800 block mb-0.5">Лично в МАУ ДО &quot;СЮТ&quot;</span>
                     <p className="text-blue-900 text-[11px] leading-tight">
-                      Раздел «Образование дети» → Запись в кружки → Свердловская обл. → Новоуральск.
+                      ул. Комсомольская 21, каб. 107. Пн-Пт: 8:30 – 17:00 (перерыв 12:00 – 12:48).
                     </p>
                   </div>
 
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                    <span className="font-bold text-emerald-800 block mb-0.5">2. Через Навигатор ДОД</span>
+                    <span className="font-bold text-emerald-800 block mb-0.5">Какие именно бланки нужно искать и заполнить?</span>
                     <p className="text-emerald-900 text-[11px] leading-tight">
-                      На официальном портале по Свердловской области (выбирайте МАУ ДО «СЮТ»).
-                    </p>
-                  </div>
+                      <p className="text-gray-600 mb-2">
+                        Когда вы перейдете на сайт СЮТ, в результатах поиска откройте актуальную статью о приёме (например, «Приём учащихся на новый учебный год»). Внутри неё будут прикреплены следующие документы для скачивания:
+                      </p>
+                                
+                      <ul className="space-y-2 text-gray-700 bg-white p-3 rounded-xl border border-amber-200/60 list-none font-medium">
+                        <li className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                            Заявление на зачисление от имени родителя (законного представителя)
+                            </li>
+                        <li className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                            Согласие на обработку персональных данных ребенка и родителя
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                            Заявление на учет сертификата дополнительного образования (ПФДО)
+                        </li>
+                      </ul>
 
-                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <span className="font-bold text-gray-800 block mb-0.5">3. Лично в МАУ ДО &quot;СЮТ&quot;</span>
-                    <p className="text-gray-600 text-[11px] leading-tight">
-                      ул. Комсомольская 21, каб. 107. Пн-Пт: 8:30 – 17:00 (перерыв 12:00 – 12:48).
+                      <div className="pt-2 text-[11px] text-amber-800 italic flex items-start gap-1.5">
+                        <Lightbulb 
+                            size={15} 
+                            strokeWidth={2.5}
+                            className="shrink-0 mt-0.5 text-amber-600"
+                        />
+                        <span>
+                          <strong>Совет:</strong> Если у вас нет принтера, чтобы распечатать бланки дома, не переживайте! Вы можете прийти в 107 кабинет СЮТ, и выдадут чистыебумажные бланки на месте.
+                        </span>
+                      </div>
                     </p>
                   </div>
                 </div>
@@ -121,22 +142,14 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-2 mt-5">
+              <div className="mt-5">
                 <Link
-                  href={PAGES.INSTRUCTION()} 
+                  href="https://vk.ru/novkvantorium" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs py-3 rounded-xl transition-colors block"
+                  className="text-center bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1"
                 >
-                  Инструкция по записи
-                </Link>
-                <Link
-                  href="https://xn--66-kmc.xn--80aafey1amqq.xn--d1acj3b/" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="text-center bg-[#D60042] hover:bg-[#B50035] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1"
-                >
-                  В Навигатор <MoveUpRight size={12} strokeWidth={3} />
+                  В ВК <MoveUpRight size={12} strokeWidth={3} />
                 </Link>
               </div>
             </div>

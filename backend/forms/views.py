@@ -4,6 +4,10 @@ from .models import *
 from news.models import *
 from notifications.models import *
 import json
+import uuid
+from io import BytesIO
+from django.core.files.base import ContentFile
+from PIL import Image, ImageOps
 from django.db import transaction, IntegrityError, IntegrityError
 from django.utils import timezone
 from pytils.translit import slugify
@@ -16,6 +20,94 @@ from django.http import HttpResponse
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .serializers import *
+
+
+FORM_SETTINGS_WHITELIST = {
+    'timer_enabled', 'timer_seconds', 'one_question_per_page',
+    'show_results_after', 'require_profile', 'survey_for_authorized_users',
+    'one_time_participation_survey',
+}
+
+def filter_form_settings(settings_data):
+    return {k: v for k, v in settings_data.items() if k in FORM_SETTINGS_WHITELIST}
+
+
+MAX_IMAGE_PIXELS = 40_000_000
+ALLOWED_IMAGE_CONTENT_TYPES = {'image/jpeg', 'image/png', 'image/webp', 'image/gif'}
+ALLOWED_MEDIA_EXTENSIONS = {
+    'jpg', 'jpeg', 'png', 'webp', 'gif',
+    'mp3', 'wav', 'ogg', 'm4a', 'mp4', 'webm',
+}
+MAX_QUESTION_MEDIA_SIZE = 20 * 1024 * 1024
+
+
+def process_question_media(media_file):
+    if media_file is None:
+        return None
+
+    if media_file.size > MAX_QUESTION_MEDIA_SIZE:
+        raise ValueError("Размер медиафайла не должен превышать 20 МБ.")
+
+    name = getattr(media_file, 'name', '') or ''
+    ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+    if ext not in ALLOWED_MEDIA_EXTENSIONS:
+        raise ValueError("Недопустимый тип файла.")
+
+    content_type = (getattr(media_file, 'content_type', '') or '').lower()
+    if content_type in ALLOWED_IMAGE_CONTENT_TYPES:
+        try:
+            with Image.open(media_file) as img:
+                if img.width * img.height > MAX_IMAGE_PIXELS:
+                    raise ValueError("Изображение слишком большое.")
+                if img.mode in ('RGBA', 'LA'):
+                    background = Image.new('RGB', img.size, (255, 255, 255))
+                    background.paste(img, mask=img.split()[-1])
+                    img = background
+                elif img.mode != 'RGB':
+                    img = img.convert('RGB')
+                output_buffer = BytesIO()
+                img.save(output_buffer, format='WEBP', quality=85)
+                output_buffer.seek(0)
+                return ContentFile(output_buffer.read(), name=f"question_{uuid.uuid4().hex}.webp")
+        except ValueError:
+            raise
+        except Exception:
+            raise ValueError("Файл не является валидным изображением.")
+
+    if content_type.startswith(('audio/', 'video/')):
+        return media_file
+
+    raise ValueError("Недопустимый тип файла.")
+
+
+def process_news_image(image_file):
+    if image_file is None:
+        return None
+
+    if image_file.size > 5 * 1024 * 1024:
+        raise ValueError("Размер изображения не должен превышать 5 МБ.")
+
+    try:
+        with Image.open(image_file) as img:
+            if img.width * img.height > MAX_IMAGE_PIXELS:
+                raise ValueError("Изображение слишком большое.")
+            if img.mode in ('RGBA', 'LA'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1])
+                img = background
+            elif img.mode != 'RGB':
+                img = img.convert('RGB')
+            img = ImageOps.fit(img, (800, 450), Image.Resampling.LANCZOS)
+            output_buffer = BytesIO()
+            img.save(output_buffer, format='WEBP', quality=85)
+            output_buffer.seek(0)
+            return ContentFile(output_buffer.read(), name=f"news_{uuid.uuid4().hex}.webp")
+    except ValueError:
+        raise
+    except Exception:
+        raise ValueError("Файл не является валидным изображением.")
+
+
 
 
 class CreateFormView(APIView):
@@ -41,14 +133,13 @@ class CreateFormView(APIView):
                     description=request.data.get('description', ''),
                     deadline=request.data.get('deadline') or None,
                     status=status_val,
-                    **settings_data
+                    **filter_form_settings(settings_data)
                 )
 
                 for index, q_item in enumerate(questions_data):
 
                     media_file = request.FILES.get(f'question_media_{index}')
-                    if media_file:
-                        pass
+                    media_file = process_question_media(media_file)
 
                     question = Question.objects.create(
                         form=form,
@@ -69,7 +160,7 @@ class CreateFormView(APIView):
                         )
 
                 if status_val == 'active':
-                    news_image = request.FILES.get('news_image')
+                    news_image = process_news_image(request.FILES.get('news_image'))
 
                     try:
                         new_post, _ = News.objects.update_or_create(
@@ -163,13 +254,13 @@ class UpdateFormView(APIView):
                 form.description = request.data.get('description', form.description)
                 form.deadline = request.data.get('deadline') or None
 
-                for key, value in settings_data.items():
+                for key, value in filter_form_settings(settings_data).items():
                     setattr(form, key, value)
 
                 form.save()
 
                 if new_status == 'active':
-                    news_image = request.FILES.get('news_image')
+                    news_image = process_news_image(request.FILES.get('news_image'))
 
                     news_post, _ = News.objects.update_or_create(
                         form_id=form.id,
@@ -194,6 +285,7 @@ class UpdateFormView(APIView):
                 for index, q_item in enumerate(questions_data):
                     q_id = q_item.get('id')
                     media_file = request.FILES.get(f'question_media_{index}')
+                    media_file = process_question_media(media_file)
                     
                     question = form.questions.filter(id=q_id).first() if str(q_id).isdigit() else None
 
@@ -262,7 +354,11 @@ class FormDetailView(APIView):
             form = get_object_or_404(Form, id=slug)
         else:
             form = get_object_or_404(Form, slug=slug)
-        
+
+        is_owner = getattr(request.user, 'is_authenticated', False) and form.owner_id == request.user.id
+        if form.status != 'active' and not is_owner:
+            return Response({"error": "Форма не найдена или недоступна"}, status=404)
+
         questions = []
         for q in form.questions.all():
             choices = [{
@@ -371,6 +467,9 @@ class SubmitResponseView(APIView):
         profile = request.data.get('profile', {})
         answers_data = request.data.get('answers', [])
 
+        if form.require_profile and not (profile or {}).get('full_name', '').strip():
+            return Response({"error": "Необходимо указать ФИО"}, status=400)
+
         try:
             with transaction.atomic():
                 form_response = FormResponse.objects.create(
@@ -469,7 +568,8 @@ class FormResultsListView(APIView):
     permission_classes = [IsAdminRole | IsTeacherRole]
 
     def get(self, request, form_id):
-        responses = FormResponse.objects.filter(form_id=form_id).order_by('-submitted_at')
+        form = get_object_or_404(Form, id=form_id, owner=request.user)
+        responses = FormResponse.objects.filter(form=form).order_by('-submitted_at')
         data = [{
             "id": r.id,
             "full_name": r.full_name,
