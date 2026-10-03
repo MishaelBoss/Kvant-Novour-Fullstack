@@ -49,7 +49,6 @@ interface GroupFormValues {
     course: string;
     module_type: string;
     teacher_id: number | null;
-    students_ids: number[];
     max_students: number | null;
     start_date: string;
     end_date: string;
@@ -68,7 +67,6 @@ export default function EditStudyGroupModal({ group, children, fetch }: Props) {
             course: group.course ?? '',
             module_type: group.module_type ?? '',
             teacher_id: group.teacher_id ?? null,
-            students_ids: group.students_ids ?? [],
             max_students: group.max_students ?? null,
             start_date: group.start_date ?? '',
             end_date: group.end_date ?? '',
@@ -93,7 +91,6 @@ export default function EditStudyGroupModal({ group, children, fetch }: Props) {
                     course: detail.course ?? '',
                     module_type: detail.module_type ?? '',
                     teacher_id: detail.teacher_id ?? null,
-                    students_ids: detail.students_ids ?? [],
                     max_students: detail.max_students ?? null,
                     start_date: detail.start_date ?? '',
                     end_date: detail.end_date ?? '',
@@ -154,7 +151,6 @@ export default function EditStudyGroupModal({ group, children, fetch }: Props) {
                 course: data.course,
                 module_type: data.module_type,
                 teacher_id: data.teacher_id,
-                students_ids: data.students_ids,
                 max_students: data.max_students ?? null,
                 start_date: data.start_date || null,
                 end_date: data.end_date || null,
@@ -350,27 +346,6 @@ export default function EditStudyGroupModal({ group, children, fetch }: Props) {
                                             placeholder="Выберите преподавателя..."
                                             isClearable
                                             noOptionsMessage={() => "Преподаватели не найдены"}
-                                            styles={selectStyles}
-                                        />
-                                    )}
-                                />
-                            </Box>
-
-                            <Box>
-                                <Text as="div" size="2" mb="2" weight="bold">Ученики</Text>
-                                <Controller
-                                    name="students_ids"
-                                    control={methods.control}
-                                    render={({ field }) => (
-                                        <Select<StudentOption, true>
-                                            isMulti
-                                            options={studentOptions}
-                                            value={studentOptions.filter((o) => field.value.includes(o.value))}
-                                            onChange={(newValue: MultiValue<StudentOption>) =>
-                                                field.onChange(newValue.map((o) => o.value))
-                                            }
-                                            placeholder="Выберите учеников..."
-                                            noOptionsMessage={() => "Ученики не найдены"}
                                             styles={selectStyles}
                                         />
                                     )}

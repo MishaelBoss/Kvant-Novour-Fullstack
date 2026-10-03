@@ -2,14 +2,13 @@ import Image from "next/image";
 import { useState, useMemo, useEffect } from "react";
 import { NotificationSidebar } from "../NotificationSidebar";
 import { SystemNotificationCard } from "../SystemNotificationCard";
-import { ChatNotificationCard } from "../ChatNotificationCard";
 import { getNotificationsList, readAllNotifications, readNotification } from "@/app/lib/api";
 import { INotifications, NotificationsType } from "@/app/types/notifications.interface";
 import { IApiError } from "@/app/types/api-error.interface";
 import { NewsNotificationsCard } from "../NewsNotificationsCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { useWebSocket, LiveNotification } from "@/app/context/WebSocketContext";
-import { CalendarDaysIcon, MessageCircleMoreIcon, ShieldCheckIcon } from "lucide-react";
+import { CalendarDaysIcon, ShieldCheckIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -136,15 +135,6 @@ export function NotificationsTab() {
             icon: <ShieldCheckIcon className="w-5 h-5 text-white"/>
         },
         {
-            id: 'chat' as const,
-            title: 'Связь с преподавателем',
-            text: 'Комментарии к проектам, чаты',
-            unread: unreadCounts.chat,
-            date: latestDates.chat,
-            bg: 'bg-gradient-to-b from-[#60a5fa] to-[#2563eb] shadow-[0_2px_8px_rgba(37,99,235,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)]',
-            icon: <MessageCircleMoreIcon className="w-5 h-5 text-white"/>
-        },
-        {
             id: 'news' as const,
             title: 'Мероприятия',
             text: 'Хакатоны, конкурсы',
@@ -221,13 +211,6 @@ export function NotificationsTab() {
                                 {notif.type === 'system' && (
                                     <SystemNotificationCard 
                                         notif={notif}
-                                    />
-                                )}
-
-                                {notif.type === 'chat' && (
-                                    <ChatNotificationCard 
-                                        notif={notif} 
-                                        onRead={toggleRead} 
                                     />
                                 )}
 

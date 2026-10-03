@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import { Toaster } from "react-hot-toast";
 import { QueryProvider } from "./components/QueryProvider";
+import { Cookie } from "./components/Cookie";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
               <WebSocketProvider>
                 <Toaster position="bottom-right" />
                 {children}
+                <Cookie/>
               </WebSocketProvider>
             </AuthProvider>
           </QueryProvider>

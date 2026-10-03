@@ -64,7 +64,6 @@ class StudyGroup(models.Model):
     course = models.CharField(max_length=100, blank=True, default='', verbose_name="Курс (слаг направления)")
     module_type = models.CharField(max_length=20, choices=MODULE_CHOICES, blank=True, default='', verbose_name="Тип модуля")
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='teaching_groups', limit_choices_to={'userprofile__role': 'teacher'} )
-    students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='study_groups', blank=True)
     max_students = models.PositiveIntegerField(null=True, blank=True, default=10, verbose_name="Максимум участников (0 — без лимита)")
     start_date = models.DateField(null=True, blank=True, verbose_name="Дата начала занятий")
     end_date = models.DateField(null=True, blank=True, verbose_name="Дата окончания занятий")
@@ -99,28 +98,6 @@ class StudyGroup(models.Model):
     def __str__(self):
         return self.name
 
-
-class GroupMembership(models.Model):
-    STATUS = [
-        ('active', 'Активен'),
-        ('completed', 'Прошёл модуль'),
-        ('failed', 'Не прошёл модуль'),
-        ('left', 'Покинул'),
-    ]
-
-    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE, related_name='memberships')
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_memberships')
-    status = models.CharField(max_length=10, choices=STATUS, default='active')
-    joined_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = [('group', 'student')]
-        ordering = ['-joined_at']
-
-    def __str__(self):
-        return f"{self.student.username} — {self.group.name} ({self.get_status_display()})"
-    
 
 class UserSession(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')

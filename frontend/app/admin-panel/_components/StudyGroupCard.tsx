@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal";
 import { PencilIcon, Trash2Icon, Users } from "lucide-react";
@@ -24,10 +23,6 @@ interface Props {
 }
 
 export function StudyGroupCard({ group, fetch }: Props) {
-    const members = group.students ?? [];
-    const count = group.students_count ?? members.length;
-    const isFull = !!group.max_students && count >= group.max_students;
-
     return (
         <div className="p-5 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-shadow gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -49,9 +44,9 @@ export function StudyGroupCard({ group, fetch }: Props) {
                                 {MODULE_LABELS[group.module_type] ?? group.module_type}
                             </span>
                         )}
-                        <span className={`flex items-center gap-1 text-[12px] font-medium rounded-full px-3 py-1 shrink-0 ${isFull ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-100'}`}>
+                        <span className={`flex items-center gap-1 text-[12px] font-medium rounded-full px-3 py-1 shrink-0 text-gray-500 bg-gray-100`}>
                             <Users size={13} />
-                            {group.max_students ? `${count}/${group.max_students}` : count}
+                            {group.max_students}
                         </span>
                     </div>
 

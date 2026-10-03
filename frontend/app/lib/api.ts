@@ -293,11 +293,6 @@ export const uploadAvatar = async (file: File): Promise<IAvatarResponse> => {
     return res.data;
 };
 
-export const getAttendanceList = async (): Promise<IAttendanceResponse> => {
-    const res = await apiClient.get<IAttendanceResponse>('/attendance-list/');
-    return res.data;
-};
-
 export const getGroupList = async (): Promise<IGroup[]> => {
     const res = await apiClient.get<IGroup[]>('/group/');
     return res.data;
@@ -313,7 +308,6 @@ export const createStudyGroup = async (data: IGroup): Promise<void> => {
     if (data.start_date) formData.append('start_date', data.start_date);
     if (data.end_date) formData.append('end_date', data.end_date);
     if (data.start_time) formData.append('start_time', data.start_time);
-    if (data.students_ids && data.students_ids.length) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
     await apiClient.post<IGroup>('/create-study-group/', formData);
 };
@@ -337,7 +331,6 @@ export const updateStudyGroup = async (id: number, data: Partial<IGroup>): Promi
     if (data.start_date !== undefined) formData.append('start_date', data.start_date || '');
     if (data.end_date !== undefined) formData.append('end_date', data.end_date || '');
     if (data.start_time !== undefined) formData.append('start_time', data.start_time || '');
-    if (data.students_ids) data.students_ids.forEach((id) => formData.append('students_ids', id.toString()));
 
     await apiClient.patch<IGroup>(`/update-study-group/${id}/`, formData);
 }
@@ -371,33 +364,7 @@ export const getGroupBySlug = async (slug: string): Promise<IGroup> => {
     return res.data;
 }
 
-export const addStudentToGroup = async (slug: string, studentId: number): Promise<void> => {
-    await apiClient.post(`/groups/${slug}/add-student/`, { student_id: studentId });
-}
-
-export const removeStudentFromGroup = async (slug: string, studentId: number): Promise<void> => {
-    await apiClient.post(`/groups/${slug}/remove-student/`, { student_id: studentId });
-}
-
-export const getMyGroups = async (): Promise<IStudyGroupResponse> => {
-    const res = await apiClient.get<IStudyGroupResponse>('/my-groups/');
-    return res.data;
-}
-
-export const getMyGroupHistory = async (): Promise<IGroupHistoryResponse> => {
-    const res = await apiClient.get<IGroupHistoryResponse>('/my-group-history/');
-    return res.data;
-}
-
 export const getMyTeachingGroups = async (): Promise<IStudyGroupResponse> => {
     const res = await apiClient.get<IStudyGroupResponse>('/my-teaching-groups/');
     return res.data;
-}
-
-export const updateGroupMembershipStatus = async (id: number, status: string): Promise<void> => {
-    await apiClient.patch(`/group-memberships/${id}/`, { status });
-}
-
-export const createAttendance = async (data: { student: number; group: number; date: string; status: string; notes?: string }): Promise<void> => {
-    await apiClient.post('/create-attendance/', data);
 }

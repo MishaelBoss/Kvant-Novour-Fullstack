@@ -8,6 +8,4 @@ export interface IPublicProfileData {
     date_joined: string;
     avatar: string | null;
     role: string;
-    current_groups?: IGroupMembership[];
-    group_history?: IGroupMembership[];
 }

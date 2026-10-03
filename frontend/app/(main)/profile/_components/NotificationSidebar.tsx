@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ISidebarTab {
-    id: 'system' | 'chat' | 'news';
+    id: 'system' | 'news';
     title: string;
     text: string;
     unread: number;
@@ -11,8 +11,8 @@ interface ISidebarTab {
 }
 
 interface INotificationSidebarProps {
-    activeFilter: 'system' | 'chat' | 'news';
-    setActiveFilter: (filter: 'system' | 'chat' | 'news') => void;
+    activeFilter: 'system' | 'news';
+    setActiveFilter: (filter: 'system' | 'news') => void;
     sidebarTabs: ISidebarTab[];
     totalUnread: number;
     onMarkAllAsRead: () => void;
