@@ -5,12 +5,12 @@ import { IPersonalData } from "@/app/data/personalData";
 export function TeamCard({ person }: { person: IPersonalData }) {
     return (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group">
-            <div className="relative h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+            <div className="relative h-56 bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
                 {person.photo ? (
                     <Image src={person.photo} alt={person.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <div className="w-24 h-24 rounded-full bg-linear-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" className="opacity-60">
                                 <circle cx="12" cy="8" r="4" />
                                 <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
