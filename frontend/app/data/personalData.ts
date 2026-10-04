@@ -13,7 +13,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Пупков Игорь Геннадьевич",
         role: "Заведующий структурным подразделением «Детский технопарк «Кванториум»",
         description: "Руководит работой технопарка, координирует образовательные программы и проектную деятельность. Режиссёр, педагог-организатор с многолетним опытом.",
-        photo: "",
+        photo: "/staff/Pupkov_Igor_Gennadyevich.webp",
         courses: [],
     },
     {
@@ -29,7 +29,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Осинцев Олег Сергеевич",
         role: "Наставник Промробоквантума",
         description: "Специалист по программированию (Scratch, Unity, C++, Python) и разработке обучающих проектов в области робототехники.",
-        photo: "",
+        photo: "/staff/Osintsev_Oleg_Sergeevich.webp",
         courses: ["prom"],
     },
     {
@@ -37,7 +37,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Пупкова Светлана Петровна",
         role: "Наставник VR/AR-квантума, первая квалификационная категория",
         description: "Обучает разработке приложений виртуальной и дополненной реальности, 3D-моделированию, съёмке 360°. Прошла повышение квалификации по VR/AR (базовый и продвинутый уровни).",
-        photo: "",
+        photo: "/staff/Pupkova_Svetlana_Petrovna.webp",
         courses: ["vr-ar"],
     },
     {
@@ -45,7 +45,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Просвирнина Наталья Анатольевна",
         role: "Наставник Хайтека, первая квалификационная категория",
         description: "Инженер-технолог. Обучает работе на лазерных станках, 3D-принтерах, фрезерных станках с ЧПУ, 3D-моделированию в КОМПАС-3D и Blender. Педагогический стаж 15 лет.",
-        photo: "",
+        photo: "/staff/Prosvyrnina_Natalya_Anatolyevna.webp",
         courses: ["hi-tech"],
     },
     {
@@ -53,7 +53,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Гусев Антон Валерьевич",
         role: "Наставник Хайтека, кандидат технических наук",
         description: "Инженер-мехатроник, кандидат технических наук, доцент НТИ НИЯУ МИФИ. Автор 20 научных работ. Эксперт проектных смен JuniorSkills и «Молодые профессионалы».",
-        photo: "",
+        photo: "/staff/Gusev_Anton_Valeryevich.webp",
         courses: ["hi-tech"],
     },
     {
@@ -61,7 +61,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Шубин Валерий Александрович",
         role: "Наставник IT-квантума",
         description: "Программист, специалист по C#, SQL, нейронным сетям. Полуфиналист Международного инженерного чемпионата CASE-IN. Обучает интернету вещей, блокчейну, машинному обучению.",
-        photo: "",
+        photo: "/staff/Shubin_Valery_Alexandrovich.webp",
         courses: ["it"],
     },
     {
@@ -69,7 +69,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Андреев Евгений Игоревич",
         role: "Наставник Квантошахмат",
         description: "Кандидат в мастера спорта по шахматам (рейтинг ЭЛО 2000). Организатор турниров среди городов ЗАТО. Ведёт занятия на платформах Chess.com и Lichess.org.",
-        photo: "",
+        photo: "/staff/Evgeny_Igorevich_Andreev.webp",
         courses: ["chess"],
     },
     {
@@ -77,7 +77,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Скосырская Ольга Геннадьевна",
         role: "Наставник технического английского языка",
         description: "Филолог с 34-летним стажем. Специализируется на преподавании технического английского, подготовке к олимпиадам и конкурсным мероприятиям.",
-        photo: "",
+        photo: "/staff/Skosyrskaya_Olga_Gennadyevna.webp",
         courses: ["english"],
     },
     {
@@ -85,7 +85,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Миронова Татьяна Рудольфовна",
         role: "Наставник математики, первая квалификационная категория",
         description: "Математик, общественный представитель АСИ по Свердловской области. Эксперт рабочей группы EduNet Форсайт НТИ 2.0. Участник проектных смен и программ повышения квалификации.",
-        photo: "",
+        photo: "/staff/Mironova_Tatyana_Rudolfovna.webp",
         courses: ["mathematics"],
     },
     {
@@ -93,7 +93,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Бородулина Людмила Леонидовна",
         role: "Педагог-организатор",
         description: "Организует мероприятия технопарка, курирует проектную деятельность и профориентационную работу с обучающимися.",
-        photo: "",
+        photo: "/staff/Lyudmila_Leonidovna_Borodulina.webp",
         courses: [],
     },
     {
@@ -101,7 +101,7 @@ export const PERSONAL: IPersonalData[] = [
         name: "Кузьмина Оксана Юрьевна",
         role: "Методист, первая квалификационная категория",
         description: "Разрабатывает образовательные программы, методические материалы и учебно-методическую документацию технопарка.",
-        photo: "",
+        photo: "/staff/Kuzmina_Oksana_Yuryevna.webp",
         courses: [],
     },
 ];

@@ -22,12 +22,12 @@ export function TeamCard({ person }: { person: IPersonalData }) {
                     <div className="absolute top-3 right-3 flex flex-wrap gap-1.5 justify-end">
                         {person.courses.map(course => (
                             <span key={course} className="px-2.5 py-1 text-[11px] font-medium rounded-full bg-white/90 backdrop-blur-sm text-gray-700 shadow-sm">
-                                {course === 'it' && 'IT'}
-                                {course === 'prom' && 'Промробо'}
-                                {course === 'hi-tech' && 'Hi-Tech'}
-                                {course === 'vr-ar' && 'VR/AR'}
-                                {course === 'chess' && 'Шахматы'}
-                                {course === 'english' && 'Английский'}
+                                {course === 'it' && 'IT-квантум'}
+                                {course === 'prom' && 'Промробоквантум'}
+                                {course === 'hi-tech' && 'Хайтек'}
+                                {course === 'vr-ar' && 'VR/AR – квантум'}
+                                {course === 'chess' && 'Квантошахматы'}
+                                {course === 'english' && 'Технический английский язык'}
                                 {course === 'mathematics' && 'Математика'}
                             </span>
                         ))}

@@ -62,4 +62,7 @@ export const PAGES = new class PageConfig{
     COURSES_VRAR() {
         return "/courses/vr-ar/"
     }
+    ABOUT() {
+        return "/about/"
+    }
 }

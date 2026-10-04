@@ -7,6 +7,7 @@ import { PAGES } from '../config/pages.config';
 import { HoverDropdown } from './HoverDropdown';
 import { AuthModal } from '../(auth)/_components/AuthModal';
 import { useMotionValueEvent, useScroll, motion } from 'framer-motion';
+import { Building2Icon, GraduationCapIcon } from 'lucide-react';
 
 interface Props {
     className?: string;
@@ -38,6 +39,15 @@ export const Header: React.FC<Props> = () => {
             <header className="relative w-full bg-white px-6 pb-3.5 pt-2 md:max-w-354 md:rounded-b-4xl mx-auto shadow-sm">
                 <div className="mx-auto flex min-h-15 items-center justify-end px-6">
                     <div className="flex items-center gap-2">
+                        <Link href={PAGES.ABOUT()} className="group flex min-w-17.5 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-transparent px-3 py-2 text-center no-underline outline-none transition-all duration-200 hover:bg-[#001a34]/5">
+                            <div className="relative flex h-7 w-7 items-center justify-center">
+                                <svg className="h-6 w-6 text-[#001a34]/40 transition-colors duration-200 group-hover:text-[#005bff]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+                                </svg>
+                            </div>
+                            <span className="text-[13px] font-normal leading-4 text-[#001a34] whitespace-nowrap transition-colors duration-200 group-hover:text-[#005bff]">О нас</span>
+                        </Link>
+                        
                         <Link href={PAGES.HOME()} className="group flex min-w-17.5 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-transparent px-3 py-2 text-center no-underline outline-none transition-all duration-200 hover:bg-[#001a34]/5">
                             <div className="relative flex h-7 w-7 items-center justify-center">
                                 <svg className="h-6 w-6 text-[#001a34]/40 transition-colors duration-200 group-hover:text-[#005bff]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
