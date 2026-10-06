@@ -8,37 +8,37 @@ import { QUANTUMS } from "../data/quantumsData";
 import { motion } from "framer-motion"
 
 const containerVariants = {
-    initial: { opacity: 0},
-    enter: { 
-        opacity: 1, 
-        x: 0, 
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2,
-        } 
-    },
-    exit: {
-        opacity: 0,
-        transition: { 
-            staggerChildren: 0.05,
-            delayChildren: -1,
-        },
-        x: 10
-    },
+  initial: { opacity: 0},
+  enter: { 
+      opacity: 1, 
+      x: 0, 
+      transition: {
+          staggerChildren: 0.1,
+          delayChildren: 0.2,
+      } 
+  },
+  exit: {
+      opacity: 0,
+      transition: { 
+          staggerChildren: 0.05,
+          delayChildren: -1,
+      },
+      x: 10
+  },
 };
 
 const cardVariants = {
-    initial: { opacity: 0, y: 20},
-    enter: { 
-        opacity: 1, 
-        y: 0, 
-        transition: { duration: 0.4, ease: 'easeOut' as const },
-    },
-    exit: {
-        opacity: 0,
-        y: 20,
-        transition: { duration: 0.2 },
-    },
+  initial: { opacity: 0, y: 20},
+  enter: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.4, ease: 'easeOut' as const },
+  },
+  exit: {
+      opacity: 0,
+      y: 20,
+      transition: { duration: 0.2 },
+  },
 };
 
 export default function Home() {
