@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Header } from "../components/Header";
-import { ArrowRight, Sparkles, GraduationCap, Phone, MoveUpRight, Lightbulb } from "lucide-react";
+import { ArrowRight, GraduationCap, Phone, MoveUpRight, Lightbulb, CircleQuestionMarkIcon } from "lucide-react";
 import Image from "next/image";
 import { PAGES } from "../config/pages.config";
 import { QUANTUMS } from "../data/quantumsData";
@@ -77,7 +77,7 @@ export default function Home() {
             <div className="bg-white rounded-3xl p-6 flex flex-col justify-between border border-gray-100 shadow-sm">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-[#f91155]">
-                  <Sparkles className="w-6 h-6" />
+                  <CircleQuestionMarkIcon className="w-6 h-6" />
                 </div>
                 
                 <div className="space-y-1">
