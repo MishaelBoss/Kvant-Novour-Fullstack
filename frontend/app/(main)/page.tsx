@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Header } from "../components/Header";
-import { ArrowRight, GraduationCap, Phone, MoveUpRight, Lightbulb, CircleQuestionMarkIcon } from "lucide-react";
+import { ArrowRight, GraduationCap, Phone, MoveUpRight, Lightbulb, CircleQuestionMarkIcon, MapPin, Clock, FileText } from "lucide-react";
 import Image from "next/image";
 import { PAGES } from "../config/pages.config";
 import { QUANTUMS } from "../data/quantumsData";
@@ -84,60 +84,67 @@ export default function Home() {
                   <h2 className="font-bold text-gray-900 text-lg leading-snug">
                     Как записаться на обучение?
                   </h2>
-                  <p className="text-gray-500 text-xs">
-                    Выбирайте любой удобный для вас способ оформления:
-                  </p>
                 </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                    <span className="font-bold text-blue-800 block mb-0.5">Лично в МАУ ДО &quot;СЮТ&quot;</span>
-                    <p className="text-blue-900 text-[11px] leading-tight">
-                      ул. Комсомольская 21, каб. 107. Пн-Пт: 8:30 – 17:00 (перерыв 12:00 – 12:48).
+                <div className="space-y-2.5 text-xs">
+                  <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-blue-900">
+                      <MapPin size={14} className="text-blue-600 shrink-0" strokeWidth={2.5} />
+                      <span>Лично в МАУ ДО &quot;СЮТ&quot;</span>
+                    </div>
+                    <p className="text-blue-950 text-[11px] leading-relaxed pl-5.5">
+                      ул. Комсомольская 21, каб. 107.
                     </p>
+                    <div className="flex items-center gap-1.5 text-blue-800 text-[11px] pl-5.5">
+                      <Clock size={12} className="text-blue-600 shrink-0" strokeWidth={2.5} />
+                      <span>Пн–Пт: 8:30 – 17:00 (обед 12:00 – 12:48)</span>
+                    </div>
                   </div>
 
-                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                    <span className="font-bold text-emerald-800 block mb-0.5">Какие именно бланки нужно искать и заполнить?</span>
+                  <div className="p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-100 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-emerald-900">
+                      <FileText size={14} className="text-emerald-600 shrink-0" strokeWidth={2.5} />
+                      <span>Пакет документов для зачисления</span>
+                    </div>
                     
-                    <p className="text-gray-600 mb-2">
-                      Когда вы перейдете на сайт СЮТ, в результатах поиска откройте актуальную статью о приёме (например, «Приём учащихся на новый учебный год»). Внутри неё будут прикреплены следующие документы для скачивания:
+                    <p className="text-gray-600 text-[11px] leading-relaxed">
+                      Скачайте бланки на официальном сайте СЮТ (в разделе приёма) или заполните их на месте:
                     </p>
                                 
-                    <ul className="space-y-2 text-gray-700 bg-white p-3 rounded-xl border border-amber-200/60 list-none font-medium">
-                      <li className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                          Заявление на зачисление от имени родителя (законного представителя)
-                          </li>
-                      <li className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                          Согласие на обработку персональных данных ребенка и родителя
+                    <ul className="space-y-1.5 text-gray-700 bg-white p-3 rounded-xl border border-emerald-200/60 list-none font-medium text-[11px]">
+                      <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 shrink-0"></span>
+                          <span>Заявление на зачисление (от родителя / законного представителя)</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                          Заявление на учет сертификата дополнительного образования (ПФДО)
+                      <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 shrink-0"></span>
+                          <span>Согласие на обработку персональных данных</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 shrink-0"></span>
+                          <span>Заявление на учет сертификата ПФДО</span>
                       </li>
                     </ul>
 
-                    <div className="pt-2 text-[11px] text-amber-800 italic flex items-start gap-1.5">
+                    <div className="pt-1 text-[11px] text-amber-900 bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60 flex items-start gap-2">
                       <Lightbulb 
                           size={15} 
                           strokeWidth={2.5}
                           className="shrink-0 mt-0.5 text-amber-600"
                       />
-                      <span>
-                        <strong>Совет:</strong> Если у вас нет принтера, чтобы распечатать бланки дома, не переживайте! Вы можете прийти в 107 кабинет СЮТ, и выдадут чистыебумажные бланки на месте.
+                      <span className="leading-tight">
+                        <strong>Без принтера?</strong> Не проблема! Приходите в каб. 107 СЮТ — чистые бумажные бланки выдадим на месте.
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-gray-100 text-[11px] text-gray-500 flex justify-between">
-                  <span className="inline-flex items-center gap-1">
+                <div className="pt-2 border-t border-gray-100 text-[11px] text-gray-500 flex justify-between items-center">
+                  <span className="inline-flex items-center gap-1.5">
                     <Phone size={12} className="text-gray-400" strokeWidth={2.5} />
-                    Кванториум: <strong>3-82-65</strong>
+                    Кванториум: <a href="tel:3437038265" className="font-bold text-gray-800 hover:text-blue-600 transition-colors">3-82-65</a>
                   </span>
-                  <span>Приемная СЮТ: <strong>3-92-31</strong></span>
+                  <span>Приемная: <a href="tel:3437039231" className="font-bold text-gray-800 hover:text-blue-600 transition-colors">3-92-31</a></span>
                 </div>
               </div>
               
@@ -146,9 +153,9 @@ export default function Home() {
                   href="https://vk.ru/novkvantorium" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="text-center bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1"
+                  className="text-center bg-[#005bff] hover:bg-[#004ae6] text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5"
                 >
-                  В ВК <MoveUpRight size={12} strokeWidth={3} />
+                  Связаться во ВКонтакте <MoveUpRight size={13} strokeWidth={3} />
                 </Link>
               </div>
             </div>
