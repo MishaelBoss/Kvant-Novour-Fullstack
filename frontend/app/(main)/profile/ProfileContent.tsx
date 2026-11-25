@@ -93,7 +93,7 @@ export default function ProfileContent() {
 
     const currentAvatar = (user?.avatar && typeof user.avatar === 'string') 
         ? user.avatar.replace('http://localhost:8000', '').replace('http://localhost', '') 
-        : '/default-avatar.png';
+        : '/undraw_finance-guy-avatar_vhop.svg';
 
     const setActiveTab = (tab: string) => {
         router.push(`?tab=${tab}`, { scroll: false });
